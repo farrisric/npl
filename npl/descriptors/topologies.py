@@ -1,9 +1,9 @@
-from npl.descriptors.descriptors import Descriptor
+from npl.descriptors import Descriptor
 from npl.neighbour_list import construct_neighborlist
 
 class Topologies(Descriptor):
 
-    def __init__(self, symbols):
+    def __init__(self):
         self.neighbor_list = None
         self.symbols = None
         self.symbols_list = None
@@ -12,15 +12,15 @@ class Topologies(Descriptor):
     def create(self, particle):
 
         self.get_neighbour_list(particle)
-
-        return super().create(particle)
+        self.get_symbols_list(particle)
+        #return super().create(particle)
 
     def get_symbols_list(self, particle):
         self.symbols = sorted(list(particle.symbols.indices()))
         self.symbols_list = particle.symbols
 
     def get_neighbour_list(self,particle):
-        self.neighbour_list = construct_neighborlist(particle)
+        self.neighbor_list = construct_neighborlist(particle)
     
     def count_bonds(self, particle):
         n_aa_bonds = 0

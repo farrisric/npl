@@ -6,13 +6,9 @@ import numpy as np
 import itertools
 import copy
 
+def get_connectivity_matrix(atoms, scale_factor=1.0, cutoffs = None):
 
-def construct_neighborlist( atoms, scale_factor=1.0, npl = True, cutoffs = None):
-
-        neighborlist = defaultdict(lambda: set())
-
-        if not cutoffs:
-            cutoffs = natural_cutoffs(atoms, mult=scale_factor)
+        connectivity_matrix = np.zeros((len(atoms), len(atoms)), dtype=np.int128)
             
         neighbor_list = build_neighbor_list(atoms,
                                             cutoffs=cutoffs,
@@ -21,8 +17,9 @@ def construct_neighborlist( atoms, scale_factor=1.0, npl = True, cutoffs = None)
 
         for atom_idx, _ in enumerate(atoms):
             neighbors, _ = neighbor_list.get_neighbors(atom_idx)
-            if npl:
-                neighborlist[atom_idx] = set(neighbors)
-            else:
-                neighborlist[atom_idx] = neighbors
-        return neighborlist
+            for neighbor_idx in neighbors:
+                connectivity_matrix[atom_idx][neighbor_idx] = 1
+
+        return connectivity_matrix
+
+
