@@ -1,7 +1,7 @@
 from numba import njit
 import numpy as np
 
-from descriptors import Descriptor
+from npl.descriptors import Descriptor
 from npl.core import Nanoparticle
 
 class EnvironmentalTopologies(Descriptor):
@@ -14,22 +14,28 @@ class EnvironmentalTopologies(Descriptor):
         self.coordination_number_offsets = [int(cn*(cn + 1)/2) for cn in range(13)]
         self.element_offset = 91
         
-    
+        self.connectivity_matrix = None
+        self.occupancy_symbol_a = None
+        self.occupancy_symbol_b = None
+        
     def create(self, particle):
         system = Nanoparticle.from_atoms(particle)
+        self.connectivity_matrix = system.get_connectivity_matrix()
+        self.occupancy_symbol_a, self.occupancy_symbol_b  = system.get_symbols_lists()
+        self.compute_local_environments()
 
     @njit
-    def compute_local_environments(self, system):
+    def compute_local_environments(self):
 
-        for i in range(len(system.connectivity_matrix)):
-            a_bonds = np.int16(np.sum(system.connectivity_matrix[i]*system.occupancy_symbol_a))
-            b_bonds = np.int16(np.sum(system.connectivity_matrix[i]*system.occupancy_symbol_b))
+        for i in range(self.n_atoms):
+            a_bonds = np.int16(np.sum(self.connectivity_matrix[i]*self.occupancy_symbol_a))
+            b_bonds = np.int16(np.sum(self.connectivity_matrix[i]*self.occupancy_symbol_b))
 
             self.atom_features[i][0] = a_bonds
             self.atom_features[i][1] = b_bonds
 
     @njit
-    def compute_local_environment(system, atom_index):
+    def compute_local_environment(self, system, atom_index):
 
         a_bonds = np.int16(np.sum(system.connectivity_matrix[atom_index]*system.occupancy_symbol_a))
         b_bonds = np.int16(np.sum(system.connectivity_matrix[atom_index]*system.occupancy_symbol_b))
@@ -37,6 +43,7 @@ class EnvironmentalTopologies(Descriptor):
         self.local_environments[atom_index][0] = a_bonds
         self.local_environments[atom_index][1] = b_bonds
         
+    @njit
     def compute_atom_features(self, system):
 
         for atom_idx in range(self.n_atoms):

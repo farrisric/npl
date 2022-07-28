@@ -88,6 +88,8 @@ class Nanoparticle(Atoms):
                 self.occupancy_symbol_a[atom.index] = 1
             else:
                 self.occupancy_symbol_b[atom.index] = 1
+
+        return self.occupancy_symbol_a, self.occupancy_symbol_b
     
     def get_connectivity_matrix(self):
         """Calculates the connectivity matrix A, an NxN matrix where N is the number of atoms.
