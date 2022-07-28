@@ -1,1 +1,1 @@
-from npl.neighbour_list.neighbour_list import construct_neighborlist
+from npl.neighbour_list.neighbour_list import get_connectivity_matrix

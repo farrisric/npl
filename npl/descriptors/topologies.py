@@ -1,5 +1,5 @@
 from npl.descriptors import Descriptor
-from npl.neighbour_list import construct_neighborlist
+from npl.neighbour_list import get_connectivity_matrix
 
 class Topologies(Descriptor):
 
@@ -11,7 +11,7 @@ class Topologies(Descriptor):
 
     def create(self, particle):
 
-        self.get_neighbour_list(particle)
+        self.get_connectivity_matrix(particle)
         self.get_symbols_list(particle)
         #return super().create(particle)
 
@@ -19,8 +19,8 @@ class Topologies(Descriptor):
         self.symbols = sorted(list(particle.symbols.indices()))
         self.symbols_list = particle.symbols
 
-    def get_neighbour_list(self,particle):
-        self.neighbor_list = construct_neighborlist(particle)
+    def get_connectivity_matrix(self,particle):
+        self.neighbor_list = get_connectivity_matrix(particle)
     
     def count_bonds(self, particle):
         n_aa_bonds = 0
