@@ -1,2 +1,6 @@
 from setuptools import setup
-setup()
+from Cython.Build import cythonize
+
+setup(
+    ext_modules = cythonize("npl/ext/*.pyx")
+)

@@ -1,0 +1,5 @@
+ase==3.22.1
+numba==0.56.0
+numpy==1.22.4
+setuptools==59.6.0
+
