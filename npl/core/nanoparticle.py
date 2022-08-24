@@ -80,16 +80,16 @@ class Nanoparticle(Atoms):
         Returns: np.arrays: 1D arrays that contains the occupancy of a lattice position
         base on the element of the array
         """
-        self.occupancy_symbol_a = np.zeros(len(self))
-        self.occupancy_symbol_b = np.zeros(len(self))
+        self._occupancy_symbol_a = np.zeros(len(self))
+        self._occupancy_symbol_b = np.zeros(len(self))
 
         for atom in self:
             if atom.symbol == list(self.symbols.indices())[0]:
-                self.occupancy_symbol_a[atom.index] = 1
+                self._occupancy_symbol_a[atom.index] = 1
             else:
-                self.occupancy_symbol_b[atom.index] = 1
+                self._occupancy_symbol_b[atom.index] = 1
 
-        return self.occupancy_symbol_a, self.occupancy_symbol_b
+        return self._occupancy_symbol_a, self._occupancy_symbol_b
     
     def get_connectivity_matrix(self):
         """Calculates the connectivity matrix A, an NxN matrix where N is the number of atoms.
