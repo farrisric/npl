@@ -1,7 +1,19 @@
+from numba import njit
+import numpy as np
+
 from npl.descriptors import Descriptor
-from npl.neighbour_list import get_connectivity_matrix
+from npl.core import Nanoparticle
 
 class Topologies(Descriptor):
+    def __init__(self):
+        pass
+
+    def create(self, particle):
+        system = Nanoparticle.from_atoms(particle)
+        bond_matrix = system.get_bond_matrix()
+        feature_vector = self.compute_feature_vector(system._connectivity_matrix, system._occupation_matrix.T, bond_matrix)
+        return feature_vector
+
 
     def __init__(self):
         self.neighbor_list = None

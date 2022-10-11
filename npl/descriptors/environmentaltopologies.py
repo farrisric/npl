@@ -5,7 +5,6 @@ from npl.descriptors import Descriptor
 from npl.core import Nanoparticle
 
 class EnvironmentalTopologies(Descriptor):
-    
     def __init__(self):
         pass
 
