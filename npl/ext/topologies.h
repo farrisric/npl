@@ -2,7 +2,6 @@
 #define TOPOLOGIES_H
 
 #include <iostream>
-#include <eigen3/Eigen/Dense>
 #include <string>
 
 using namespace Eigen;

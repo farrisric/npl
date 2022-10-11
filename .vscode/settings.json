@@ -55,5 +55,6 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "jupyter.kernels.filter": []
 }

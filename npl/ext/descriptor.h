@@ -1,6 +1,5 @@
 #include <vector>
 #include <iostream>
-#include <eigen3/Eigen/Dense>
 #include <string>
 #include <pybind11/stl.h>
 

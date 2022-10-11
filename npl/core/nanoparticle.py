@@ -43,9 +43,8 @@ class Nanoparticle(Atoms):
             info,
         )
 
-        self._connectivity_matrix = None
-        self.occupancy_symbol_a = None
-        self.occupancy_symbol_b = None
+        self._connectivity_matrix = self.get_connectivity_matrix()
+        self._occupation_matrix = self.get_occupation_matrix()
 
     @staticmethod
     def from_atoms(atoms):
@@ -68,8 +67,11 @@ class Nanoparticle(Atoms):
 
         return system
     
-    def get_symbols_lists(self):
-        """Return m 1D arrays of length N, where m is the number of species
+    def get_bond_matrix(self):
+        return np.dot(self._connectivity_matrix, self._occupation_matrix.T)
+
+    def get_occupation_matrix(self):
+        """Return m NxM matrix where M is the number of species
         in the Nanoparticle and N is the number of atoms.
         
         Each species has its own 1D array: V^E where E is the element of the specie.
@@ -80,16 +82,16 @@ class Nanoparticle(Atoms):
         Returns: np.arrays: 1D arrays that contains the occupancy of a lattice position
         base on the element of the array
         """
-        self._occupancy_symbol_a = np.zeros(len(self))
-        self._occupancy_symbol_b = np.zeros(len(self))
+        elements = sorted(list(self.symbols.indices()))
+        n_elements = len(elements)
+
+        occupation_matrix = np.zeros((n_elements, self.get_global_number_of_atoms()))
 
         for atom in self:
-            if atom.symbol == list(self.symbols.indices())[0]:
-                self._occupancy_symbol_a[atom.index] = 1
-            else:
-                self._occupancy_symbol_b[atom.index] = 1
+            element_index = elements.index(atom.symbol)
+            occupation_matrix[element_index, atom.index] = 1
 
-        return self._occupancy_symbol_a, self._occupancy_symbol_b
+        return occupation_matrix
     
     def get_connectivity_matrix(self):
         """Calculates the connectivity matrix A, an NxN matrix where N is the number of atoms.
@@ -103,7 +105,7 @@ class Nanoparticle(Atoms):
         from ase.neighborlist import natural_cutoffs
         from ase.neighborlist import build_neighbor_list
 
-        self._connectivity_matrix = np.zeros((len(self), len(self)), dtype=np.int16)
+        connectivity_matrix = np.zeros((len(self), len(self)), dtype=np.int16)
 
         cutoffs = natural_cutoffs(self)    
         neighbor_list = build_neighbor_list(self,
@@ -114,9 +116,9 @@ class Nanoparticle(Atoms):
         for atom_idx, _ in enumerate(self):
             neighbors, _ = neighbor_list.get_neighbors(atom_idx)
             for neighbor_idx in neighbors:
-                self._connectivity_matrix[atom_idx][neighbor_idx] = 1
+                connectivity_matrix[atom_idx][neighbor_idx] = 1
 
-        return self._connectivity_matrix
+        return connectivity_matrix
 
 
 
