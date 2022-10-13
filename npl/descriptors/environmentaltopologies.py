@@ -6,13 +6,20 @@ from npl.core import Nanoparticle
 
 class EnvironmentalTopologies(Descriptor):
     def __init__(self):
-        pass
+        super().__init__(name='ETOP')
+        
 
     def create(self, particle):
         system = Nanoparticle.from_atoms(particle)
         bond_matrix = system.get_bond_matrix()
         feature_vector = self.compute_feature_vector(system._connectivity_matrix, system._occupation_matrix.T, bond_matrix)
         return feature_vector
+
+    def _create(self, particle):
+        system = Nanoparticle.from_atoms(particle)
+        bond_matrix = system.get_bond_matrix()
+        feature_vector = self.compute_feature_vector(system._connectivity_matrix, system._occupation_matrix.T, bond_matrix)
+        particle.info['descriptors'] = {self.name : feature_vector}
 
     @staticmethod
     @njit
