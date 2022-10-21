@@ -30,6 +30,7 @@ class LinearModelCalculator(BaseCalculator):
         super().__init__(name=name)
 
         self.model = linear_model
+        self.descriptor_key = descriptor_key
         self._fit(training_set, descriptor_key)        
     
     def _fit(self, trainin_set, descriptor_key):
@@ -42,4 +43,4 @@ class LinearModelCalculator(BaseCalculator):
         self.model.fit(X,y)
 
     def calculate_total(self, particle):
-        return self.model.predict(particle.info['desc'][descriptor_key])
+        return self.model.predict(particle.info['descriptors'][self.descriptor_key])
