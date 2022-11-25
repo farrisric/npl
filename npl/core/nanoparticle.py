@@ -45,6 +45,9 @@ class Nanoparticle(Atoms):
 
         self._connectivity_matrix = self.get_connectivity_matrix()
         self._occupation_matrix = self.get_occupation_matrix()
+        self.neighbor_dict = {x.index : [] for x in self}
+
+        self.constructu_neighbor_list()
 
     @staticmethod
     def from_atoms(atoms):
@@ -63,6 +66,7 @@ class Nanoparticle(Atoms):
             constraint=atoms._get_constraints(),
             calculator=atoms.get_calculator(),
             info=atoms.info,
+            
         )
 
         return system
@@ -119,6 +123,50 @@ class Nanoparticle(Atoms):
                 connectivity_matrix[atom_idx][neighbor_idx] = 1
 
         return connectivity_matrix
+
+    def constructu_neighbor_list(self):
+        """Return a dictionary where the keys are the atom indices and the
+        values are the indices of its first nearest-neighbors."""
+        from ase.neighborlist import natural_cutoffs
+        from ase.neighborlist import build_neighbor_list
+
+        self.neighbor_dict = {x.index : [] for x in self}
+        cutoffs = natural_cutoffs(self)    
+        neighbor_list = build_neighbor_list(self,
+                                            cutoffs=cutoffs,
+                                            bothways=True,
+                                            self_interaction=False)
+
+        for atom_idx in self.neighbor_dict:
+            self.neighbor_dict[atom_idx] = neighbor_list.get_neighbors(atom_idx)[0]
+
+    def get_coordination_list(self):
+        coordination_list = np.empty(len(self))
+
+        for index, neigh in self.neighbor_dict.items():
+            coordination_list[index] = len(neigh)
+
+        return coordination_list
+
+    def get_surface_neighbors(self):
+        surface_indices = np.where(self.get_coordination_list()<12)[0]
+
+        surface_neighbors_dict = {x : [] for x in surface_indices}
+        
+        for surface_idx in surface_indices:
+            for neigh in self.neighbor_dict[surface_idx]:
+                if neigh in surface_indices:
+                    surface_neighbors_dict[surface_idx].append(neigh)
+
+        return surface_neighbors_dict
+
+        
+
+
+
+
+        
+
 
 
 

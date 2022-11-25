@@ -14,7 +14,6 @@ class Topologies(Descriptor):
         feature_vector = self.compute_feature_vector(system._connectivity_matrix, system._occupation_matrix.T, bond_matrix)
         return feature_vector
 
-
     def __init__(self):
         self.neighbor_list = None
         self.symbols = None
