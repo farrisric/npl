@@ -4,23 +4,32 @@ import numpy as np
 from npl.descriptors import Descriptor
 from npl.core import Nanoparticle
 
-class SitesDescriptors(Descriptor):
+class SiteFinder(Descriptor):
     """Class for the calculation of adsoption site descriptors as in Mie et al. 2019.
-    Each site has its own set of descriptors."""
-
-    def __init__(self, system):
-        self.system = system
+    Each site has its own set of descriptors.
+    
+    Parameters
+    ----------
+    system:
+        identifier of the descriptor
+    """
+    
+    def __init__(self, particle):
+        self.particle = particle
         self.surface_neighbors_dict = None
-        self.singlets = np.where(self.system.get_coordination_list()<12)[0].tolist()
+        self.singlets = []
         self.pairs = []
         self.triplets = []
         self.quadruplets = []
         
         super().__init__(name='ADS')
+        self.get_site_singlets()
         self.constructur_surface_neighbors()
         self.get_site_pairs()
         self.get_site_triplets()
         self.get_site_quadruplets()
+
+        del self.particle
 
     def create(self, particle):
         pass 
@@ -29,12 +38,16 @@ class SitesDescriptors(Descriptor):
         self.surface_neighbors_dict = {x : [] for x in self.singlets}
         
         for surface_idx in self.singlets:
-            for neigh in self.system.neighbor_dict[surface_idx]:
+            for neigh in self.particle.neighbor_dict[surface_idx]:
                 if neigh in self.singlets:
                     self.surface_neighbors_dict[surface_idx].append(neigh)
 
-    
+    def get_site_singlets(self):
+        coordination_list = self.particle.get_coordination_list()
+        self.singlets = np.where(coordination_list<12)[0].tolist()
+
     def get_site_pairs(self):
+
         for central_i, neighbors in self.surface_neighbors_dict.items():
             for neigh_i in sorted(neighbors):
                 if neigh_i > central_i:

@@ -11,6 +11,10 @@ class Descriptor(ABC):
 
     def __init__(self, name):
         self.name = name
+        self.n_features = 0
+
+    @abstractmethod
+    def _compute_n_features(self):
         pass
 
     @abstractmethod

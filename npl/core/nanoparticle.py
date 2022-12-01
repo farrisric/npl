@@ -1,6 +1,9 @@
 import sys
-from ase import Atoms
 import numpy as np
+
+from ase import Atoms
+from ase.neighborlist import natural_cutoffs
+from ase.neighborlist import build_neighbor_list
 
 class Nanoparticle(Atoms):
     """Nanoparticle Object used within the package, inerithms from the
@@ -42,12 +45,12 @@ class Nanoparticle(Atoms):
             calculator,
             info,
         )
-
-        self._connectivity_matrix = self.get_connectivity_matrix()
-        self._occupation_matrix = self.get_occupation_matrix()
+        
         self.neighbor_dict = {x.index : [] for x in self}
-
-        self.constructu_neighbor_list()
+        self._construct_neighbor_list()
+        self.CM = self._compute_connectivity_matrix()
+        self.OM = self._compute_occupation_matrix()
+        self.atom_features = dict()
 
     @staticmethod
     def from_atoms(atoms):
@@ -74,7 +77,7 @@ class Nanoparticle(Atoms):
     def get_bond_matrix(self):
         return np.dot(self._connectivity_matrix, self._occupation_matrix.T)
 
-    def get_occupation_matrix(self):
+    def _compute_occupation_matrix(self):
         """Return m NxM matrix where M is the number of species
         in the Nanoparticle and N is the number of atoms.
         
@@ -86,18 +89,18 @@ class Nanoparticle(Atoms):
         Returns: np.arrays: 1D arrays that contains the occupancy of a lattice position
         base on the element of the array
         """
-        elements = sorted(list(self.symbols.indices()))
+        elements = np.unique(self.numbers)
         n_elements = len(elements)
 
-        occupation_matrix = np.zeros((n_elements, self.get_global_number_of_atoms()))
+        occupation_matrix = np.zeros((n_elements, len(self)), dtype=np.int8)
 
         for atom in self:
-            element_index = elements.index(atom.symbol)
+            element_index = np.where(elements==atom.number)[0]
             occupation_matrix[element_index, atom.index] = 1
 
         return occupation_matrix
     
-    def get_connectivity_matrix(self):
+    def _compute_connectivity_matrix(self):
         """Calculates the connectivity matrix A, an NxN matrix where N is the number of atoms.
         
             A_ij = 0 if atom_i and atom_j are not bonded together
@@ -106,29 +109,17 @@ class Nanoparticle(Atoms):
             Returns:
             np.array: Symmetric 2D matrix containing the connectivity between atoms.
         """
-        from ase.neighborlist import natural_cutoffs
-        from ase.neighborlist import build_neighbor_list
 
-        connectivity_matrix = np.zeros((len(self), len(self)), dtype=np.int16)
-
-        cutoffs = natural_cutoffs(self)    
-        neighbor_list = build_neighbor_list(self,
-                                            cutoffs=cutoffs,
-                                            bothways=True,
-                                            self_interaction=False)
-
-        for atom_idx, _ in enumerate(self):
-            neighbors, _ = neighbor_list.get_neighbors(atom_idx)
-            for neighbor_idx in neighbors:
-                connectivity_matrix[atom_idx][neighbor_idx] = 1
+        connectivity_matrix = np.zeros((len(self), len(self)), dtype=np.int8)
+        for i in self.neighbor_dict:
+            for j in self.neighbor_dict[i]:
+                connectivity_matrix[i][j] = 1
 
         return connectivity_matrix
 
-    def constructu_neighbor_list(self):
+    def _construct_neighbor_list(self):
         """Return a dictionary where the keys are the atom indices and the
         values are the indices of its first nearest-neighbors."""
-        from ase.neighborlist import natural_cutoffs
-        from ase.neighborlist import build_neighbor_list
 
         self.neighbor_dict = {x.index : [] for x in self}
         cutoffs = natural_cutoffs(self)    
