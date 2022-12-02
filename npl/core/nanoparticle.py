@@ -2,6 +2,7 @@ import sys
 import numpy as np
 
 from ase import Atoms
+from ase.data import atomic_numbers
 from ase.neighborlist import natural_cutoffs
 from ase.neighborlist import build_neighbor_list
 
@@ -47,10 +48,14 @@ class Nanoparticle(Atoms):
         )
         
         self.neighbor_dict = {x.index : [] for x in self}
+        self.numbers_indices = {number : index for index, number in enumerate(np.unique(self.numbers))}
+        self.symbols_indices = {number : index for index, number in enumerate(np.unique(self.symbols))}
+        self.atom_features = dict()
+
         self._construct_neighbor_list()
         self.CM = self._compute_connectivity_matrix()
         self.OM = self._compute_occupation_matrix()
-        self.atom_features = dict()
+        
 
     @staticmethod
     def from_atoms(atoms):
@@ -89,7 +94,7 @@ class Nanoparticle(Atoms):
         Returns: np.arrays: 1D arrays that contains the occupancy of a lattice position
         base on the element of the array
         """
-        elements = np.unique(self.numbers)
+        elements = self.get_unique_numbers()
         n_elements = len(elements)
 
         occupation_matrix = np.zeros((n_elements, len(self)), dtype=np.int8)
@@ -150,6 +155,42 @@ class Nanoparticle(Atoms):
                     surface_neighbors_dict[surface_idx].append(neigh)
 
         return surface_neighbors_dict
+
+    def get_unique_numbers(self):
+        return list(self.numbers_indices.keys())
+
+    def get_number_index(self, atomic_number):
+        if atomic_number in self.numbers_indices:
+            return self.numbers_indices[atomic_number]
+        else:
+            raise NameError
+
+    def get_index_number(self, number_index):
+        
+        for number, index in self.numbers_indices.items():
+            if index == number_index:
+                return number
+
+
+    def get_occupation_indices_by_symbol(self, symbol):
+
+        if type(symbol) == str:
+            symbol = atomic_numbers[symbol]
+
+        index = self.get_number_index(symbol)
+        occupied_indices = np.where(self.OM[index] == 1)[0]
+
+        return occupied_indices
+
+    def get_numbers_from_occupation_matrix(self):
+
+        new_numbers = []
+        for index in self.OM.T:
+            number_index = np.where(index == 1)[0][0]
+            new_numbers.append(self.get_index_number(number_index))
+        
+        return new_numbers
+        
 
         
 

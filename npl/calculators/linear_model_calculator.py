@@ -3,7 +3,7 @@ from sklearn import linear_model
 from npl.calculators.base_calculator import BaseCalculator
 from npl.core.nanoparticle import Nanoparticle
 
-class LinearModelCalculator(BaseCalculator):
+class TopologicalCalculator(BaseCalculator):
     """A LinearModelCalculator object that calculates the 
     total energy of a nanoparticle based on its descriptor.
 

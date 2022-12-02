@@ -11,6 +11,7 @@ class BaseOperator(ABC):
     """
 
     def __init__(self):
+        self.operations = []
         pass
 
     @abstractmethod

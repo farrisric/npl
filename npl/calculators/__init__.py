@@ -1,1 +1,2 @@
-from .linear_model_calculator import LinearModelCalculator
+from npl.calculators.base_calculator import BaseCalculator
+from npl.calculators.linear_model_calculator import TopologicalCalculator
