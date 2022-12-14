@@ -1,10 +1,10 @@
 from numba import njit
 import numpy as np
 
-from npl.descriptors import Descriptor
+from npl.descriptors import BaseDescriptor
 from npl.core import Nanoparticle
 
-class SiteFinder(Descriptor):
+class SiteFinder(BaseDescriptor):
     """Class for the calculation of adsoption site descriptors as in Mie et al. 2019.
     Each site has its own set of descriptors.
     

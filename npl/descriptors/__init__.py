@@ -1,4 +1,4 @@
-from npl.descriptors.descriptors import Descriptor
+from npl.descriptors.base_descriptor import BaseDescriptor
 from npl.descriptors.topologies import Topologies
 from npl.descriptors.environmentaltopologies import EnvironmentalTopologies
 from npl.descriptors.site_finder import SiteFinder

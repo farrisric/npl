@@ -7,6 +7,7 @@ from ase.units import kB
 from ase.data import chemical_symbols
 
 from npl.calculators.base_calculator import BaseCalculator
+from npl.global_optimization.operations import BaseOperator
 from npl.global_optimization.ensambles.base_ensamble import BaseEnsemble
 
 
@@ -55,6 +56,7 @@ class ThermodynamicBaseEnsemble(BaseEnsemble):
     def __init__(self,
                  structure: Atoms,
                  calculator: BaseCalculator,
+                 operator: BaseOperator,
                  boltzmann_constant: float = kB,
                  random_seed: int = None,) -> None:
 
@@ -63,6 +65,7 @@ class ThermodynamicBaseEnsemble(BaseEnsemble):
         super().__init__(
             structure=structure,
             calculator=calculator,
+            operator=operator,
             random_seed=random_seed,)
 
     @abstractproperty
@@ -93,9 +96,7 @@ class ThermodynamicBaseEnsemble(BaseEnsemble):
             p = np.exp(-potential_diff / (self.boltzmann_constant * self.temperature))
             return p > self._next_random_number()
 
-    def do_canonical_swap(self,
-                          sublattice_index: int,
-                          allowed_species: List[int] = None) -> int:
+    def do_canonical_swap(self) -> int:
         """ Carries out one Monte Carlo trial step.
 
         Parameters
@@ -109,11 +110,11 @@ class ThermodynamicBaseEnsemble(BaseEnsemble):
         -------
         Returns 1 or 0 depending on if trial move was accepted or rejected
         """
-        sites, species = self.configuration.get_swapped_state(sublattice_index, allowed_species)
-        potential_diff = self._get_property_change(sites, species)
+        self.operator.perform_operation(self.structure)
+        potential_diff = self._get_property_change()
 
         if self._acceptance_condition(potential_diff):
-            self.update_occupations(sites, species)
             return 1
+        self.operator.revert_operation(self.structure)
         return 0
 

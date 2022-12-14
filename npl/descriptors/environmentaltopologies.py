@@ -1,10 +1,10 @@
 from numba import njit
 import numpy as np
 
-from npl.descriptors import Descriptor
+from npl.descriptors import BaseDescriptor
 from npl.core import Nanoparticle
 
-class EnvironmentalTopologies(Descriptor):
+class EnvironmentalTopologies(BaseDescriptor):
     def __init__(self):
         super().__init__(name='ETOP')
         

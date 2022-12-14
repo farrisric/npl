@@ -1,14 +1,16 @@
+from typing import List
+
 from numba import njit
 import numpy as np
 from itertools import combinations_with_replacement
 
 from ase.data import atomic_numbers
 
-from npl.descriptors import Descriptor
+from npl.descriptors import BaseDescriptor
 from npl.core import Nanoparticle
 
-class Topologies(Descriptor):
-    def __init__(self, symbols):
+class Topologies(BaseDescriptor):
+    def __init__(self, symbols : List[str]) -> None:
         self.n_features = 0
 
         self.atomic_numbers = sorted([atomic_numbers[symbol] for symbol in symbols])
@@ -46,8 +48,11 @@ class Topologies(Descriptor):
         for atom_index in range(len(system)):
             self._compute_atom_features(system, atom_index, system.atom_features[self.name][atom_index])
 
+    def get_feature_vector(self, system : Nanoparticle):
 
-    def create(self, system):
+        if not isinstance(system, Nanoparticle):
+            system = Nanoparticle.from_atoms(system)
+
         self._compute_all_atom_features(system)
         return system.atom_features[self.name].sum(axis=0)
         
