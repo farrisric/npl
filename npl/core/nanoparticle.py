@@ -94,7 +94,7 @@ class Nanoparticle(Atoms):
         Returns: np.arrays: 1D arrays that contains the occupancy of a lattice position
         base on the element of the array
         """
-        elements = self.get_unique_numbers()
+        elements = self.get_unique_atomic_numbers()
         n_elements = len(elements)
 
         occupation_matrix = np.zeros((n_elements, len(self)), dtype=np.int8)
@@ -156,7 +156,7 @@ class Nanoparticle(Atoms):
 
         return surface_neighbors_dict
 
-    def get_unique_numbers(self):
+    def get_unique_atomic_numbers(self):
         return list(self.numbers_indices.keys())
 
     def get_number_index(self, atomic_number):

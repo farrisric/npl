@@ -17,11 +17,9 @@ class ExchangeOperator(BaseOperator):
     def __init__(self, system, p_geometric):
         self.exchange_types = []
         self.indices_by_element = dict()
-
         self.p_geometric = p_geometric
-
         self.operations = []
-
+        
         self.bind_system(system)
 
         
