@@ -3,7 +3,7 @@ import numpy as np
 
 from npl.global_optimization.operations.base_operation import BaseOperator
 
-class ExchangeOperator:
+class ExchangeOperator(BaseOperator):
     """Class that performs exchange operators between atoms of
     different elements in a nanoparticle. It uses the Occupation Matrix
     of a system to perform element swaps
@@ -14,7 +14,7 @@ class ExchangeOperator:
         identifier of the descriptor
     """
 
-    def __init__(self, system,p_geometric):
+    def __init__(self, system, p_geometric):
         self.exchange_types = []
         self.indices_by_element = dict()
 

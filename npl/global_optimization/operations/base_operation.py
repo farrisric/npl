@@ -21,3 +21,8 @@ class BaseOperator(ABC):
     @abstractmethod
     def revert_operation(self):
         pass
+
+    def execute_swap_operation(self, a, exchange, swap):
+        ex1, ex2 = exchange
+        swap1, swap2 = swap
+        a[ex1][swap1], a[ex2][swap2] = a[ex2][swap2], a[ex1][swap1]
