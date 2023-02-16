@@ -26,33 +26,26 @@ class Topologies(BaseDescriptor):
         self.n_features += len(self.atomic_numbers) * 13
 
     def _compute_bond_types(self):
-
         self.bond_types = [x for x in combinations_with_replacement(self.atomic_numbers, 2)]
         self.bond_type_per_element = {x : [] for x in self.atomic_numbers}
-
         for atomic_number in self.atomic_numbers:
             for bond_type in self.bond_types:
                 if atomic_number in bond_type:
                     self.bond_type_per_element[atomic_number].append(self.bond_types.index(bond_type))
     
     def _compute_atom_features(self, system, atom_index, row):
-
         key = system[atom_index].number
-
         for element, feature_index in enumerate(self.bond_type_per_element[key]):
             row[feature_index] += np.dot(system.CM[atom_index], system.OM[element])
 
     def _compute_all_atom_features(self, system):
         system.atom_features[self.name] = np.zeros((len(system), self.n_features), dtype=np.int8)
-  
         for atom_index in range(len(system)):
             self._compute_atom_features(system, atom_index, system.atom_features[self.name][atom_index])
 
     def get_feature_vector(self, system : Nanoparticle):
-
         if not isinstance(system, Nanoparticle):
             system = Nanoparticle.from_atoms(system)
-
         self._compute_all_atom_features(system)
         return system.atom_features[self.name].sum(axis=0)
         

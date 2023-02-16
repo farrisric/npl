@@ -56,14 +56,4 @@ def compute_bond_combinations(n_bond_types, cn_number):
 
     return combinations
 
-
-
-if __name__ == "__main__":
-    import random 
-
-    global_top = [random.random() for _ in range(48)]
-    symbols = ['Au','Pt','Ni']
-    # a = compute_bond_types(global_top, symbols)
-    coefficeints, feature_index_values = compute_coefficients_for_linear_topological_model(global_top, symbols)
-    print(feature_index_values['Pt'][(0, 1, 11, 1)])
     

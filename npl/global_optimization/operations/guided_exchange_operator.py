@@ -1,16 +1,38 @@
 from npl.core import Nanoparticle
 from npl.global_optimization.operations import BaseOperator
+from npl.global_optimization.operations import features
 from sortedcontainers import SortedKeyList
-from typing import List
+from typing import List, Dict
 import numpy as np
 
 class GuidedExchangeOperator(BaseOperator):
-    def __init__(self, system: Nanoparticle, environment_energies : List[float]) -> None:
+    def __init__(self, system: Nanoparticle, environment_energies : List[float], feature_index_values : Dict[tuple, float]) -> None:
         super().__init__(system)
         self.n_envs = int(len(environment_energies)/len(self.atomic_numbers))
         self.flip_energies = {atomic_number : None for atomic_number in self.atomic_numbers}
-        
+        self.exchange_energies = dict()
+        self.sorted_indices = SortedKeyList(key=lambda x: min(self.exchange_energies[x]))
+
         self.get_flip_energies(environment_energies)
+
+    def abind_system(self, system, feature_index_values):
+        super().bind_system(system)
+        
+        for atom in system:
+            Z = atom.number
+            number_index = system.get_number_index(Z)
+            atom_feature = self.get_atom_feature(system, atom)
+            feature_index = feature_index_values[atom_feature]
+            self.exchange_energies[atom.index] = self.flip_energies[Z][feature_index]
+            self.sorted_indices.add(atom.index)
+
+    def get_atom_feature(self, system, atom):
+        from npl.global_optimization.operations import features
+        n = len(self.atomic_numbers)
+        i = features[n][system.get_number_index(atom.number)]
+        return tuple(system.atom_features['TOP'][atom.index][i])
+         
+
 
     def env_from_symbol(self, index : int) -> float:
         return self.n_envs * index
