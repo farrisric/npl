@@ -18,7 +18,8 @@ class BaseOperator(ABC):
         self.indices_by_element = dict()
         self.atomic_numbers = system.get_unique_atomic_numbers()
 
-        self.bind_system(system)
+        self.get_indices_by_symbol(system)
+        self.compute_number_of_exchange_types(system)
 
     @abstractmethod
     def perform_operation(self):
@@ -28,12 +29,12 @@ class BaseOperator(ABC):
     def revert_operation(self):
         pass
     
-    def bind_system(self, system):
-        """Bind the nanoparticle to the exchange operator in 
-        order to perform swaps
-        """
-        self.get_indices_by_symbol(system)
-        self.compute_number_of_exchange_types(system)
+    # def bind_system(self, system):
+    #     """Bind the nanoparticle to the exchange operator in 
+    #     order to perform swaps
+    #     """
+    #     self.get_indices_by_symbol(system)
+    #     self.compute_number_of_exchange_types(system)
 
 
     def compute_number_of_exchange_types(self, system):

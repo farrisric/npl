@@ -8,21 +8,21 @@ import numpy as np
 class GuidedExchangeOperator(BaseOperator):
     def __init__(self, system: Nanoparticle, environment_energies : List[float], feature_index_values : Dict[tuple, float]) -> None:
         super().__init__(system)
-        self.n_envs = int(len(environment_energies)/len(self.atomic_numbers))
-        self.flip_energies = {atomic_number : None for atomic_number in self.atomic_numbers}
+        self.feature_index_values = feature_index_values
         self.exchange_energies = dict()
         self.sorted_indices = SortedKeyList(key=lambda x: min(self.exchange_energies[x]))
+        self.n_envs = int(len(environment_energies)/len(self.atomic_numbers))
+        self.flip_energies = {atomic_number : None for atomic_number in self.atomic_numbers}
 
         self.get_flip_energies(environment_energies)
+        self.bind_system(system)
 
-    def abind_system(self, system, feature_index_values):
-        super().bind_system(system)
-        
+    def bind_system(self, system):
         for atom in system:
             Z = atom.number
             number_index = system.get_number_index(Z)
             atom_feature = self.get_atom_feature(system, atom)
-            feature_index = feature_index_values[atom_feature]
+            feature_index = self.feature_index_values[Z][atom_feature]
             self.exchange_energies[atom.index] = self.flip_energies[Z][feature_index]
             self.sorted_indices.add(atom.index)
 
@@ -32,8 +32,6 @@ class GuidedExchangeOperator(BaseOperator):
         i = features[n][system.get_number_index(atom.number)]
         return tuple(system.atom_features['TOP'][atom.index][i])
          
-
-
     def env_from_symbol(self, index : int) -> float:
         return self.n_envs * index
 

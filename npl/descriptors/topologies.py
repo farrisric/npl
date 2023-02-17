@@ -10,10 +10,9 @@ from npl.descriptors import BaseDescriptor
 from npl.core import Nanoparticle
 
 class Topologies(BaseDescriptor):
-    def __init__(self, symbols : List[str]) -> None:
+    def __init__(self, atomic_numbers : List[str]) -> None:
         self.n_features = 0
-
-        self.atomic_numbers = sorted([atomic_numbers[symbol] for symbol in symbols])
+        self.atomic_numbers = sorted(atomic_numbers)
         self.bond_types = None
         self.bond_type_per_element = None
 
