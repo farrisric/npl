@@ -1,7 +1,9 @@
-from npl.core import Nanoparticle
 from abc import ABC, abstractmethod
 from itertools import combinations
 from typing import List
+
+from npl.core import Nanoparticle
+
 
 class BaseOperator(ABC):
     """An abstract base class for operation that can be performed 

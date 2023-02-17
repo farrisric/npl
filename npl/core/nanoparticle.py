@@ -1,10 +1,10 @@
 import sys
-import numpy as np
 
+import numpy as np
 from ase import Atoms
 from ase.data import atomic_numbers
-from ase.neighborlist import natural_cutoffs
-from ase.neighborlist import build_neighbor_list
+from ase.neighborlist import build_neighbor_list, natural_cutoffs
+
 
 class Nanoparticle(Atoms):
     """Nanoparticle Object used within the package, inerithms from the

@@ -1,9 +1,11 @@
-from npl.core import Nanoparticle
-from npl.global_optimization.operations import BaseOperator
-from npl.global_optimization.operations import features
-from sortedcontainers import SortedKeyList
-from typing import List, Dict
+from typing import Dict, List
+
 import numpy as np
+from sortedcontainers import SortedKeyList
+
+from npl.core import Nanoparticle
+from npl.global_optimization.operations import BaseOperator, features
+
 
 class GuidedExchangeOperator(BaseOperator):
     def __init__(self, system: Nanoparticle, environment_energies : List[float], feature_index_values : Dict[tuple, float]) -> None:

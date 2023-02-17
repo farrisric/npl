@@ -1,13 +1,15 @@
-from npl.core import Nanoparticle
-from npl.global_optimization.operations import GuidedExchangeOperator
-from npl.global_optimization.operations import features
-from npl.descriptors import Topologies
-from npl.utils import compute_coefficients_for_linear_topological_model, get_combinations
-from ase.cluster import Octahedron
-from sortedcontainers import SortedKeyList
 import random
 from itertools import combinations_with_replacement
+
 import numpy as np
+from ase.cluster import Octahedron
+from sortedcontainers import SortedKeyList
+
+from npl.core import Nanoparticle
+from npl.descriptors import Topologies
+from npl.global_optimization.operations import GuidedExchangeOperator, features
+from npl.utils import (compute_coefficients_for_linear_topological_model,
+                       get_combinations)
 
 atoms = Octahedron('Pt', 6, 1)
 

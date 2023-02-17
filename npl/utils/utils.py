@@ -1,6 +1,8 @@
-import numpy as np
-from typing import List
 from itertools import combinations_with_replacement, product
+from typing import List
+
+import numpy as np
+
 
 def get_combinations(element_list : List, combination_size : int) -> List[List]:
     "Returns a list of combinations of a list with given size"
