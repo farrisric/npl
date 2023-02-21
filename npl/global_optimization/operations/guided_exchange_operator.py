@@ -26,6 +26,9 @@ class GuidedExchangeOperator(BaseOperator):
 
         self.get_flip_energies(environment_energies)
         self.bind_system(system)
+
+        self.exchanged_indices = []
+
 #TODO change exchange energy with flip energy
     def bind_system(self, system):
         "Sorts each atom in the system based on each flip energy it has"
@@ -56,6 +59,8 @@ class GuidedExchangeOperator(BaseOperator):
             if flip < best_swap:
                 exchange_indices = (a, b)
                 best_swap = flip
+            else: 
+                return False
         return exchange_indices
 
     def get_atom_feature(self, system, atom):
@@ -78,12 +83,33 @@ class GuidedExchangeOperator(BaseOperator):
                     flip_energy_matrix[i][j] = flip
             self.flip_energies[Z] = flip_energy_matrix
 
+#TODO impolement basin hopping steps and update function after swap
+
+    def basin_hop_step(self):
+        raise NotImplementedError
     
+    def update(self, system : Nanoparticle, exchaged_indices : List[int], old_numbers : List[int]) -> None:
+        for index, old_num in zip(exchaged_indices, old_numbers):
+            Z_i = system.get_index_number(old_num)
+            for Z_j in range(self.n_symbols):
+                if Z_j != Z_i:
+                    self.sorted_energies_dict[Z_i][Z_j].remove(index)
+            self.get_exchange_energy(system, system[index])
+            self.add_atom_index(system, system[index])
+        
     def revert_operation(self):
         return super().revert_operation()
 
-    def perform_operation(self):
-        return super().perform_operation()
+    def perform_operation(self, system : Nanoparticle):
+        exchaged_indices = self.find_best_swap_pair()
+        if not exchaged_indices:
+            return print('Cannot do more steps')
+        old_numbers = [system[x].number for x in exchaged_indices]
+        i, j = exchaged_indices
+        system[i].number, system[j].number = system[j].number, system[i].number
+        system.update_occupation_matrix(exchaged_indices, old_numbers)
+        self.update(system, exchaged_indices, old_numbers)
+
         
     
     

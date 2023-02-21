@@ -1,7 +1,9 @@
 from itertools import combinations
+
 import numpy as np
 
 from npl.global_optimization.operations.base_operation import BaseOperator
+
 
 class ExchangeOperator(BaseOperator):
     """Class that performs exchange operators between atoms of

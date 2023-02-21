@@ -56,7 +56,6 @@ class Nanoparticle(Atoms):
         self.CM = self._compute_connectivity_matrix()
         self.OM = self._compute_occupation_matrix()
         
-
     @staticmethod
     def from_atoms(atoms):
         """Creates a Nanoparticle object from ASE.Atoms object."""
@@ -74,9 +73,7 @@ class Nanoparticle(Atoms):
             constraint=atoms._get_constraints(),
             calculator=atoms.get_calculator(),
             info=atoms.info,
-            
         )
-
         return system
     
     def get_bond_matrix(self):
@@ -94,17 +91,21 @@ class Nanoparticle(Atoms):
         Returns: np.arrays: 1D arrays that contains the occupancy of a lattice position
         base on the element of the array
         """
-        elements = self.get_unique_atomic_numbers()
-        n_elements = len(elements)
-
-        occupation_matrix = np.zeros((n_elements, len(self)), dtype=np.int8)
-
+        n_elements = len(self.numbers_indices)
+        occupation_matrix = np.zeros((n_elements, len(self)))
         for atom in self:
-            element_index = np.where(elements==atom.number)[0]
+            element_index = self.get_number_index(atom.number)
             occupation_matrix[element_index, atom.index] = 1
-
         return occupation_matrix
     
+    def update_occupation_matrix(self, indices, old_numbers):
+        "Update the occupation matrix after performing an exchange operation"
+        for atom_index, old_number in zip(indices, old_numbers):
+            old_element_index = self.get_number_index(old_number)
+            element_index = self.get_number_index(self[atom_index].number)
+            self.OM[old_element_index, atom_index] = 0 
+            self.OM[element_index, atom_index] = 1
+
     def _compute_connectivity_matrix(self):
         """Calculates the connectivity matrix A, an NxN matrix where N is the number of atoms.
         
@@ -114,18 +115,15 @@ class Nanoparticle(Atoms):
             Returns:
             np.array: Symmetric 2D matrix containing the connectivity between atoms.
         """
-
-        connectivity_matrix = np.zeros((len(self), len(self)), dtype=np.int8)
+        connectivity_matrix = np.zeros((len(self), len(self)))
         for i in self.neighbor_dict:
             for j in self.neighbor_dict[i]:
                 connectivity_matrix[i][j] = 1
-
         return connectivity_matrix
 
     def _construct_neighbor_list(self):
         """Return a dictionary where the keys are the atom indices and the
         values are the indices of its first nearest-neighbors."""
-
         self.neighbor_dict = {x.index : [] for x in self}
         cutoffs = natural_cutoffs(self)    
         neighbor_list = build_neighbor_list(self,
@@ -166,10 +164,7 @@ class Nanoparticle(Atoms):
             raise NameError
 
     def get_index_number(self, number_index):
-        
-        for number, index in self.numbers_indices.items():
-            if index == number_index:
-                return number
+        return self.numbers_indices[number_index]
 
 
     def get_occupation_indices_by_symbol(self, symbol):
