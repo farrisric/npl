@@ -19,6 +19,8 @@ class BaseOperator(ABC):
         self.exchange_types = []
         self.indices_by_element = dict()
         self.atomic_numbers = system.get_unique_atomic_numbers()
+        self.indices_Z = system.numbers_indices
+        self.n_symbols = len(self.atomic_numbers)
 
         self.get_indices_by_symbol(system)
         self.compute_number_of_exchange_types(system)

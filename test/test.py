@@ -28,28 +28,39 @@ top.get_feature_vector(system)
 coefficeints, feature_index_values = compute_coefficients_for_linear_topological_model(global_top, atomic_numbers)
 exchange = GuidedExchangeOperator(system, coefficeints, feature_index_values)
 
-sorted_energies_dict = {Z : SortedKeyList(key=lambda x: min(exchange.exchange_energies[x])) for Z in exchange.atomic_numbers}
+exchange = exchange.find_best_swap_pair()
+print(exchange)
 
-for i in exchange.sorted_indices:
-    Z = system[i].number
-    sorted_energies_dict[Z].add(i)
+# index_atomic_numbers = {x : i for i, x in enumerate(exchange.atomic_numbers)}
 
-atomic_numbers = {i : x for i, x in enumerate(exchange.atomic_numbers)}
+# sorted_energies_dict = {Z : {} for Z in index_atomic_numbers.values()}
 
-exchange_matrix = np.empty((3,3))
+# for Z_i in sorted_energies_dict:
+#     for Z_j in sorted_energies_dict:
+#         if Z_j == Z_i:
+#             continue
+#         sorted_energies_dict[Z_i][Z_j] = SortedKeyList(key=lambda x: exchange.exchange_energies[x][Z_j])
 
-for f in range(2):
-    for Z_index, Z in atomic_numbers.items():
-        i = sorted_energies_dict[Z][f]
-        print(i)
-        flip = exchange.exchange_energies[i]
-        exchange_matrix[Z_index] = flip
+# for atom in system:
+#     Z_i = index_atomic_numbers[atom.number]
+#     for Z_j in index_atomic_numbers.values():
+#         if Z_i == Z_j:
+#             continue
+#         sorted_energies_dict[Z_i][Z_j].add(atom.index)
 
-    combinations = get_combinations(range(3),2)
-    combinations = [x for x in combinations if x[1]!=x[0]]
+# combinations = get_combinations(range(3),2)
+# combinations = [x for x in combinations if x[1]!=x[0]]
 
-    for combination in combinations:
-        i,j = combination 
-        exchange_ij = exchange_matrix[i][j] + exchange_matrix[j][i]
-        print(combination ,exchange_ij)
+# best_flip = 0
+# for combination in combinations:
+#     Z_i, Z_j = combination
+#     a = sorted_energies_dict[Z_i][Z_j][0]
+#     b = sorted_energies_dict[Z_j][Z_i][0]
+#     flip = exchange.exchange_energies[a][Z_j] + exchange.exchange_energies[b][Z_i]
+#     if flip < best_flip:
+#         exchange_indices = (a, b)
+#         best_flip = flip
 
+# print(best_flip, exchange_indices)
+# print(system[exchange_indices[0]])
+# print(system[exchange_indices[1]])

@@ -5,28 +5,58 @@ from sortedcontainers import SortedKeyList
 
 from npl.core import Nanoparticle
 from npl.global_optimization.operations import BaseOperator, features
+from npl.utils import get_combinations
 
 
 class GuidedExchangeOperator(BaseOperator):
-    def __init__(self, system: Nanoparticle, environment_energies : List[float], feature_index_values : Dict[tuple, float]) -> None:
+    def __init__(self, system : Nanoparticle, environment_energies : List[float], feature_index_values : Dict[tuple, float]) -> None:
         super().__init__(system)
         self.feature_index_values = feature_index_values
         self.exchange_energies = dict()
         self.sorted_indices = SortedKeyList(key=lambda x: min(self.exchange_energies[x]))
         self.n_envs = int(len(environment_energies)/len(self.atomic_numbers))
         self.flip_energies = {atomic_number : None for atomic_number in self.atomic_numbers}
+        self.sorted_energies_dict = {Z : {} for Z in range(self.n_symbols)}
+        self.swap_combinations = [x for x in get_combinations(range(self.n_symbols), 2) if x[1]!=x[0]] 
+        for Z_i in self.sorted_energies_dict:
+            for Z_j in self.sorted_energies_dict:
+                if Z_j == Z_i:
+                    continue
+                self.sorted_energies_dict[Z_i][Z_j] = SortedKeyList(key=lambda x: self.exchange_energies[x][Z_j])
 
         self.get_flip_energies(environment_energies)
         self.bind_system(system)
-
+#TODO change exchange energy with flip energy
     def bind_system(self, system):
+        "Sorts each atom in the system based on each flip energy it has"
         for atom in system:
-            Z = atom.number
-            number_index = system.get_number_index(Z)
-            atom_feature = self.get_atom_feature(system, atom)
-            feature_index = self.feature_index_values[Z][atom_feature]
-            self.exchange_energies[atom.index] = self.flip_energies[Z][feature_index]
-            self.sorted_indices.add(atom.index)
+            self.get_exchange_energy(system, atom)
+            self.add_atom_index(system, atom)
+
+    def get_exchange_energy(self, system, atom):
+        "Computes the flip energies of atom_i based on its Z and features (bonds)"
+        atom_feature = self.get_atom_feature(system, atom)
+        feature_index = self.feature_index_values[atom.number][atom_feature]
+        self.exchange_energies[atom.index] = self.flip_energies[atom.number][feature_index]
+
+    def add_atom_index(self, system, atom):
+        "Add the atom.index into each sorted list"
+        Z_i = system.get_number_index(atom.number)
+        for Z_j in range(self.n_symbols):
+            if Z_j != Z_i:
+                self.sorted_energies_dict[Z_i][Z_j].add(atom.index)
+
+    def find_best_swap_pair(self):
+        "Finds the best pair of atoms to swap that yields the maximum decrease in energy"
+        best_swap = 0
+        for Z_i, Z_j in self.swap_combinations:
+            a = self.sorted_energies_dict[Z_i][Z_j][0]
+            b = self.sorted_energies_dict[Z_j][Z_i][0]
+            flip = self.exchange_energies[a][Z_j] + self.exchange_energies[b][Z_i]
+            if flip < best_swap:
+                exchange_indices = (a, b)
+                best_swap = flip
+        return exchange_indices
 
     def get_atom_feature(self, system, atom):
         from npl.global_optimization.operations import features
