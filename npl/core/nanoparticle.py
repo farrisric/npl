@@ -51,6 +51,7 @@ class Nanoparticle(Atoms):
         self.numbers_indices = {number : index for index, number in enumerate(np.unique(self.numbers))}
         self.symbols_indices = {number : index for index, number in enumerate(np.unique(self.symbols))}
         self.atom_features = dict()
+        self.descriptors = dict()
 
         self._construct_neighbor_list()
         self.CM = self._compute_connectivity_matrix()
@@ -143,7 +144,7 @@ class Nanoparticle(Atoms):
         return coordination_list
 
     def get_surface_neighbors(self):
-        surface_indices = np.where(self.get_coordination_list()<12)[0]
+        surface_indices = np.where(self.get_coordination_list() < 12)[0]
 
         surface_neighbors_dict = {x : [] for x in surface_indices}
         

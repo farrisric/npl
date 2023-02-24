@@ -10,11 +10,12 @@ from npl.descriptors import BaseDescriptor
 
 
 class Topologies(BaseDescriptor):
-    def __init__(self, atomic_numbers : List[str]) -> None:
+    def __init__(self, atomic_numbers : List[int]) -> None:
         self.n_features = 0
         self.atomic_numbers = sorted(atomic_numbers)
         self.bond_types = None
         self.bond_type_per_element = None
+        self.name = 'TOP'
 
         super().__init__(name = 'TOP')
         self._compute_bond_types()
@@ -46,7 +47,7 @@ class Topologies(BaseDescriptor):
         if not isinstance(system, Nanoparticle):
             system = Nanoparticle.from_atoms(system)
         self._compute_all_atom_features(system)
-        return system.atom_features[self.name].sum(axis=0)
+        system.descriptors[self.name] = system.atom_features[self.name].sum(axis=0)
         
         
 

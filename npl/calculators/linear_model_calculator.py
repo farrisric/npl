@@ -1,9 +1,14 @@
+from typing import List
+
+import numpy as np
+
 from sklearn import linear_model
 
 from npl.calculators.base_calculator import BaseCalculator
 from npl.core.nanoparticle import Nanoparticle
 
-class TopologicalCalculator(BaseCalculator):
+
+class TrainedCalculator(BaseCalculator):
     """A LinearModelCalculator object that calculates the 
     total energy of a nanoparticle based on its descriptor.
 
@@ -21,26 +26,20 @@ class TopologicalCalculator(BaseCalculator):
 
     """
 
-    def __init__(self,
-                training_set: list[Nanoparticle],
-                descriptor_key: str,
-                linear_model: linear_model,
-                name: str):
-
+    def __init__(self, name: str, linear_model) -> None:
         super().__init__(name=name)
-
-        self.model = linear_model
-        self.descriptor_key = descriptor_key
-        self._fit(training_set, descriptor_key)        
+        self.model = linear_model()
+       
     
-    def _fit(self, trainin_set, descriptor_key):
-
+    def fit(self, training_set : List[Nanoparticle]) -> None:
         X, y = [], []
-        for particle in trainin_set:
-            X.append(particle.info['descriptors'][descriptor_key])
+        for particle in training_set:
+            X.append(particle.descriptors[self.name])
             y.append(particle.get_potential_energy())
-
         self.model.fit(X,y)
 
+    def get_coefficients(self) -> np.array:
+        return self.model.coef_
+
     def calculate_total(self, particle):
-        return self.model.predict(particle.info['descriptors'][self.descriptor_key])
+        return self.model.predict([particle.descriptors[self.name]])

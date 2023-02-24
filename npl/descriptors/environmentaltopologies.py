@@ -1,8 +1,9 @@
-from numba import njit
 import numpy as np
+from numba import njit
 
-from npl.descriptors import BaseDescriptor
 from npl.core import Nanoparticle
+from npl.descriptors import BaseDescriptor
+
 
 class EnvironmentalTopologies(BaseDescriptor):
     def __init__(self):

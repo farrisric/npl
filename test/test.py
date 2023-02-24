@@ -14,9 +14,9 @@ from npl.utils import (compute_coefficients_for_linear_topological_model,
 
 atoms = Octahedron('Pt', 9, 3)
 
-for i in range(100):
+for i in  np.random.choice(405, 100, replace=False):
     atoms[i].symbol = 'Au'
-    atoms[i+50].symbol = 'Ni'
+    atoms[i+1].symbol = 'Ni'
 
 system = Nanoparticle.from_atoms(atoms)
 view(system)
@@ -27,9 +27,9 @@ atomic_numbers = system.get_unique_atomic_numbers()
 top = Topologies(atomic_numbers)
 top.get_feature_vector(system)
 
-coefficeints, feature_index_values = compute_coefficients_for_linear_topological_model(global_top, atomic_numbers)
-exchange = GuidedExchangeOperator(system, coefficeints, feature_index_values)
+coefficients, feature_index_values = compute_coefficients_for_linear_topological_model(global_top, atomic_numbers)
+exchange = GuidedExchangeOperator(system, coefficients, feature_index_values)
 
-for _ in range(1000):
+for _ in range(100):
     exchange.perform_operation(system)
 view(system)

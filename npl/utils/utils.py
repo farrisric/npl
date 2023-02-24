@@ -22,7 +22,7 @@ def compute_coefficients_for_linear_topological_model(global_topological_coeffic
     coordination_numbers = list(range(13))
     bond_types = compute_bond_types(global_topological_coefficients, atomic_numbers)
 
-    coefficeints = []
+    coefficients = []
     feature_index_values = {Z : {} for Z in atomic_numbers}
     
     for Z_i in atomic_numbers:
@@ -35,15 +35,15 @@ def compute_coefficients_for_linear_topological_model(global_topological_coeffic
                 for n_bond, Z_j in zip(bond_combination, atomic_numbers):
                     
                     bond_type = tuple(sorted([Z_i, Z_j]))
-                    bond_energy += n_bond * bond_types[bond_type]
+                    bond_energy += n_bond/2 * bond_types[bond_type]
 
                 bond_energy += global_topological_coefficients[off_set_cn + cn_number]
-                coefficeints.append(bond_energy)
+                coefficients.append(bond_energy)
                 feature_index_values[Z_i][bond_combination] = i 
                 i += 1
                 if cn_number == 12:
                     bond_energy += global_topological_coefficients[off_set_sublayer]
-                    coefficeints.append(bond_energy)
+                    coefficients.append(bond_energy)
                     bond_combination = [x for x in bond_combination] + [1]
                     feature_index_values[Z_i][tuple(bond_combination)] = i 
                     i += 1
@@ -51,7 +51,7 @@ def compute_coefficients_for_linear_topological_model(global_topological_coeffic
         off_set_sublayer += 1
         off_set_cn += 13
 
-    return coefficeints, feature_index_values
+    return coefficients, feature_index_values
 
 def compute_bond_combinations(n_bond_types, cn_number):
     n_bonds = [x for x in reversed(range(13))]

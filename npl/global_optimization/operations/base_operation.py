@@ -60,3 +60,10 @@ class BaseOperator(ABC):
         ex1, ex2 = exchange
         swap1, swap2 = swap
         a[ex1][swap1], a[ex2][swap2] = a[ex2][swap2], a[ex1][swap1]
+
+    def get_neighbor_list(self, system : Nanoparticle, indices : List[int]) -> List[int]:
+        "Return the list of indices affected by the exchange"
+        neighbors = set(indices)
+        for i in indices:
+            neighbors.union(set(system.neighbor_dict[i]))
+        return list(neighbors)

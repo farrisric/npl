@@ -56,5 +56,8 @@
         "thread": "cpp",
         "typeinfo": "cpp"
     },
-    "jupyter.kernels.filter": []
+    "jupyter.kernels.filter": [],
+    "cSpell.words": [
+        "Nanoparticle"
+    ]
 }

@@ -59,9 +59,9 @@ class GuidedExchangeOperator(BaseOperator):
             if flip < best_swap:
                 exchange_indices = (a, b)
                 best_swap = flip
-            else: 
-                return False
-        return exchange_indices
+        if best_swap < 0:
+            return exchange_indices, best_swap
+        return False, False
 
     def get_atom_feature(self, system, atom):
         from npl.global_optimization.operations import features
@@ -83,13 +83,13 @@ class GuidedExchangeOperator(BaseOperator):
                     flip_energy_matrix[i][j] = flip
             self.flip_energies[Z] = flip_energy_matrix
 
-#TODO impolement basin hopping steps and update function after swap
+#TODO implement basin hopping steps and update function after swap
 
     def basin_hop_step(self):
         raise NotImplementedError
     
-    def update(self, system : Nanoparticle, exchaged_indices : List[int], old_numbers : List[int]) -> None:
-        for index, old_num in zip(exchaged_indices, old_numbers):
+    def update(self, system : Nanoparticle, exchanged_indices : List[int], old_numbers : List[int]) -> None:
+        for index, old_num in zip(exchanged_indices, old_numbers):
             Z_i = system.get_index_number(old_num)
             for Z_j in range(self.n_symbols):
                 if Z_j != Z_i:
@@ -101,14 +101,21 @@ class GuidedExchangeOperator(BaseOperator):
         return super().revert_operation()
 
     def perform_operation(self, system : Nanoparticle):
-        exchaged_indices = self.find_best_swap_pair()
-        if not exchaged_indices:
-            return print('Cannot do more steps')
-        old_numbers = [system[x].number for x in exchaged_indices]
-        i, j = exchaged_indices
+        exchanged_indices, best_swap = self.find_best_swap_pair()
+        if not exchanged_indices:
+            return 'no more step bitch'
+        neighbors = self.get_neighbor_list(system, exchanged_indices)
+        old_numbers = [system[x].number for x in neighbors]
+        i, j = exchanged_indices
         system[i].number, system[j].number = system[j].number, system[i].number
-        system.update_occupation_matrix(exchaged_indices, old_numbers)
-        self.update(system, exchaged_indices, old_numbers)
+        system.update_occupation_matrix(neighbors, old_numbers)
+        self.update(system, neighbors, old_numbers)
+        return best_swap
+
+    
+
+
+
 
         
     
