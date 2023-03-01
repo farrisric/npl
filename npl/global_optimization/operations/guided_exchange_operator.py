@@ -13,19 +13,12 @@ class GuidedExchangeOperator(BaseOperator):
         super().__init__(system)
         self.feature_index_values = feature_index_values
         self.exchange_energies = dict()
-        self.sorted_indices = SortedKeyList(key=lambda x: min(self.exchange_energies[x]))
         self.n_envs = int(len(environment_energies)/len(self.atomic_numbers))
-        #self.flip_energies = {atomic_number : None for atomic_number in self.atomic_numbers}
-        self.flip_energies = None
-        self.sorted_energies_dict = {Z : {} for Z in range(self.n_symbols)}
-        self.swap_combinations = [x for x in get_combinations(range(self.n_symbols), 2) if x[1]!=x[0]] 
-        for Z_i in self.sorted_energies_dict:
-            for Z_j in self.sorted_energies_dict:
-                if Z_j == Z_i:
-                    continue
-                self.sorted_energies_dict[Z_i][Z_j] = SortedKeyList(key=lambda x: self.exchange_energies[x][Z_j])
-
-        self.get_flip_energies(environment_energies)
+        self.env_energy_difference = None
+        self.swap_combinations = [x for x in get_combinations(range(self.n_symbols), 2) if x[1] != x[0]] 
+        
+        self.sorted_energies_dict = self.get_sorted_dict_by_n_symbols(self.n_symbols)
+        self.get_env_energy_difference(environment_energies)
         self.bind_system(system)
 
         self.exchanged_indices = []
@@ -39,10 +32,12 @@ class GuidedExchangeOperator(BaseOperator):
 
     def get_exchange_energy(self, system, atom):
         "Computes the flip energies of atom_i based on its Z and features (bonds)"
+        feature_index = self.get_feature_index_from_atom_feature(system, atom)
+        self.exchange_energies[atom.index] = self.env_energy_difference[feature_index]
+
+    def get_feature_index_from_atom_feature(self, system, atom):
         atom_feature = self.get_atom_feature(system, atom)
-        feature_index = self.feature_index_values[atom.number][atom_feature]
-        #self.exchange_energies[atom.index] = self.flip_energies[atom.number][feature_index]
-        self.exchange_energies[atom.index] = self.flip_energies[feature_index]
+        return self.feature_index_values[atom.number][atom_feature]
 
     def add_atom_index(self, system, atom):
         "Add the atom.index into each sorted list"
@@ -74,28 +69,15 @@ class GuidedExchangeOperator(BaseOperator):
     def env_from_symbol(self, index : int) -> float:
         return self.n_envs * index
 
-    def get_flip_energies(self, environment_energies : List[float]):
-        flip_energy_matrix = np.zeros((len(environment_energies), len(self.atomic_numbers)))
+    def get_env_energy_difference(self, environment_energies : List[float]):
+        self.env_energy_difference = np.zeros((len(environment_energies), len(self.atomic_numbers)))
         for Z in range(len(self.atomic_numbers)):
             for i in range(self.n_envs):
                 for j in range(len(self.atomic_numbers)):
                     flip_initial = i + self.env_from_symbol(Z)
                     flip_final = i + self.env_from_symbol(j)
                     flip = environment_energies[flip_final] - environment_energies[flip_initial]
-                    flip_energy_matrix[flip_initial][j] = flip
-
-        self.flip_energies = flip_energy_matrix
-
-    # def get_flip_energies_ops(self, environment_energies : List[float]):
-    #     flip_energy_matrix = np.empty((self.n_envs, len(self.atomic_numbers)))
-    #     for Z in self.atomic_numbers:
-    #         for i in range(self.n_envs):
-    #             for j in range(len(self.atomic_numbers)):
-    #                 flip_initial = i + self.env_from_symbol(self.atomic_numbers.index(Z))
-    #                 flip_final = i + self.env_from_symbol(j)
-    #                 flip = environment_energies[flip_final] - environment_energies[flip_initial]
-    #                 flip_energy_matrix[i][j] = flip
-    #         self.flip_energies[Z] = flip_energy_matrix
+                    self.env_energy_difference[flip_initial][j] = flip
 
 #TODO implement basin hopping steps and update function after swap
 
@@ -119,16 +101,62 @@ class GuidedExchangeOperator(BaseOperator):
         if not exchanged_indices:
             return 'no more step bitch'
         neighbors = self.get_neighbor_list(system, exchanged_indices)
+        neighbors = self.get_neighbor_list(system, neighbors)
         old_numbers = [system[x].number for x in neighbors]
         i, j = exchanged_indices
-        system[i].number, system[j].number = system[j].number, system[i].number
+        system[i].symbol, system[j].symbol = system[j].symbol, system[i].symbol
         system.update_occupation_matrix(neighbors, old_numbers)
         self.update(system, neighbors, old_numbers)
         return best_swap
 
-    
+    def get_sorted_dict_by_n_symbols(self, n_symbols): 
+        sorted_energies_dict_2 = {
+            0: {1 : SortedKeyList(key=lambda i: self.exchange_energies[i][1])},
+            1: {0 : SortedKeyList(key=lambda i: self.exchange_energies[i][0])}
+        }
+        sorted_energies_dict_3 = {
+            0 : {
+                1 : SortedKeyList(key=lambda i: self.exchange_energies[i][1]),
+                2 : SortedKeyList(key=lambda i: self.exchange_energies[i][2])
+            },
+            1 : {
+                0 : SortedKeyList(key=lambda i: self.exchange_energies[i][0]),
+                2 : SortedKeyList(key=lambda i: self.exchange_energies[i][2])
+            },
+            2: {
+                0 : SortedKeyList(key=lambda i: self.exchange_energies[i][0]),
+                1 : SortedKeyList(key=lambda i: self.exchange_energies[i][1])
+            }
+        }
+        sorted_energies_dict_4 = {
+            0 : {
+                1 : SortedKeyList(key=lambda i: self.exchange_energies[i][1]),
+                2 : SortedKeyList(key=lambda i: self.exchange_energies[i][2]),
+                3 : SortedKeyList(key=lambda i: self.exchange_energies[i][3])
+            },
+            1 : {
+                0 : SortedKeyList(key=lambda i: self.exchange_energies[i][0]),
+                2 : SortedKeyList(key=lambda i: self.exchange_energies[i][2]),
+                3 : SortedKeyList(key=lambda i: self.exchange_energies[i][3])
+            },
+            2: {
+                0 : SortedKeyList(key=lambda i: self.exchange_energies[i][0]),
+                1 : SortedKeyList(key=lambda i: self.exchange_energies[i][1]),
+                3 : SortedKeyList(key=lambda i: self.exchange_energies[i][3])
+            },
+            3 : {
+                0 : SortedKeyList(key=lambda i: self.exchange_energies[i][0]),
+                1 : SortedKeyList(key=lambda i: self.exchange_energies[i][1]),
+                2 : SortedKeyList(key=lambda i: self.exchange_energies[i][2])
+            }
+        }
 
-
+        if n_symbols == 2:
+            return sorted_energies_dict_2
+        if n_symbols == 3:
+            return sorted_energies_dict_3
+        if n_symbols == 4:
+            return sorted_energies_dict_4
 
 
         

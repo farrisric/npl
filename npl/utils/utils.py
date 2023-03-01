@@ -30,26 +30,29 @@ def compute_coefficients_for_linear_topological_model(global_topological_coeffic
         off_set_sublayer = len(bond_types)
         for cn_number in coordination_numbers:
             for bond_combination in compute_bond_combinations(n_species, cn_number):
-                bond_energy = 0
-                tot_energy = 0
+                env_energy = 0
+                total_energy = 0
                 for n_bond, Z_j in zip(bond_combination, atomic_numbers):
                     bond_type = tuple(sorted([Z_i, Z_j]))
-                    bond_energy += n_bond/2 * bond_types[bond_type]
-                    tot_energy += n_bond * bond_types[bond_type]
 
-                bond_energy += global_topological_coefficients[off_set_cn + cn_number]
-                coefficients.append(bond_energy)
-                total_energies.append(tot_energy)
+                    env_energy += ((n_bond/2) * bond_types[bond_type])
+                    total_energy += (n_bond * bond_types[bond_type])
+
+                env_energy += global_topological_coefficients[off_set_cn + cn_number]
+                total_energy += global_topological_coefficients[off_set_cn + cn_number]
+
+                coefficients.append(env_energy)
+                total_energies.append(total_energy)
                 feature_index_values[Z_i][bond_combination] = i 
                 i += 1
-                if cn_number == 12:
-                    bond_energy += global_topological_coefficients[off_set_sublayer]
-                    tot_energy += global_topological_coefficients[off_set_sublayer]
-                    coefficients.append(bond_energy)
-                    total_energies.append(tot_energy)
-                    bond_combination = [x for x in bond_combination] + [1]
-                    feature_index_values[Z_i][tuple(bond_combination)] = i 
-                    i += 1
+                # if cn_number == 12:
+                #     env_energy += (global_topological_coefficients[off_set_sublayer])
+                #     total_energies += (global_topological_coefficients[off_set_sublayer])
+                #     coefficients.append(env_energy)
+                #     total_energies.append(total_energies)
+                #     bond_combination = [x for x in bond_combination] + [1]
+                #     feature_index_values[Z_i][tuple(bond_combination)] = i 
+                #     i += 1
             
         off_set_sublayer += 1
         off_set_cn += 13

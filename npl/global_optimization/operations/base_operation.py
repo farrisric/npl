@@ -65,10 +65,5 @@ class BaseOperator(ABC):
         "Return the list of indices affected by the exchange"
         neighbors = set(indices)
         for i in indices:
-            neighbors.union(set(system.neighbor_dict[i]))
-
-        new_neighbors = neighbors
-        for i in neighbors:
-            new_neighbors.union(set(system.neighbor_dict[i]))
-
-        return list(new_neighbors)
+            neighbors = neighbors.union(set(system.neighbor_dict[i]))
+        return list(neighbors)

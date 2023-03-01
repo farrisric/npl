@@ -42,4 +42,4 @@ class TrainedCalculator(BaseCalculator):
         return self.model.coef_
 
     def calculate_total(self, particle):
-        return self.model.predict([particle.descriptors[self.name]])
+        return np.dot(np.transpose(self.model.coef_),particle.descriptors[self.name])
