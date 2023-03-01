@@ -1,18 +1,17 @@
 from random import shuffle
 
-from ase.cluster import Octahedron
+import matplotlib.pyplot as plt
 from ase.calculators.emt import EMT
+from ase.cluster import Octahedron
 from ase.visualize import view
-
 from sklearn.linear_model import Ridge
 
-import matplotlib.pyplot as plt
-
 from npl.calculators import TrainedCalculator
-from npl.descriptors import Topologies
 from npl.core import Nanoparticle as nano
-from npl.utils import compute_coefficients_for_linear_topological_model
+from npl.descriptors import Topologies
 from npl.global_optimization.operations import GuidedExchangeOperator
+from npl.utils import (compute_bond_combinations,
+                       compute_coefficients_for_linear_topological_model)
 
 symbols = ['Au']*150+['Pt']*100+['Pd']*155
 system = Octahedron('Pt', 9, 3)
@@ -31,7 +30,7 @@ for _ in range(20):
 c = TrainedCalculator('TOP', Ridge)
 c.fit(training_set)
 coef = c.get_coefficients()
-
+print(compute_bond_combinations(coef, training_set[1].get_unique_atomic_numbers()))
 coefficients, feature_index_values = compute_coefficients_for_linear_topological_model(coef, training_set[1].get_unique_atomic_numbers())
 exchange = GuidedExchangeOperator(p, coefficients, feature_index_values)
 
