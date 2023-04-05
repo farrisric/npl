@@ -36,7 +36,8 @@ def compute_coefficients_for_linear_topological_model(global_topological_coeffic
                     bond_type = tuple(sorted([Z_i, Z_j]))
 
                     env_energy += ((n_bond/2) * bond_types[bond_type])
-                    total_energy += (n_bond * bond_types[bond_type])
+                    total_energy += env_energy
+                    total_energy += ((n_bond/2) * bond_types[bond_type])
 
                 env_energy += global_topological_coefficients[off_set_cn + cn_number]
                 total_energy += global_topological_coefficients[off_set_cn + cn_number]

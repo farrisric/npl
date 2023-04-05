@@ -23,7 +23,7 @@ class GuidedExchangeOperator(BaseOperator):
 
         self.exchanged_indices = []
 
-#TODO change exchange energy with flip energy
+    #TODO change exchange energy with flip energy
     def bind_system(self, system):
         "Sorts each atom in the system based on each flip energy it has"
         for atom in system:

@@ -19,7 +19,7 @@ for i in  np.random.choice(405, 100, replace=False):
     atoms[i+1].symbol = 'Ni'
 
 system = Nanoparticle.from_atoms(atoms)
-view(system)
+#view(system)
 
 global_top = [-random.random() for _ in range(48)]
 atomic_numbers = system.get_unique_atomic_numbers()
@@ -27,9 +27,9 @@ atomic_numbers = system.get_unique_atomic_numbers()
 top = Topologies(atomic_numbers)
 top.get_feature_vector(system)
 
-coefficients, feature_index_values = compute_coefficients_for_linear_topological_model(global_top, atomic_numbers)
+coefficients, tot_en, feature_index_values = compute_coefficients_for_linear_topological_model(global_top, atomic_numbers)
 exchange = GuidedExchangeOperator(system, coefficients, feature_index_values)
 
 for _ in range(100):
     exchange.perform_operation(system)
-view(system)
+#view(system)
