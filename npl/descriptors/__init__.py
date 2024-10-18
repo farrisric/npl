@@ -1,6 +1,7 @@
 # npl/descriptors/__init__.py
 
-from .global_feature_classifier import (testTopologicalFeatureClassifier,
+from .global_feature_classifier import (GlobalFeatureClassifier,
+                                        testTopologicalFeatureClassifier,
                                         TopologicalFeatureClassifier,
                                         ExtendedTopologicalFeaturesClassifier,
                                         AtomicCoordinationTypes,
@@ -8,7 +9,10 @@ from .global_feature_classifier import (testTopologicalFeatureClassifier,
 
 from .local_environment_feature_classifier import (LocalEnvironmentFeatureClassifier,
                                                    TopologicalEnvironmentClassifier,
-                                                   CoordinationNumberClassifier)
+                                                   CoordinationNumberClassifier,
+                                                   TopologicalFeatureClassifier)
+
+from .local_environment_calculator import (LocalEnvironmentCalculator,)
 
 __all__ = [
     "LayererTopologicalDescriptors",

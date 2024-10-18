@@ -1,7 +1,7 @@
-from Core import LocalEnvironmentCalculator as LEC
-from Core import LocalEnvironmentFeatureClassifier as LFC
-from Core import EnergyCalculator as EC
-from Core import GlobalFeatureClassifier as GFC
+from npl.descriptors import LocalEnvironmentCalculator as LEC
+from npl.descriptors import LocalEnvironmentFeatureClassifier as LFC
+from npl.calculators import EnergyCalculator as EC
+from npl.descriptors import GlobalFeatureClassifier as GFC
 
 import time
 

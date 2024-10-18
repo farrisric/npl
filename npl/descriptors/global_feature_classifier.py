@@ -122,6 +122,23 @@ class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
 
         feature_vector = np.array([n_aa_bonds/n_atoms, n_bb_bonds/n_atoms, n_ab_bonds/n_atoms, M] + coordinated_atoms)
         particle.set_feature_vector(self.feature_key, feature_vector)
+        
+    def get_feature_labels(self):
+        """
+        Generate a list of feature labels for the topological feature vector.
+
+        The feature labels include:
+        - Bond counts for AA, BB, and AB bonds.
+        - Number of atoms of type A.
+        - Coordination numbers for atoms of type A from 0 to 12.
+
+        Returns:
+            list: A list of feature labels.
+        """
+        bonds = [f'{self.symbol_a}{self.symbol_a}', f'{self.symbol_b}{self.symbol_b}', f'{self.symbol_a}{self.symbol_b}']
+        n_symbol_a_atoms = [f'n_{self.symbol_a}']
+        coordination_a = [f'{self.symbol_a}(cn={i})' for i in range(13)]
+        return bonds + n_symbol_a_atoms + coordination_a
 
 
 class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):

@@ -378,7 +378,7 @@ def compute_coefficients_for_linear_topological_model(global_topological_coeffic
                 else:
                     energy += (n_symbol_a_atoms*e_ab_bond/2)
                     energy += ((cn_number - n_symbol_a_atoms)*e_bb_bond/2)
-                    energy += (global_topological_coefficients[16 + cn_number])
+                    #energy += (global_topological_coefficients[16 + cn_number])
 
                     total_energy = energy
                     total_energy += n_symbol_a_atoms*e_ab_bond/2
