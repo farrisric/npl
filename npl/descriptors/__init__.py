@@ -1,4 +1,16 @@
-from npl.descriptors.base_descriptor import BaseDescriptor
-from npl.descriptors.topologies import Topologies
-from npl.descriptors.environmentaltopologies import EnvironmentalTopologies
-from npl.descriptors.site_finder import SiteFinder
+# npl/descriptors/__init__.py
+
+from .global_feature_classifier import (testTopologicalFeatureClassifier,
+                                        TopologicalFeatureClassifier,
+                                        ExtendedTopologicalFeaturesClassifier,
+                                        AtomicCoordinationTypes,
+                                        CoordinationFeatureClassifier)
+
+from .local_environment_feature_classifier import (LocalEnvironmentFeatureClassifier,
+                                                   TopologicalEnvironmentClassifier,
+                                                   CoordinationNumberClassifier)
+
+__all__ = [
+    "LayererTopologicalDescriptors",
+    "local_environment_calculator"
+]

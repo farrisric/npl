@@ -1,2 +1,6 @@
-from npl.calculators.base_calculator import BaseCalculator
-from npl.calculators.linear_model_calculator import TrainedCalculator
+from .energy_calculator import EMTCalculator, BayesianRRCalculator
+
+__all__ = [
+    "EMTCalculator",
+    "BayesianRRCalculator"
+]
