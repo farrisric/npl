@@ -20,7 +20,9 @@ def setup_monte_carlo(start_particle, energy_calculator, feature_classifier):
     return energy_key, feature_calculator, exchange_operator
 
 def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_classifier):
-    energy_key, feature_calculator, exchange_operator = setup_monte_carlo(start_particle, energy_calculator, feature_classifier)
+    energy_key, feature_calculator, exchange_operator = setup_monte_carlo(start_particle,
+                                                                          energy_calculator,
+                                                                          feature_classifier)
 
     start_energy = start_particle.get_energy(energy_key)
     lowest_energy = start_energy

@@ -12,9 +12,10 @@ from .local_environment_feature_classifier import (LocalEnvironmentFeatureClassi
                                                    CoordinationNumberClassifier,
                                                    TopologicalFeatureClassifier)
 
-from .local_environment_calculator import (LocalEnvironmentCalculator,)
+from .local_environment_calculator import (LocalEnvironmentCalculator,
+                                           NeighborCountingEnvironmentCalculator)
 
 __all__ = [
     "LayererTopologicalDescriptors",
-    "local_environment_calculator"
+    "LocalEnvironmentCalculator"
 ]

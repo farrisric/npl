@@ -4,6 +4,38 @@ import copy
 
 
 class LocalEnvironmentFeatureClassifier:
+    """
+    LocalEnvironmentFeatureClassifier is a class that classifies features of local environments around atoms in a particle.
+
+    Attributes:
+        local_environment_calculator: An instance responsible for computing local environments.
+        feature_key: A key to identify the feature being computed.
+
+    Methods:
+        __init__(local_environment_calculator):
+            Initializes the classifier with a local environment calculator.
+
+        compute_atom_features(particle, recompute_local_environments=False):
+            Computes features for each atom in the particle. Optionally recomputes local environments.
+
+        compute_feature_vector(particle, recompute_atom_features=True, recompute_local_environments=False):
+            Computes the feature vector for the particle. Optionally recomputes atom features and local environments.
+
+        compute_atom_feature(particle, atom_index, recompute_local_environment=False):
+            Computes the feature for a specific atom in the particle.
+
+        get_feature_key():
+            Returns the feature key.
+
+        set_feature_key(feature_key):
+            Sets the feature key.
+
+        compute_n_features(particle):
+            Abstract method to compute the number of features for the particle. Must be implemented by subclasses.
+
+        predict_atom_feature(particle, lattice_index, recompute_local_environment=False):
+            Abstract method to predict the feature of a specific atom. Must be implemented by subclasses.
+    """
     def __init__(self, local_environment_calculator):
         self.local_environment_calculator = local_environment_calculator
         self.feature_key = None

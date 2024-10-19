@@ -112,16 +112,6 @@ class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
     def __init__(self, symbols):
         SimpleFeatureClassifier.__init__(self, symbols)
         self.feature_key = 'TFC'
-
-    def compute_feature_vector(self, particle):
-        n_atoms = particle.get_n_atoms()
-        n_aa_bonds, n_bb_bonds, n_ab_bonds = self.compute_respective_bond_counts(particle)
-        coordinated_atoms = [len(particle.get_atom_indices_from_coordination_number([cn], symbol=self.symbol_a)) for cn in range(13)]
-
-        M = particle.get_stoichiometry()[self.symbol_a]*0.1
-
-        feature_vector = np.array([n_aa_bonds/n_atoms, n_bb_bonds/n_atoms, n_ab_bonds/n_atoms, M] + coordinated_atoms)
-        particle.set_feature_vector(self.feature_key, feature_vector)
         
     def get_feature_labels(self):
         """
@@ -139,6 +129,16 @@ class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
         n_symbol_a_atoms = [f'n_{self.symbol_a}']
         coordination_a = [f'{self.symbol_a}(cn={i})' for i in range(13)]
         return bonds + n_symbol_a_atoms + coordination_a
+    
+    def compute_feature_vector(self, particle):
+        n_atoms = particle.get_n_atoms()
+        n_aa_bonds, n_bb_bonds, n_ab_bonds = self.compute_respective_bond_counts(particle)
+        coordinated_atoms = [len(particle.get_atom_indices_from_coordination_number([cn], symbol=self.symbol_a)) for cn in range(13)]
+
+        M = particle.get_stoichiometry()[self.symbol_a]*0.1
+
+        feature_vector = np.array([n_aa_bonds/n_atoms, n_bb_bonds/n_atoms, n_ab_bonds/n_atoms, M] + coordinated_atoms)
+        particle.set_feature_vector(self.feature_key, feature_vector)
 
 
 class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
