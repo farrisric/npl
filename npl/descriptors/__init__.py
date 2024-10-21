@@ -8,7 +8,6 @@ from .global_feature_classifier import (GlobalFeatureClassifier,
                                         CoordinationFeatureClassifier)
 
 from .local_environment_feature_classifier import (LocalEnvironmentFeatureClassifier,
-                                                   TopologicalEnvironmentClassifier,
                                                    CoordinationNumberClassifier,
                                                    TopologicalEnvironmentClassifier)
 
