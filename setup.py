@@ -12,7 +12,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "acat>=1.7.1",
-        "scikit_learn>=1.0.2",
+        "scikit_learn>=1.5.0",
         "scipy>=1.10.0",
         "sortedcontainers>=2.4.0"
     ],

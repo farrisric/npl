@@ -14,13 +14,13 @@ class CanonicalEnsemble(BaseEnsemble):
                  fmax=0.1,
                  temperature=300, 
                  steps=100, 
-                 traj_file='traj_test.traj', 
                  op_list=None, 
-                 outfile='outfile.out',
-                 outfile_write_interval=10,
-                 constraints=None) -> None:
+                 constraints=None,
+                 traj_file: str = 'traj_test.traj', 
+                 outfile: str = 'outfile.out',
+                 outfile_write_interval: int = 10) -> None:
 
-        super().__init__(structure=atoms, calculator=calculator, random_seed=random_seed)
+        super().__init__(structure=atoms, calculator=calculator, random_seed=random_seed, traj_file=traj_file,outfile=outfile,outfile_write_interval=outfile_write_interval)
 
         if random_seed is not None:
             random.seed(random_seed)
@@ -33,20 +33,10 @@ class CanonicalEnsemble(BaseEnsemble):
         self._optimizer = optimizer
         self._fmax = fmax
         self._steps = steps
-        self._traj_file = traj_file
         self._op_list = op_list
-        self._outfile = outfile
-        self._outfile_write_interval = outfile_write_interval
 
         self._step = 0
         self._accepted_trials = 0
-
-    def write_outfile(self, step, energy):
-        with open(self._outfile, 'a') as outfile:
-            outfile.write(' STEP: {} ENERGY: {}\n'.format(step, energy))
-    
-    def write_traj_file(self, atoms):
-        Trajectory(self._traj_file, 'a').write(atoms)
 
     def _acceptance_condition(self, potential_diff: float) -> bool:
         if potential_diff <= 0:
@@ -106,49 +96,3 @@ class CanonicalEnsemble(BaseEnsemble):
             if self._step % self._outfile_write_interval == 0:
                 self.write_outfile(self._step, self.lowest_energy)
 
-
-if __name__ == '__main__':
-    from ase.io import read
-    from ase.optimize import BFGS
-    from mace.calculators import mace_mp
-    from acat.ga.adsorbate_operators import (AddAdsorbate, RemoveAdsorbate,
-                                         MoveAdsorbate, ReplaceAdsorbate,
-                                         SimpleCutSpliceCrossoverWithAdsorbates)
-    from acat.ga.particle_mutations import (RandomPermutation, COM2surfPermutation,
-                                            Rich2poorPermutation, Poor2richPermutation)
-    from ase.ga.offspring_creator import OperationSelector
-    from acat.adsorption_sites import ClusterAdsorptionSites
-    from acat.adsorbate_coverage import ClusterAdsorbateCoverage
-
-    atoms = read('/home/g15farris/AdsGO/PdAg_CO_H/bare_nps/xyz/Ag300Pd105_LEH.xyz')
-    atoms.center(5)
-    calculator = mace_mp(model="/work/g15farris/2023-12-03-mace-128-L1_epoch-199.model")
-    optimizer = BFGS
-    temperature = 300
-    steps = 100
-    traj_file = 'traj_test.traj'
-    sas = ClusterAdsorptionSites(atoms, composition_effect=True)
-    soclist = ([1, 1, 1, 1, 1],
-        [Rich2poorPermutation(elements=['Ag', 'Pd'], num_muts=1),
-         Poor2richPermutation(elements=['Ag', 'Pd'], num_muts=1),
-         RandomPermutation(elements=['Ag', 'Pd'], num_muts=1),
-         COM2surfPermutation(elements=['Ag', 'Pd'], num_muts=1),
-         MoveAdsorbate(['H'], adsorption_sites=sas, num_muts=1)
-        ])
-    op_list = OperationSelector(*soclist)
-
-    outfile = 'outfile.out'
-    outfile_write_interval = 10
-
-    montecarlo = CanonicalEnsemble(atoms,
-                 calculator,
-                 optimizer, 
-                 fmax=0.1,
-                 temperature=temperature, 
-                 steps=steps, 
-                 traj_file=traj_file, 
-                 op_list=op_list, 
-                 outfile=outfile,
-                 outfile_write_interval=outfile_write_interval)
-    
-    montecarlo.run()
