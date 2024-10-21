@@ -10,7 +10,7 @@ from .global_feature_classifier import (GlobalFeatureClassifier,
 from .local_environment_feature_classifier import (LocalEnvironmentFeatureClassifier,
                                                    TopologicalEnvironmentClassifier,
                                                    CoordinationNumberClassifier,
-                                                   TopologicalFeatureClassifier)
+                                                   TopologicalEnvironmentClassifier)
 
 from .local_environment_calculator import (LocalEnvironmentCalculator,
                                            NeighborCountingEnvironmentCalculator)
