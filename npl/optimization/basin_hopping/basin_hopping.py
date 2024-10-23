@@ -15,7 +15,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
     best_particle = copy.deepcopy(start_particle)
     lowest_energy = start_energy
     times = []
-    dio_porco_list = []
+    flip_energy_list = []
 
     step = 0
     for i in range(n_hopping_attempts):
@@ -36,7 +36,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
             energy_calculator.compute_energy(start_particle)
             new_energy = start_particle.get_energy(energy_key)
 
-            dio_porco_list.append((flip, new_energy-start_energy, exchanged_indices))
+            flip_energy_list.append((flip, new_energy-start_energy, exchanged_indices))
 
             if new_energy < start_energy:
                 start_energy = new_energy
@@ -74,4 +74,4 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
     print('Lowest energy: {:.3f}'.format(lowest_energy))
     lowest_energies.append((lowest_energy, step))
 
-    return [best_particle, lowest_energies, dio_porco_list]
+    return [best_particle, lowest_energies, flip_energy_list]

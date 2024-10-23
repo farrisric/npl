@@ -20,6 +20,15 @@ def get_reference_structure(particle: Nanoparticle, ase = None) -> Nanoparticle:
     return particle
 
 def plot_cummulative_success_rate(energies: list, steps: list, figname: str):
+    """
+    Plots the cumulative success rate based on given energies and steps, and saves the plot to a file.
+    Parameters:
+    energies (list): A list of energy values.
+    steps (list): A list of step values corresponding to the energies.
+    figname (str): The filename to save the plot.
+    The function sorts the energies and steps, calculates the cumulative success rate, and plots it.
+    The plot is saved as an image file with the specified filename.
+    """
     energies, steps = zip(*sorted(zip(energies, steps)))
     min_energy = min(energies)
     max_steps = max(steps)
@@ -29,8 +38,7 @@ def plot_cummulative_success_rate(energies: list, steps: list, figname: str):
     index = 0
     for step, energy in zip(steps, energies):
         if energy == min_energy:
-            percent += 100 / len(energies)
-            success_rate[step:] += percent
+            success_rate[step:] += 100 / len(energies)
             
     plt.plot(range(len(success_rate)), success_rate)
     plt.xlabel('Steps')
