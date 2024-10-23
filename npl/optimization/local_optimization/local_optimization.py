@@ -1,5 +1,5 @@
 from npl.descriptors.local_environment_calculator import NeighborCountingEnvironmentCalculator
-from npl.optimization.local_optimization.garbage_exchange_operator import GuidedExchangeOperator
+from npl.optimization.local_optimization.guided_exchange_operator import GuidedExchangeOperator
 from npl.descriptors.local_environment_feature_classifier import TopologicalEnvironmentClassifier
 
 import numpy as np

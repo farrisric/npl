@@ -1,6 +1,6 @@
 from npl.optimization.local_optimization import setup_local_optimization
 from npl.optimization.local_optimization import update_atomic_features
-from npl.optimization.local_optimization.garbage_exchange_operator import GuidedExchangeOperator
+from npl.optimization.local_optimization.guided_exchange_operator import GuidedExchangeOperator
 
 import copy
 import time

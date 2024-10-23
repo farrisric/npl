@@ -293,7 +293,7 @@ class BaseNanoparticle:
                 diff = n_atoms - sum(transformed_stoichiometry.values())
                 transformed_stoichiometry[sorted(stoichiometry)[0]] += diff
 
-            print('Resulting stoichiometry: {}'.format(transformed_stoichiometry))
+            #print('Resulting stoichiometry: {}'.format(transformed_stoichiometry))
             self.atoms.random_ordering(transformed_stoichiometry)
         else:
             self.atoms.random_ordering(stoichiometry)
