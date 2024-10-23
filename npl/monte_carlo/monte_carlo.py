@@ -2,8 +2,8 @@ import numpy as np
 import copy
 from itertools import chain
 
-from Core.LocalEnvironmentCalculator import NeighborCountingEnvironmentCalculator
-from MCMC.RandomExchangeOperator import RandomExchangeOperator
+from npl.descriptors.local_environment_calculator import NeighborCountingEnvironmentCalculator
+from npl.monte_carlo.random_exchange_operator import RandomExchangeOperator
 
 import time
 

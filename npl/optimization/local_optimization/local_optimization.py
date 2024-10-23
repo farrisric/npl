@@ -1,6 +1,6 @@
-from Core.LocalEnvironmentCalculator import NeighborCountingEnvironmentCalculator
-from LocalOpt.GarbageExchangeOperator import GuidedExchangeOperator
-from Core.LocalEnvironmentFeatureClassifier import TopologicalEnvironmentClassifier
+from npl.descriptors.local_environment_calculator import NeighborCountingEnvironmentCalculator
+from npl.optimization.local_optimization.garbage_exchange_operator import GuidedExchangeOperator
+from npl.descriptors.local_environment_feature_classifier import TopologicalEnvironmentClassifier
 
 import numpy as np
 
