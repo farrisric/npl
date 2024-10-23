@@ -17,11 +17,19 @@ class TOPCalculator(Calculator):
     
     def __init__(self,
                  model_paths : Union[list, str],
+                 feature_key : str,
                  **kwargs
                  ):
         Calculator.__init__(self, **kwargs)
+
+        self.feature_key = feature_key
+        self.model = self.load_model(model_paths)
     
-        self.model = pass
+    def load_model(self, model_path):
+        with open(model_path, 'rb') as calc:
+            return pickle.load(calc)
     
     def calculate(self, atoms):
-        return NotImplementedError
+        self.results = {}
+        feature_vector = atoms.info[self.feature_key]
+        self.results['energy'] = self.model.predict(feature_vector)
