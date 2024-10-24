@@ -53,6 +53,7 @@ pip install ./NPlib
 
 If you use this code, please cite our papers:
 
+```bibtex
 @farris2024{10.1063/5.0214377,
     author = {Farris, Riccardo and Neyman, Konstantin M. and Bruix, Albert},
     title = "{Determining the chemical ordering in nanoalloys by considering atomic coordination types}",
@@ -64,3 +65,4 @@ If you use this code, please cite our papers:
     issn = {0021-9606},
     doi = {10.1063/5.0214377},
 }
+```
