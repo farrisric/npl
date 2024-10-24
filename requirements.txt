@@ -2,6 +2,5 @@ acat==1.7.1
 nbconvert==7.16.4
 nbformat==5.10.4
 scikit_learn==1.5.2
-
 setuptools==68.2.2
 sortedcontainers==2.4.0

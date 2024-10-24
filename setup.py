@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="npl",
-    version="2.0.0",
+    version="1.0.0",
     description="Nanoparticle Library for computational analysis of nanoparticles",
     long_description="This is a long description for the Nanoparticle Library.",
     long_description_content_type="text/markdown",
