@@ -305,7 +305,7 @@ class LateralInteractionCalculator:
 
     def construct_interatomic_potential_matrix(self, particle):
         def construct_adsorbate_grid(particle):
-            from Core.Adsorption import PlaceAddAtoms
+            #from Core.Adsorption import PlaceAddAtoms
             particle.construct_adsorption_list()
             n_sites = particle.get_total_number_of_sites()
             ads_site_list = particle.get_adsorption_list()

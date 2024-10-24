@@ -110,8 +110,8 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, local_fe
     return [best_particle, accepted_energies]
 
 def run_monte_carlo_for_adsorbates(beta, max_steps, start_particle, adsorbates_energy, n_adsorbates):
-    from Core.GlobalFeatureClassifier import AdsorptionFeatureVector
-    from Core.EnergyCalculator import LateralInteractionCalculator
+    #from Core.GlobalFeatureClassifier import AdsorptionFeatureVector
+    #from Core.EnergyCalculator import LateralInteractionCalculator
 
     exchange_operator = RandomExchangeOperator(0.5)
     exchange_operator.bind_adsorbates(start_particle, n_adsorbates)
@@ -212,8 +212,8 @@ def run_monte_carlo_for_adsorbates(beta, max_steps, start_particle, adsorbates_e
 
 
 def run_monte_carlo_ordering_adsorbates(beta, max_steps, start_particle, ordering_energy_calculator, adsorbates_energy_calculator, n_adsorbates, local_feature_classifier):
-    from Core.GlobalFeatureClassifier import AdsorptionFeatureVector
-    from Core.EnergyCalculator import LateralInteractionCalculator
+    #from Core.GlobalFeatureClassifier import AdsorptionFeatureVector
+    #from Core.EnergyCalculator import LateralInteractionCalculator
 
     exchange_operator = RandomExchangeOperator(0.5)
     exchange_operator.bind_adsorbates(start_particle, n_adsorbates)

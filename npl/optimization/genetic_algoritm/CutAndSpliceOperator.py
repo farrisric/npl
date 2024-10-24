@@ -1,5 +1,5 @@
-from Core.Nanoparticle import Nanoparticle
-from Core.CuttingPlaneUtilities import SphericalCuttingPlaneGenerator
+from npl.core import Nanoparticle
+from npl.utils.cutting_plane_utilities import SphericalCuttingPlaneGenerator
 import numpy as np
 
 

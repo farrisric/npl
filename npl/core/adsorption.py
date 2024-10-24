@@ -1,4 +1,4 @@
-import Core.MathModules as math
+import npl.utils.math_modules as math
 
 from ase import Atoms
 
