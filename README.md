@@ -56,7 +56,8 @@ If you use this code, please cite our papers:
 ```bibtex
 @neuman{10.1063/5.0214377,
     author = {Felix Neumann  and Johannes T Margraf and Karsten Reuter and Albert Bruix},
-    title = "{Interplay between shape and composition in bimetallic nanoparticles revealed by an efficient optimal-exchange optimization algorithm}",
+    title = "{Interplay between shape and composition in bimetallic nanoparticles
+    revealed by an efficient optimal-exchange optimization algorithm}",
     archivePrefix = {ChemRxiv},
     doi = {10.26434/chemrxiv-2021-26ztp},
 }
@@ -72,10 +73,9 @@ If you use this code, please cite our papers:
     issn = {0021-9606},
     doi = {10.1063/5.0193848},
     url = {https://doi.org/10.1063/5.0193848},
-    eprint = {https://pubs.aip.org/aip/jcp/article-pdf/doi/10.1063/5.0193848/19868352/124706\_1\_5.0193848.pdf},
 }
 
-@farris2024{10.1063/5.0214377,
+@farris{10.1063/5.0214377,
     author = {Farris, Riccardo and Neyman, Konstantin M. and Bruix, Albert},
     title = "{Determining the chemical ordering in nanoalloys by considering atomic coordination types}",
     journal = {The Journal of Chemical Physics},
@@ -84,6 +84,6 @@ If you use this code, please cite our papers:
     pages = {134114},
     year = {2024},
     issn = {0021-9606},
-    doi = {10.1063/5.0214377},
+    doi = {10.1063/5.0214377}
 }
 ```
