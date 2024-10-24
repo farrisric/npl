@@ -32,10 +32,6 @@ NPL (NanoParticleLibrary) is a comprehensive wrapper around the popular ASE (Ato
 
 A partial documentation is available at: https://nplib.readthedocs.io/en/latest/
 
-## Documentation
-
-A partial documentation is available at: https://npl-docs.readthedocs.io
-
 ## Installation
 
 ### Requirements
