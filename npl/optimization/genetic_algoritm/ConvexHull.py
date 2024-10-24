@@ -1,7 +1,7 @@
 import numpy as np
-from GA.CutAndSpliceOperator import CutAndSpliceOperator
-from GA.ExchangeOperator import ExchangeOperator
-from GA.MutationOperator import MutationOperator
+from npl.optimization.genetic_algoritm.CutAndSpliceOperator import CutAndSpliceOperator
+from npl.optimization.genetic_algoritm.ExchangeOperator import ExchangeOperator
+from npl.optimization.genetic_algoritm.MutationOperator import MutationOperator
 
 import copy
 import pickle
@@ -45,7 +45,7 @@ def locate_convex_hull(start_population, unsuccessful_gens_for_convergence,
 
         else:
             # random mutation
-            parent = population.gaussian_tournament(1, 5)[0]
+            parent = population.npl.optimization.genetic_algoritmussian_tournament(1, 5)[0]
             new_particle = mutation_operator.random_mutation(parent)
 
         # check that it is not a pure particle

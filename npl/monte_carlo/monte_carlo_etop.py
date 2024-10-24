@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 
-from MCMC.random_exchange_operator_etop import RandomExchangeOperatorExtended
+from npl.optimization.monte_carlo.random_exchange_operator_etop import RandomExchangeOperatorExtended
 
 def setup_monte_carlo(start_particle, energy_calculator, feature_classifier):
     symbols = start_particle.get_all_symbols()

@@ -1,4 +1,4 @@
-from MCMC.RandomExchangeOperator import RandomExchangeOperator
+from npl.monte_carlo.random_exchange_operator import RandomExchangeOperator
 
 import numpy as np
 import itertools

@@ -2,7 +2,7 @@ import numpy as np
 import copy
 from itertools import chain
 
-from MCMC.RandomExchangeOperator import RandomExchangeOperator
+from npl.monte_carlo.random_exchange_operator import RandomExchangeOperator
 
 
 def setup_monte_carlo(start_particle, energy_calculator, feature_classifier):

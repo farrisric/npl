@@ -1,7 +1,7 @@
 import numpy as np
-from GA.CutAndSpliceOperator import CutAndSpliceOperator
-from GA.ExchangeOperator import ExchangeOperator
-from LocalOpt.LocalOptimization import local_optimization
+from npl.optimization.genetic_algoritm.CutAndSpliceOperator import CutAndSpliceOperator
+from npl.optimization.genetic_algoritm.ExchangeOperator import ExchangeOperator
+from npl.optimization.local_optimization.local_optimization import local_optimization
 
 
 def compute_fitness(particle, min_energy, max_energy, energy_key):
