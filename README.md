@@ -54,6 +54,27 @@ pip install ./NPlib
 If you use this code, please cite our papers:
 
 ```bibtex
+@neuman{10.1063/5.0214377,
+    author = {Felix Neumann  and Johannes T Margraf and Karsten Reuter and Albert Bruix},
+    title = "{Interplay between shape and composition in bimetallic nanoparticles revealed by an efficient optimal-exchange optimization algorithm}",
+    archivePrefix = {ChemRxiv},
+    doi = {10.26434/chemrxiv-2021-26ztp},
+}
+
+@article{10.1063/5.0193848,
+    author = {Farris, Riccardo and Merinov, Boris V. and Bruix, Albert and Neyman, Konstantin M.},
+    title = "{Effects of Zr dopants on properties of PtNi nanoparticles for ORR catalysis: A DFT modeling}",
+    journal = {The Journal of Chemical Physics},
+    volume = {160},
+    number = {12},
+    pages = {124706},
+    year = {2024},
+    issn = {0021-9606},
+    doi = {10.1063/5.0193848},
+    url = {https://doi.org/10.1063/5.0193848},
+    eprint = {https://pubs.aip.org/aip/jcp/article-pdf/doi/10.1063/5.0193848/19868352/124706\_1\_5.0193848.pdf},
+}
+
 @farris2024{10.1063/5.0214377,
     author = {Farris, Riccardo and Neyman, Konstantin M. and Bruix, Albert},
     title = "{Determining the chemical ordering in nanoalloys by considering atomic coordination types}",
