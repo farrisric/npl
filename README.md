@@ -43,7 +43,13 @@ A partial documentation is available at: https://nplib.readthedocs.io/en/latest/
 
 ### Installation from PyPI
 
-This is the recommended way to install NPL.
+You can install NPL with pip:
+
+```sh
+pip install npl
+```
+
+or from github:
 
 ```sh
 git clone https://github.com/farrisric/NPlib
