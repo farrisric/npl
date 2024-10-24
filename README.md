@@ -46,5 +46,21 @@ A partial documentation is available at: https://npl-docs.readthedocs.io
 This is the recommended way to install NPL.
 
 ```sh
-pip install --upgrade pip
-pip install nanoparticlelibrary
+git clone https://github.com/farrisric/NPlib
+pip install ./NPlib
+```
+## References
+
+If you use this code, please cite our papers:
+
+@farris2024{10.1063/5.0214377,
+    author = {Farris, Riccardo and Neyman, Konstantin M. and Bruix, Albert},
+    title = "{Determining the chemical ordering in nanoalloys by considering atomic coordination types}",
+    journal = {The Journal of Chemical Physics},
+    volume = {161},
+    number = {13},
+    pages = {134114},
+    year = {2024},
+    issn = {0021-9606},
+    doi = {10.1063/5.0214377},
+}
