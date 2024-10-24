@@ -6,7 +6,6 @@ from .basin_hopping import run_basin_hopping
 #rom .genetic_algoritm import run_genetic_algorithm
 from .local_optimization.local_optimization import local_optimization
 
-#from .monte_carlo.ensembles import BaseEnsemble, CanonicalEnsemble
 
 __all__ = [
     "GOSearch",

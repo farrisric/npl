@@ -1,4 +1,4 @@
-from LocalOpt.LocalOptimization import local_optimization
+from npl.optimization.local_optimization.local_optimization import local_optimization
 
 import copy
 
