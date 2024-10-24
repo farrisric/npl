@@ -10,7 +10,6 @@ Subpackages
    npl.optimization.basin_hopping
    npl.optimization.genetic_algoritm
    npl.optimization.local_optimization
-   npl.optimization.monte_carlo
 
 Submodules
 ----------
