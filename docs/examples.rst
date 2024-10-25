@@ -1,36 +1,15 @@
 Examples
 ========
 
-Basic Usage Example
--------------------
+This section provides practical examples of how to use the Nanoparticle Library (NPL) to train models, extract features, and optimize nanoparticle structures.
 
-This example demonstrates setting up a bimetallic nanoparticle and optimizing it with Monte Carlo:
+Training a Topological Descriptor Model
+----------------------------------------
 
-.. code-block:: python
+For a detailed tutorial on training a model using Topological Descriptors, please refer to the following document:
 
-   from nplib import Nanoparticle
-   from nplib.optimization import MonteCarlo
-   
-   # Initialize a bimetallic nanoparticle
-   nanoparticle = Nanoparticle(elements=["Ag", "Pd"], size=50)
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
 
-   # Run Monte Carlo optimization
-   optimizer = MonteCarlo(nanoparticle)
-   optimized_structure = optimizer.run()
-
-Training a Surrogate Model
---------------------------
-
-This example shows how to train a surrogate model with topological descriptors:
-
-.. code-block:: python
-
-   from nplib.models import SurrogateModel
-   from nplib.descriptors import TopologicalDescriptor
-
-   # Initialize descriptors and surrogate model
-   descriptors = TopologicalDescriptor(nanoparticle)
-   model = SurrogateModel(descriptors)
-
-   # Train the model
-   model.train()
+   train_top
