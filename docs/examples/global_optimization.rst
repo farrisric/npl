@@ -83,8 +83,8 @@ Plot the cumulative success rate:
     :alt: Cumulative Success Rate
     :align: center
 
-Evaluating with the Optimizal Exchange Algorithm
-------------------------------------------------
+Running the Optimizal Exchange Algorithm
+----------------------------------------
 
 Run the optimal exchange algorithm to search for global minima:
 
