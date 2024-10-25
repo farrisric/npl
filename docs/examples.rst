@@ -12,4 +12,4 @@ For a detailed tutorial on training a model using Topological Descriptors, pleas
    :maxdepth: 1
    :caption: Contents:
 
-   train_top
+   examples/train_top.rst
