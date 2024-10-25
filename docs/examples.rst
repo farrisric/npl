@@ -10,6 +10,15 @@ For a detailed tutorial on training a model using Topological Descriptors, pleas
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
 
    examples/train_top.rst
+
+Optimization of the chemical ordering a nanoally
+------------------------------------------------
+
+For a detailed tutorial on training a model using Topological Descriptors, please refer to the following document:
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/global_optimizations.rst
