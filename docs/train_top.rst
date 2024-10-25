@@ -3,6 +3,7 @@ Training a Topological Surrogate Energy Model
 
 In this document, we will walk through the steps to train a surrogate energy model for nanoparticles using Topological Descriptors.
 Here, we import essential modules that will allow us to create nanoparticles, compute their energies, extract features, and perform Bayesian Ridge Regression.
+
 .. code-block:: python
     
     from npl.core import Nanoparticle
