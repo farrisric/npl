@@ -2,7 +2,7 @@ Training a Topological Surrogate Energy Model
 =============================================
 
 In this document, we will walk through the steps to train a surrogate energy model for nanoparticles using Topological Descriptors.
-
+Here, we import essential modules that will allow us to create nanoparticles, compute their energies, extract features, and perform Bayesian Ridge Regression.
 .. code-block:: python
     
     from npl.core import Nanoparticle
@@ -14,7 +14,8 @@ In this document, we will walk through the steps to train a surrogate energy mod
     import matplotlib.pyplot as plt
     import pickle
 
-Here, we import essential modules that will allow us to create nanoparticles, compute their energies, extract features, and perform Bayesian Ridge Regression.
+This function initializes an EMTCalculator and creates a list of nanoparticles based on the given parameters.
+Each nanoparticle's energy is computed and stored in the training set.
 
 .. code-block:: python
 
@@ -34,15 +35,16 @@ Here, we import essential modules that will allow us to create nanoparticles, co
             
         return training_set
 
-This function initializes an EMTCalculator and creates a list of nanoparticles based on the given parameters.
-Each nanoparticle's energy is computed and stored in the training set.
+Here, we define the stoichiometry for our nanoparticles and generate a training set containing 40 nanoparticles.
+
 
 .. code-block:: python
 
     stoichiometry = {'Pt': 55, 'Au': 24}
     training_set = create_octahedron_training_set(40, 5, 1, stoichiometry)
 
-Here, we define the stoichiometry for our nanoparticles and generate a training set containing 40 nanoparticles.
+
+We initialize the TopologicalFeatureClassifier to compute the topological features for each nanoparticle in the training set.
 
 .. code-block:: python
 
@@ -50,15 +52,16 @@ Here, we define the stoichiometry for our nanoparticles and generate a training 
     for p in training_set:
         classifier.compute_feature_vector(p)
 
-We initialize the TopologicalFeatureClassifier to compute the topological features for each nanoparticle in the training set.
+An instance of the Bayesian Ridge Regression calculator is created, and we fit the model using the training set
+with 10% of the data reserved for validation.
 
 .. code-block:: python
 
     calculator = BayesianRRCalculator(classifier.get_feature_key())
     calculator.fit(training_set, 'EMT', validation_set=0.1)
 
-An instance of the Bayesian Ridge Regression calculator is created, and we fit the model using the training set
-with 10% of the data reserved for validation.
+This figure illustrates the learning curve for the model, depicting the training and test performance as the training set size increases.
+
 
 .. code-block:: python
 
@@ -73,7 +76,7 @@ with 10% of the data reserved for validation.
    :align: center
    :figwidth: 100%
 
-This figure illustrates the learning curve for the model, depicting the training and test performance as the training set size increases.
+We plot the coefficients values to visualize the importance of each feature in the model.
 
 .. code-block:: python
 
@@ -94,8 +97,10 @@ This figure illustrates the learning curve for the model, depicting the training
     :align: center
     :figwidth: 100%
 
+Finally, we save the trained model to a file for future use, ensuring that we can reuse it without retraining.
+
 .. code-block:: python
 
     calculator.save('bayesian_rr_calculator.pkl')
 
-Finally, we save the trained model to a file for future use, ensuring that we can reuse it without retraining.
+
