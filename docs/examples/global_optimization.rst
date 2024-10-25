@@ -71,6 +71,11 @@ Use ASE to view the optimized particle and plot accepted energies:
 
     view(best_particle.get_ase_atoms(), viewer='x3d')
 
+.. figure:: ../images/MC_gm.png
+
+    :alt: Cumulative Success Rate
+    :align: center
+
 Plot the cumulative success rate:
 
 .. figure:: ../images/MC_cumulative.png
