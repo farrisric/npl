@@ -3,9 +3,6 @@ Chemical Ordering Global Optimization
 
 In this tutorial, we demonstrate the global optimization of chemical ordering in nanoparticles using Monte Carlo and basin-hopping algorithms.
 
-Setup
------
-
 .. code-block:: python
 
     from npl.core import Nanoparticle
@@ -16,8 +13,6 @@ Setup
     import numpy as np
     import matplotlib.pyplot as plt
     from ase.visualize import view
-
-This example requires `npl`, `ase`, and `matplotlib`.
 
 Creating the Nanoparticle and Optimizing
 ----------------------------------------

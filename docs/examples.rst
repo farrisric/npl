@@ -21,4 +21,4 @@ For a detailed tutorial on training a model using Topological Descriptors, pleas
 .. toctree::
    :maxdepth: 1
 
-   examples/global_optimizations.rst
+   examples/global_optimization.rst
