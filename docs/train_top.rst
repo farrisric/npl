@@ -3,10 +3,9 @@ Training a Topological Descriptor Model
 
 In this document, we will walk through the steps to train a surrogate energy model for nanoparticles using Topological Descriptors.
 
-## Example Code
-
 .. code-block:: python
-    # Import necessary modules from NPlib
+    
+    
     from npl.core import Nanoparticle
     from npl.calculators import EMTCalculator
     from npl.descriptors.global_feature_classifier import testTopologicalFeatureClassifier
@@ -16,8 +15,7 @@ In this document, we will walk through the steps to train a surrogate energy mod
     import matplotlib.pyplot as plt
     import pickle
 
-    # Here, we import essential modules that will allow us to create nanoparticles, compute their energies,
-    # extract features, and perform Bayesian Ridge Regression.
+Here, we import essential modules that will allow us to create nanoparticles, compute their energies, extract features, and perform Bayesian Ridge Regression.
 
 .. code-block:: python
     # Function to create a training set of nanoparticles
@@ -37,15 +35,15 @@ In this document, we will walk through the steps to train a surrogate energy mod
             
         return training_set
 
-    # This function initializes an EMTCalculator and creates a list of nanoparticles based on the given parameters.
-    # Each nanoparticle's energy is computed and stored in the training set.
+This function initializes an EMTCalculator and creates a list of nanoparticles based on the given parameters.
+Each nanoparticle's energy is computed and stored in the training set.
 
 .. code-block:: python
     # Create the training set with 40 particles
     stoichiometry = {'Pt': 55, 'Au': 24}
     training_set = create_octahedron_training_set(40, 5, 1, stoichiometry)
 
-    # Here, we define the stoichiometry for our nanoparticles and generate a training set containing 40 nanoparticles.
+Here, we define the stoichiometry for our nanoparticles and generate a training set containing 40 nanoparticles.
 
 .. code-block:: python
     # Extract features
@@ -53,15 +51,15 @@ In this document, we will walk through the steps to train a surrogate energy mod
     for p in training_set:
         classifier.compute_feature_vector(p)
 
-    # We initialize the TopologicalFeatureClassifier to compute the topological features for each nanoparticle in the training set.
+We initialize the TopologicalFeatureClassifier to compute the topological features for each nanoparticle in the training set.
 
 .. code-block:: python
     # Train the Bayesian Ridge Regression model
     calculator = BayesianRRCalculator(classifier.get_feature_key())
     calculator.fit(training_set, 'EMT', validation_set=0.1)
 
-    # An instance of the Bayesian Ridge Regression calculator is created, and we fit the model using the training set
-    # with 10% of the data reserved for validation.
+An instance of the Bayesian Ridge Regression calculator is created, and we fit the model using the training set
+with 10% of the data reserved for validation.
 
 .. code-block:: python
     # Evaluate the model
@@ -75,7 +73,7 @@ In this document, we will walk through the steps to train a surrogate energy mod
    :align: center
    :figwidth: 60%
 
-   This figure illustrates the learning curve for the model, depicting the training and test performance as the training set size increases.
+This figure illustrates the learning curve for the model, depicting the training and test performance as the training set size increases.
 
 .. code-block:: python
     # Visualize the coefficients
@@ -99,4 +97,4 @@ In this document, we will walk through the steps to train a surrogate energy mod
     # Save the trained model
     calculator.save('bayesian_rr_calculator.pkl')
 
-    # Finally, we save the trained model to a file for future use, ensuring that we can reuse it without retraining.
+Finally, we save the trained model to a file for future use, ensuring that we can reuse it without retraining.
