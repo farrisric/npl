@@ -61,7 +61,7 @@ Perform Monte Carlo simulation with the energy calculator:
 
     from npl.monte_carlo.monte_carlo_global_features import run_monte_carlo
     feature_classifier = testTopologicalFeatureClassifier(symbols)
-    start_particle = create_start_particle(5, 1, {'Au': 24, 'Pt': 55})
+    start_particle = create_start_particle(5, 1, {'Au': 0.33, 'Pt': 0.67})
     beta, max_steps = 100, 100
 
     [best_particle, accepted_energies] = run_monte_carlo(
@@ -76,18 +76,13 @@ Use ASE to view the optimized particle and plot accepted energies:
 
     view(best_particle.get_ase_atoms(), viewer='x3d')
 
-Plot the accepted energies over simulation steps:
+Plot the cumulative success rate:
 
-.. code-block:: python
+.. figure:: ../_static/MC_cumulative.png
+    :alt: Cumulative Success Rate
+    :align: center
 
-    energies = [energy for energy, _ in accepted_energies]
-    plt.figure(figsize=(10, 6))
-    plt.plot(energies, label='Accepted Energies')
-    plt.xlabel('Step')
-    plt.ylabel('Energy')
-    plt.title('Accepted Energies Over Steps')
-    plt.legend()
-    plt.show()
+    Cumulative Success Rate
 
 Evaluating with Basin Hopping
 -----------------------------
@@ -99,14 +94,15 @@ Run basin hopping to search for global minima:
     from npl.optimization.basin_hopping import run_basin_hopping
     steps_BH, energies_BH = [], []
     for i in range(20):
-        start_particle = create_start_particle(4, 1, {'Au': 0.5, 'Pt': 0.5})
+        start_particle = create_start_particle(4, 1, {'Au': 0.33, 'Pt': 0.67})
         [best_particle, lowest_energies, flip_energy_list] = run_basin_hopping(
             start_particle, energy_calculator, total_energies, 100, 5)
         energies_BH.append(lowest_energies[-2][0])
         steps_BH.append(lowest_energies[-2][1])
 
-Plot the cumulative success rate for both algorithms:
+Plot the cumulative success for the Optimal Exchange algorithm:
 
-.. code-block:: python
+.. figure:: ../_static/BH_cumulative.png
+    :alt: Cumulative Success Rate
+    :align: center
 
-    plot_cummulative_success_rate(energies_BH, steps_BH)
