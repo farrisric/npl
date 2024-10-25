@@ -4,12 +4,18 @@ from copy import deepcopy
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve
-from sklearn.metrics import mean_absolute_error,mean_squared_error
+from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from sklearn.linear_model import BayesianRidge,Ridge
 from sklearn.model_selection import ShuffleSplit
 import numpy as np
 
-def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10, train_sizes=range(1, 401, 10),y_lim=(0,)):
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import learning_curve, ShuffleSplit
+
+def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10, 
+                         train_sizes=range(1, 401, 10), y_lim=(0,), 
+                         filename=None):
     """
     Plots learning curves for a given estimator using Mean Absolute Error (MAE) as the scoring metric.
 
@@ -19,32 +25,49 @@ def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10, train_sizes=rang
     n_atoms (int): Number of atoms, used for normalizing the error.
     estimator (object): The estimator object implementing 'fit' and 'predict' methods.
     n_splits (int, optional): Number of re-shuffling & splitting iterations for cross-validation. Default is 10.
-    train_sizes (iterable, optional): Relative or absolute numbers of training examples that will be used to generate the learning curve. Default is range(1, 401, 10).
+    train_sizes (iterable, optional): Numbers of training examples used to generate the learning curve. Default is range(1, 401, 10).
 
     The function performs cross-validation to compute training and test scores, calculates the quartiles for the scores,
     and plots the learning curves with shaded areas representing the interquartile ranges.
     """
-    cv = ShuffleSplit(n_splits=n_splits, train_size=train_sizes[-1], test_size=len(X) - train_sizes[-1], random_state=0)
-    train_sizes, train_scores, test_scores = learning_curve(estimator, X=X, y=y, cv=cv, n_jobs=-1, train_sizes=train_sizes, scoring='neg_mean_absolute_error')
+    
+    # Cross-validation setup
+    cv = ShuffleSplit(n_splits=n_splits, train_size=train_sizes[-1], 
+                      test_size=len(X) - train_sizes[-1], random_state=0)
+    
+    # Calculate learning curves
+    train_sizes, train_scores, test_scores = learning_curve(
+        estimator, X=X, y=y, cv=cv, n_jobs=-1, 
+        train_sizes=train_sizes, scoring='neg_mean_absolute_error'
+    )
 
+    # Calculate quartiles for training and test scores
     train_scores = [np.quantile(train_scores, quartile, axis=1) / n_atoms * 1000 for quartile in [0.25, 0.50, 0.75]]
     test_scores = [np.quantile(test_scores, quartile, axis=1) / n_atoms * 1000 for quartile in [0.25, 0.50, 0.75]]
 
     train_q25, train_q50, train_q75 = train_scores
     test_q25, test_q50, test_q75 = test_scores
 
-    plt.fill_between(train_sizes, -train_q25, -train_q75, alpha=0.3, label='Train IQR')
-    plt.fill_between(train_sizes, -test_q25, -test_q75, alpha=0.3, label='Test IQR')
-    plt.plot(train_sizes, -train_q50, '--', label='Train Median')
-    plt.plot(train_sizes, -test_q50, '-', label='Test Median')
+    # Plotting the learning curves
+    plt.figure(figsize=(10, 6))
+    plt.fill_between(train_sizes, -train_q25, -train_q75, 
+                     alpha=0.3, label='Train IQR', color='lightblue')
+    plt.fill_between(train_sizes, -test_q25, -test_q75, 
+                     alpha=0.3, label='Test IQR', color='lightgreen')
+    
+    plt.plot(train_sizes, -train_q50, '--', label='Train Median', color='blue')
+    plt.plot(train_sizes, -test_q50, '-', label='Test Median', color='green')
+    
     plt.ylim(y_lim)
-    plt.ylabel('MAE [meV / atom]')
-    plt.xlabel('Training Set Size')
-    plt.title('Learning Curves')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
+    plt.ylabel('MAE [meV / atom]', fontsize=12)
+    plt.xlabel('Training Set Size', fontsize=12)
+    plt.title('Learning Curves', fontsize=14)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend(fontsize=10)
+    
+    # Save the figure if a filename is provided
+    if filename:
+        plt.savefig(filename, dpi=200)
 
 def get_reference_structure(particle: Nanoparticle, ase = None) -> Nanoparticle:
     if type(particle) is not Nanoparticle:

@@ -70,6 +70,12 @@ In this document, we will walk through the steps to train a surrogate energy mod
     n_atoms = training_set[0].get_n_atoms()
     plot_learning_curves(X, y, n_atoms, calculator.ridge, n_splits=10, train_sizes=range(4, 30, 2), y_lim=(0, 2))
 
+.. figure:: images/learning_curve.png
+    :alt: Description of the image
+    :align: center
+    :figwidth: 60%
+
+    Caption for the figure describing its contents.
     # We prepare the feature vectors and energy values for evaluation and plot the learning curves to assess model performance.
 
 .. code-block:: python
@@ -84,6 +90,13 @@ In this document, we will walk through the steps to train a surrogate energy mod
     plt.ylabel('Coefficient Value')
     plt.title('Fitting Coefficients')
     plt.show()
+
+.. figure:: images/coefficients.png
+    :alt: Description of the image
+    :align: center
+    :figwidth: 60%
+
+    Caption for the figure describing its contents.
 
     # We retrieve the coefficients from the fitted model and visualize them in a bar plot, providing insight into the
     # feature importance in the model.
