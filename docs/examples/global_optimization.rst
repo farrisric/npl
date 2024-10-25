@@ -73,7 +73,7 @@ Use ASE to view the optimized particle and plot accepted energies:
 
 Plot the cumulative success rate:
 
-.. figure:: ../_static/MC_cumulative.png
+.. figure:: ../images/MC_cumulative.png
     :alt: Cumulative Success Rate
     :align: center
 
@@ -97,7 +97,7 @@ Run basin hopping to search for global minima:
 
 Plot the cumulative success for the Optimal Exchange algorithm:
 
-.. figure:: ../_static/BH_cumulative.png
+.. figure:: ../images/BH_cumulative.png
     :alt: Cumulative Success Rate
     :align: center
 
