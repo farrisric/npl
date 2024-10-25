@@ -69,7 +69,8 @@ Use ASE to view the optimized particle and plot accepted energies:
 
 .. code-block:: python
 
-    view(best_particle.get_ase_atoms(), viewer='x3d')
+    plot_atoms(global_minimum.get_ase_atoms(), rotation=('0x,+180y,0z'))
+    plt.axis('off')
 
 .. figure:: ../images/MC_gm.png
 
