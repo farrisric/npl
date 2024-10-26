@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 import pandas as pd
 from copy import deepcopy
 from sklearn.model_selection import learning_curve, ShuffleSplit
@@ -27,7 +28,7 @@ def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10,
     
     # Cross-validation setup
     cv = ShuffleSplit(n_splits=n_splits, train_size=train_sizes[-1], 
-                      test_size=len(X) - train_sizes[-1], random_state=0)
+                      test_size=len(X) - train_sizes[-1])
     
     # Calculate learning curves
     train_sizes, train_scores, test_scores = learning_curve(
@@ -152,7 +153,9 @@ def get_concentration_per_layer(particle, symbols):
         concentration_layers.append(layer_concentration)
     return concentration_layers, layers_n_atoms
 
-def plot_elemental_concentration_per_layer(particle, symbols, cmap, colors):
+def plot_elemental_concentration_per_layer(particle):
+    from ase.data import colors
+    from ase.data import atomic_numbers
     """
     Plots the elemental concentration per layer for a given particle.
     Parameters:
@@ -163,18 +166,36 @@ def plot_elemental_concentration_per_layer(particle, symbols, cmap, colors):
     Returns:
     None
     """
+    symbols = particle.get_all_symbols()
+    numbers = [atomic_numbers[symbol] for symbol in symbols]
+    atom_colors = [colors.jmol_colors[number] for number in numbers]
     concentration_layers, layers_n_atoms = get_concentration_per_layer(particle, symbols)
     layer_conc = pd.DataFrame(concentration_layers, columns=symbols)
+    cmap = LinearSegmentedColormap.from_list("", atom_colors)
     
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(12, 8))
     layer_conc.plot(kind='bar', 
                     stacked=True, 
                     colormap=cmap,
-                    color=colors,
                     width=1, 
                     edgecolor='k',
                     ax=ax)
-    plt.xlabel('Layer')
-    plt.ylabel('Concentration')
-    plt.title('Elemental Concentration per Layer')
+    
+    for i, (concentration, n_atoms) in enumerate(zip(concentration_layers, layers_n_atoms)):
+        for j, (symbol, conc) in enumerate(zip(symbols, concentration)):
+            if conc < 0.01:
+                continue
+            ax.text(i, sum(concentration[:j]) + conc / 2, f'{conc * 100:.1f}%', 
+                    ha='center', va='center', color='black', fontsize=10, fontweight='bold')
+    
+    ax.set_xlabel('Shell Number (0=Surface, {}=Core)'.format(len(concentration_layers) - 1), fontsize=14)
+    ax.set_ylabel('Shell Composition', fontsize=14)
+    ax.set_xlim(-0.5, len(layer_conc) - 0.5)
+    ax.set_ylim(0, 1)
+    ax.set_title('Elemental Concentration per Layer', fontsize=16)
+    ax.tick_params(axis='x', labelsize=12)
+    ax.tick_params(axis='y', labelsize=12)
+    ax.legend(title='Elements', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=12)
+    
+    plt.tight_layout()
     plt.show()
