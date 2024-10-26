@@ -163,7 +163,23 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
         self.get_layer_types()
         self.get_number_of_feature()
         
+    def get_feature_labels(self):
+        """
+        Generate a list of feature labels for the extended topological feature vector.
 
+        The feature labels include:
+        - Bond counts for all possible pairs of elements.
+        - Sublayer indices for each element.
+        - Coordination numbers for each element from 0 to 12.
+
+        Returns:
+            list: A list of feature labels.
+        """
+        bond_labels = [f'{a}-{b}' for a, b in self.bond_types.keys()]
+        sublayer_labels = [f'sublayer_{symbol}' for symbol in self.symbols]
+        coordination_labels = [f'{symbol}(cn={i})' for symbol in self.symbols for i in range(13)]
+        return bond_labels + sublayer_labels + coordination_labels
+        
     def get_bond_types(self):
         for i, bond_types in enumerate(combinations_with_replacement(self.symbols, 2)):
             self.bond_types[bond_types] = i

@@ -40,7 +40,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
 
     found_new_solution = False
     fields = ['energies', 'symbols', 'positions']
-    best_particle = copy.deepcopy(start_particle.get_ase_atoms())
+    best_particle = copy.deepcopy(start_particle)
 
     total_steps = 0
     no_improvement = 0
@@ -65,7 +65,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
             if found_new_solution:
                 if new_energy > start_energy:
                     start_particle.swap_symbols(exchanges)
-                    best_particle = copy.deepcopy(start_particle.get_ase_atoms())
+                    best_particle = copy.deepcopy(start_particle)
                     # accepted_structures.append(copy.deepcopy(start_particle.get_ase_atoms()))
                     # best_particle['energies'][energy_key] = start_energy
                     start_particle.swap_symbols(exchanges)
@@ -90,7 +90,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
             feature_calculator.downgrade_feature_vector(start_particle, neighborhood, old_atom_features,change)
 
             if found_new_solution:
-                best_particle = copy.deepcopy(start_particle.get_ase_atoms())
+                best_particle = copy.deepcopy(start_particle)
                 # accepted_structures.append(copy.deepcopy(start_particle.get_ase_atoms()))
                 # best_particle['energies'][energy_key] = copy.deepcopy(start_energy)
                 found_new_solution = False

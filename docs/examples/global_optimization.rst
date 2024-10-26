@@ -54,13 +54,19 @@ Perform Monte Carlo simulation with the energy calculator:
 
 .. code-block:: python
 
-    from npl.monte_carlo.monte_carlo_global_features import run_monte_carlo
-    feature_classifier = testTopologicalFeatureClassifier(symbols)
-    start_particle = create_start_particle(5, 1, {'Au': 0.33, 'Pt': 0.67})
-    beta, max_steps = 100, 100
+    from npl.monte_carlo import run_monte_carlo as rmc
 
-    [best_particle, accepted_energies] = run_monte_carlo(
-        beta, max_steps, start_particle, global_energy_calculator, feature_classifier)
+    steps_MC, energies_MC = [], []
+    for i in range(10):
+        start_particle = create_start_particle(4, 1, {'Au': 0.33, 'Pt': 0.67})
+        beta, max_steps = 250, 10000
+        [best_particle, accepted_energies] = rmc(beta, max_steps, start_particle, energy_calculator, local_feature_classifier)
+        
+        min_energy, min_step = min(accepted_energies, key=lambda x: x[0])
+        energies_MC.append(min_energy)
+        steps_MC.append(min_step)
+        if min_energy <= min(energies_MC):
+            global_minimum = best_particle
 
 Visualizing Results
 -------------------
@@ -78,6 +84,10 @@ Use ASE to view the optimized particle and plot accepted energies:
     :align: center
 
 Plot the cumulative success rate:
+
+.. code-block:: python
+
+    plot_cummulative_success_rate(energies_MC, steps_MC)
 
 .. figure:: ../images/MC_cumulative.png
 

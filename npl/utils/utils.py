@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve, ShuffleSplit
 
 def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10, 
-                         train_sizes=range(1, 401, 10), y_lim=(0,), 
+                         train_sizes=range(1, 401, 10), y_lim=None, 
                          filename=None):
     """
     Plots learning curves for a given estimator using Mean Absolute Error (MAE) as the scoring metric.
@@ -57,8 +57,8 @@ def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10,
     
     plt.plot(train_sizes, -train_q50, '--', label='Train Median', color='blue')
     plt.plot(train_sizes, -test_q50, '-', label='Test Median', color='green')
-    
-    plt.ylim(y_lim)
+    if y_lim:
+        plt.ylim(y_lim)
     plt.ylabel('MAE [meV / atom]', fontsize=12)
     plt.xlabel('Training Set Size', fontsize=12)
     plt.title('Learning Curves', fontsize=14)

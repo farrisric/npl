@@ -227,10 +227,10 @@ class BayesianRRCalculator(EnergyCalculator):
         -------
         None
         """
-        pred_validation = [self.compute_energy(p) for p in validation_set]
-        true_validation = [p.get_energy(energy_key) for p in validation_set]
-        print('Mean Absolute error {:.4f} eV'.format(mean_absolute_error(true_validation, pred_validation)))
-        print('Root Mean Square error {:.4f} eV'.format(root_mean_squared_error(true_validation, pred_validation)))
+        pred_validation = [self.compute_energy(p)/p.get_n_atoms()*1000 for p in validation_set]
+        true_validation = [p.get_energy(energy_key)/p.get_n_atoms()*1000 for p in validation_set]
+        print('Mean Absolute error {:.4f} meV/atom'.format(mean_absolute_error(true_validation, pred_validation)))
+        print('Root Mean Square error {:.4f} meV/atom'.format(root_mean_squared_error(true_validation, pred_validation)))
             
     def get_coefficients(self):
         return self.ridge.coef_
