@@ -1,17 +1,11 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from copy import deepcopy
+from sklearn.model_selection import learning_curve, ShuffleSplit
+from sklearn.metrics import mean_absolute_error
 from npl.core.nanoparticle import Nanoparticle
 from npl.calculators import EMTCalculator
-from copy import deepcopy
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import learning_curve
-from sklearn.metrics import mean_absolute_error, root_mean_squared_error
-from sklearn.linear_model import BayesianRidge,Ridge
-from sklearn.model_selection import ShuffleSplit
-import numpy as np
-
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import learning_curve, ShuffleSplit
 
 def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10, 
                          train_sizes=range(1, 401, 10), y_lim=None, 
@@ -117,3 +111,70 @@ def plot_cummulative_success_rate(energies: list, steps: list, figname: str = No
     
     if figname:
         plt.savefig(figname, dpi=200)
+        
+def get_surface_core_indices(particle):
+    surface_indices = particle.get_atom_indices_from_coordination_number(range(12))
+    core_indices = particle.get_atom_indices_from_coordination_number([12])
+    return surface_indices, core_indices
+
+def separate_layers(particle, upper_layer, indices):
+    new_upper = []
+    new_indices = []
+    for idx in indices:
+        neighbor_list = particle.neighbor_list[idx]
+        cacca = False
+        for x in neighbor_list:
+            if x in upper_layer:
+                new_upper.append(idx)
+                cacca = True
+                break               
+        if not cacca:
+            new_indices.append(idx)
+    return new_upper, new_indices
+
+def get_layers_indices(particle):
+    surface_indices, core_indices = get_surface_core_indices(particle)
+    upper_layer = surface_indices
+    indices = core_indices
+    layers = [surface_indices]
+    while indices:
+        upper_layer, indices = separate_layers(particle, upper_layer, indices)
+        layers.append(upper_layer)
+    return layers
+
+def get_concentration_per_layer(particle, symbols):
+    layers = get_layers_indices(particle)
+    layers_n_atoms = [len(x) for x in layers]
+    concentration_layers = []
+    for layer in layers:
+        layer_symbols = particle.get_symbols(layer)
+        layer_concentration = [layer_symbols.count(symbol) / len(layer) for symbol in symbols]
+        concentration_layers.append(layer_concentration)
+    return concentration_layers, layers_n_atoms
+
+def plot_elemental_concentration_per_layer(particle, symbols, cmap, colors):
+    """
+    Plots the elemental concentration per layer for a given particle.
+    Parameters:
+    particle (object): The particle object containing the data.
+    symbols (list of str): List of element symbols to be plotted.
+    cmap (str or Colormap): Colormap to be used for the plot.
+    colors (list of str or list of tuple): List of colors to be used for the plot.
+    Returns:
+    None
+    """
+    concentration_layers, layers_n_atoms = get_concentration_per_layer(particle, symbols)
+    layer_conc = pd.DataFrame(concentration_layers, columns=symbols)
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    layer_conc.plot(kind='bar', 
+                    stacked=True, 
+                    colormap=cmap,
+                    color=colors,
+                    width=1, 
+                    edgecolor='k',
+                    ax=ax)
+    plt.xlabel('Layer')
+    plt.ylabel('Concentration')
+    plt.title('Elemental Concentration per Layer')
+    plt.show()
