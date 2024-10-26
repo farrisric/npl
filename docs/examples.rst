@@ -31,4 +31,4 @@ For a detailed tutorial on training a model using the Extended Topological Descr
 .. toctree::
    :maxdepth: 1
 
-   examples/multimetal_optimization.rst
+   examples/multimetal_go.rst
