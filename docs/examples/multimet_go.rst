@@ -73,7 +73,7 @@ Creating the Training Set
     plt.title('Fitting Coefficients (Filtered)')
     plt.show()
 
-.. figure:: ../images/3met_coefficients.png
+.. figure:: ../images/3met_coeff.png
 
 Optimizing the Chemical Ordering
 
@@ -120,13 +120,13 @@ Visualize the Global Minimum and concentration per layer
     plot_atoms(atoms, rotation=('0x,75y,0z'))
     plt.axis('off')
 
-.. figure:: ../images/3met_global_minimum.png
+.. figure:: ../images/3met_gm.png
 
 .. code-block:: python
 
     plot_elemental_concentration_per_layer(global_minimum)
 
-.. figure:: ../images/3met_concentration_per_layer.png
+.. figure:: ../images/3met_conc_layer.png
 
 References
 ----------
