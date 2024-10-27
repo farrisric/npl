@@ -8,28 +8,28 @@ Option 1: Clone the Repository
 
 1. **Clone the repository**:
 
-    Open a terminal and run the following commands:
-    
-    .. code-block:: bash
+Open a terminal and run the following commands:
 
-        git clone https://github.com/farrisric/NPlib.git
-        cd NPlib
-        pip install .
+.. code-block:: bash
+
+    git clone https://github.com/farrisric/NPlib.git
+    cd NPlib
+    pip install .
 
 Option 2: Install via pip
 -------------------------
 
 1. **Install NPlib directly from PyPI**:
 
-    .. code-block:: bash
+.. code-block:: bash
 
-        pip install npl
+    pip install npl
 
 2. **Verify the installation**:
 
-    .. code-block:: bash
+.. code-block:: bash
 
-        python -c "import nplib; print(nplib.__version__)"
+    python -c "import nplib; print(nplib.__version__)"
 
 Troubleshooting
 ---------------
