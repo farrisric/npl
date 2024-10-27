@@ -8,11 +8,13 @@ from sklearn.metrics import mean_absolute_error
 from npl.core.nanoparticle import Nanoparticle
 from npl.calculators import EMTCalculator
 
-def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10, 
-                         train_sizes=range(1, 401, 10), y_lim=None, 
+
+def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10,
+                         train_sizes=range(1, 401, 10), y_lim=None,
                          filename=None):
     """
-    Plots learning curves for a given estimator using Mean Absolute Error (MAE) as the scoring metric.
+    Plots learning curves for a given estimator using Mean Absolute Error (MAE)
+    as the scoring metric.
 
     Parameters:
     X (array-like): Feature matrix.
@@ -37,8 +39,8 @@ def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10,
     )
 
     # Calculate quartiles for training and test scores
-    train_scores = [np.quantile(train_scores, quartile, axis=1) / n_atoms * 1000 for quartile in [0.25, 0.50, 0.75]]
-    test_scores = [np.quantile(test_scores, quartile, axis=1) / n_atoms * 1000 for quartile in [0.25, 0.50, 0.75]]
+    train_scores = [np.quantile(train_scores, quartile, axis=1) for quartile in [0.25, 0.50, 0.75]]
+    test_scores = [np.quantile(test_scores, quartile, axis=1) for quartile in [0.25, 0.50, 0.75]]
 
     train_q25, train_q50, train_q75 = train_scores
     test_q25, test_q50, test_q75 = test_scores
@@ -94,8 +96,6 @@ def plot_cummulative_success_rate(energies: list, steps: list, figname: str = No
     max_steps = max(steps)
     success_rate = np.zeros(max_steps)
     
-    percent = 0
-    index = 0
     for step, energy in zip(steps, energies):
         if energy == min_energy:
             success_rate[step:] += 100 / len(energies)
@@ -195,7 +195,7 @@ def plot_elemental_concentration_per_layer(particle):
     ax.set_title('Elemental Concentration per Layer', fontsize=16)
     ax.tick_params(axis='x', labelsize=12)
     ax.tick_params(axis='y', labelsize=12)
-    ax.legend(title='Elements', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=12)
-    
+    ax.legend(title='Elements', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=12)    
     plt.tight_layout()
     plt.show()
+    
