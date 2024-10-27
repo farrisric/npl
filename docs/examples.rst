@@ -13,7 +13,7 @@ For a detailed tutorial on training a model using Topological Descriptors, pleas
 
    examples/train_top.rst
 
-Optimization of the chemical ordering a nanoally
+Optimization of the chemical ordering a nanoalloy
 ------------------------------------------------
 
 For a detailed tutorial on training a model using Topological Descriptors, please refer to the following document:
