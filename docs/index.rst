@@ -23,11 +23,13 @@ Features
 - **ASE Integration and Extensibility**: Built on ASE for simulation versatility, with modularity for custom extensions.
 
 .. toctree::
-   :caption: Examples
+   :caption: Contents:
    :maxdepth: 2
-
+   
+   installation
    examples
+   
 
    
 
-.. 
+
