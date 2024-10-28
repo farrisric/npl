@@ -1,7 +1,7 @@
 Installation Guide
 ==================
 
-To install NPlib, you have two options: cloning the repository or using pip.
+To install NPL, you have two options: cloning the repository or using pip.
 
 Option 1: Clone the Repository
 ------------------------------
@@ -19,7 +19,7 @@ Open a terminal and run the following commands:
 Option 2: Install via pip
 -------------------------
 
-1. **Install NPlib directly from PyPI**:
+1. **Install NPL directly from PyPI**:
 
 .. code-block:: bash
 
@@ -29,7 +29,7 @@ Option 2: Install via pip
 
 .. code-block:: bash
 
-    python -c "import nplib; print(nplib.__version__)"
+    python -c "import npl; print(npl.__version__)"
 
 Troubleshooting
 ---------------
