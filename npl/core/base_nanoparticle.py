@@ -4,8 +4,6 @@ import pickle
 from npl.core.atom_wrapper import AtomWrapper
 from npl.core.neighbor_list import NeighborList
 from npl.core.adsorption import AdsorptionSiteList
-from ase import Atoms
-from ase.io import read, write
 
 
 # TODO update local environment handling with keys
@@ -31,7 +29,7 @@ class BaseNanoparticle:
         self.adsorption_site_list = AdsorptionSiteList()
 
         self.energies = dict()
-        
+
         self.local_environments = dict()
         self.atom_features = dict()
         self.feature_vectors = dict()
@@ -93,8 +91,8 @@ class BaseNanoparticle:
             Specify the piece of information to save. See get_as_dictionary() for explanation.
 
             filename_geometry: str
-            Filename of file in which the geometrical information will be stored. This is independent
-            of the fields variable.
+            Filename of file in which the geometrical information will be stored. This is
+            independent of the fields variable.
         """
         data = self.get_as_dictionary(fields)
         pickle.dump(data, open(filename, 'wb'))
@@ -250,8 +248,8 @@ class BaseNanoparticle:
         Parameters:
 
             index_pairs: list of tuple
-            List that contains tuples which contain two indices, respectively, of atoms where the symbols
-            will be exchanged.
+            List that contains tuples which contain two indices, respectively, of atoms where the
+            symbols will be exchanged.
         """
         self.atoms.swap_symbols(index_pairs)
 
@@ -293,17 +291,17 @@ class BaseNanoparticle:
                 diff = n_atoms - sum(transformed_stoichiometry.values())
                 transformed_stoichiometry[sorted(stoichiometry)[0]] += diff
 
-            #print('Resulting stoichiometry: {}'.format(transformed_stoichiometry))
+            # print('Resulting stoichiometry: {}'.format(transformed_stoichiometry))
             self.atoms.random_ordering(transformed_stoichiometry)
         else:
             self.atoms.random_ordering(stoichiometry)
 
     def translate_atoms_positions(self, position):
         """ Shifts the origin of the coordinates towards a given position.
-        
+
         Useful to center the origin on an atom, when the position passed
         are the coordinates of the atom.
-        
+
         Parameters:
             position: array
             Array that contains x y z coordinates. """
@@ -362,7 +360,8 @@ class BaseNanoparticle:
         """
         if symbol is None:
             return list(
-                filter(lambda x: self.get_coordination_number(x) in coordination_numbers, self.atoms.get_indices()))
+                filter(lambda x: self.get_coordination_number(x) in coordination_numbers,
+                       self.atoms.get_indices()))
         else:
             return list(filter(lambda x: self.get_coordination_number(x) in coordination_numbers
                         and self.atoms.get_symbol(x) == symbol, self.atoms.get_indices()))
@@ -375,7 +374,7 @@ class BaseNanoparticle:
 
     def get_generalized_coordination_number(self, indices):
         return self.neighbor_list.get_generalized_coordination_number(indices)
-    
+
     def get_generalized_coordination_numbers(self, sites):
 
         gcn_dict = dict()
@@ -387,9 +386,9 @@ class BaseNanoparticle:
                 gcn_dict[gen_cn] = [site]
         return gcn_dict
 
-
     def get_atoms_in_the_surface_plane(self, atom_idx, edges_corner=False):
-        return self.neighbor_list.get_atoms_in_the_surface_plane(atom_idx, edges_corner=edges_corner)
+        return self.neighbor_list.get_atoms_in_the_surface_plane(atom_idx,
+                                                                 edges_corner=edges_corner)
 
     def get_n_atoms(self):
         """Return the number of atoms."""
@@ -405,7 +404,8 @@ class BaseNanoparticle:
 
         Parameters:
             indices: list/array of int
-            Only the selected atoms will be returned. If None is given, all indices will be returned by default.
+            Only the selected atoms will be returned. If None is given, all indices will be
+            returned by default.
 
             exclude_x: bool
             Exclude vacancies denoted by symbol 'X' from the atoms object. Necessary
@@ -482,7 +482,7 @@ class BaseNanoparticle:
             return True
         return False
 
-    ### ADSORPTION SECTION
+    # ADSORPTION SECTION
 
     def construct_adsorption_list(self):
         self.adsorption_site_list.construct(self)
@@ -503,7 +503,7 @@ class BaseNanoparticle:
 
     def random_occupation(self, number_of_adsorbates):
         self.adsorption_site_list.random_occupation(number_of_adsorbates)
-        
+
     def get_occupation_vector(self):
         return self.adsorption_site_list.get_occupation_vector()
 
@@ -518,5 +518,3 @@ class BaseNanoparticle:
 
     def swap_status(self, index_pairs):
         self.adsorption_site_list.swap_status(index_pairs)
-        
-

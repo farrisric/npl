@@ -10,7 +10,8 @@ class AtomWrapper:
     """Wrapper class around the ase Atoms object to extend it with some higher-level functionality.
 
     This class extends an Atoms object with additional functions for ordering, stoichiometry
-    handling and is split from BaseNanoparticle to keep the size of the modules as small as possible.
+    handling and is split from BaseNanoparticle to keep the size of the modules as small as
+    possible.
     """
     def __init__(self):
         self.atoms = Atoms()
@@ -23,7 +24,7 @@ class AtomWrapper:
     def get_atoms(self, indices):
         return self.atoms[indices]
 
-    def get_position(self,idx):
+    def get_position(self, idx):
         return self.atoms[idx].position
 
     def remove_atoms(self, indices):
@@ -41,7 +42,9 @@ class AtomWrapper:
 
     def swap_symbols(self, index_pairs):
         for idx1, idx2 in index_pairs:
-            self.atoms[idx1].symbol, self.atoms[idx2].symbol = self.atoms[idx2].symbol, self.atoms[idx1].symbol
+            self.atoms[idx1].symbol, self.atoms[idx2].symbol = (
+                self.atoms[idx2].symbol, self.atoms[idx1].symbol
+            )
 
     def random_ordering(self, new_stoichiometry):
         """Creates a random chemical ordering for the given stoichiometry
@@ -121,4 +124,3 @@ class AtomWrapper:
 
     def translate_atoms_positions(self, position):
         self.atoms.translate(-position)
-        
