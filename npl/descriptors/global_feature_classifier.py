@@ -104,6 +104,7 @@ class SimpleFeatureClassifier(GlobalFeatureClassifier):
 
         return n_aa_bonds, n_bb_bonds, n_ab_bonds
 
+
 class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
     """Classifier for a generalization of the topological descriptors by Kozlov et al. (2015).
     Implemented for TWO elements, which are sorted alphabetically.The returned feature vector will have the form
@@ -112,7 +113,7 @@ class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
     def __init__(self, symbols):
         SimpleFeatureClassifier.__init__(self, symbols)
         self.feature_key = 'TFC'
-        
+
     def get_feature_labels(self):
         """
         Generate a list of feature labels for the topological feature vector.
@@ -129,7 +130,7 @@ class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
         n_symbol_a_atoms = [f'n_{self.symbol_a}']
         coordination_a = [f'{self.symbol_a}(cn={i})' for i in range(13)]
         return bonds + n_symbol_a_atoms + coordination_a
-    
+
     def compute_feature_vector(self, particle):
         n_atoms = particle.get_n_atoms()
         n_aa_bonds, n_bb_bonds, n_ab_bonds = self.compute_respective_bond_counts(particle)
@@ -143,7 +144,7 @@ class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
 
 class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
     """
-    Extention of the Topological Feature Classifier Class.
+    Extension of the Topological Feature Classifier Class.
     Computes the topological feature vector for more than 2 metals in the nanoparticle
     """
     def __init__(self, symbols):
@@ -162,7 +163,7 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
         self.get_bond_types()
         self.get_layer_types()
         self.get_number_of_feature()
-        
+
     def get_feature_labels(self):
         """
         Generate a list of feature labels for the extended topological feature vector.
@@ -179,7 +180,7 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
         sublayer_labels = [f'sublayer_{symbol}' for symbol in self.symbols]
         coordination_labels = [f'{symbol}(cn={i})' for symbol in self.symbols for i in range(13)]
         return bond_labels + sublayer_labels + coordination_labels
-        
+
     def get_bond_types(self):
         for i, bond_types in enumerate(combinations_with_replacement(self.symbols, 2)):
             self.bond_types[bond_types] = i
@@ -204,7 +205,6 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
                 for sub_index in particle.neighbor_list[index]:
                     if len(particle.neighbor_list[sub_index]) == 12:
                         self.sublayer_indices[sub_index] = 1
-        
 
     def compute_atom_feature(self, particle, index):
 
@@ -215,15 +215,13 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
 
         for neigh_index in particle.neighbor_list[index]:
             element2 = particle.get_symbol(neigh_index)
-            bond_type = sorted([element1,element2])
+            bond_type = sorted([element1, element2])
             index_feature = self.bond_types[tuple(bond_type)]
             atom_feature[index_feature] += 0.5
 
         atom_feature[cn_index] += 1
         
         return atom_feature
-
-
 
     def compute_atom_features(self, particle):
         self.get_sublayer_indices(particle)
@@ -232,16 +230,14 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
             atom_feature = self.compute_atom_feature(particle, atom_idx)
             particle.set_atom_feature(self.feature_key, atom_idx, atom_feature)
 
-
     def compute_feature_vector(self, particle):
 
         self.compute_atom_features(particle)
         atom_features = particle.get_atom_features(self.feature_key)
         feature_vector = atom_features.sum(axis=0)
         particle.set_feature_vector(self.feature_key, feature_vector)
-    
-    def update_atom_feature(self, particle, index):
-        
+
+    def update_atom_feature(self, particle, index):   
         atom_feature = self.compute_atom_feature(particle, index)
         particle.set_atom_feature(self.feature_key, index, atom_feature)
 
@@ -249,7 +245,6 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
 
         old_atom_features = []
         feature_vector = particle.get_feature_vector(self.feature_key)
-        
         change = 0
         for index in neighborhood:
             old_atom_feature = copy.deepcopy(particle.get_atom_feature(self.feature_key, index))
@@ -266,12 +261,10 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
 
     def downgrade_feature_vector(self, particle, neighborhood, old_atom_features, change):
         feature_vector = particle.get_feature_vector(self.feature_key)
-        
+
         for index, atom_feature in zip(neighborhood, old_atom_features):
             particle.set_atom_feature(self.feature_key, index, atom_feature)
         feature_vector -= change
-
-        
 
 
 class TopologicalFeatureClassifier(SimpleFeatureClassifier):
@@ -284,7 +277,7 @@ class TopologicalFeatureClassifier(SimpleFeatureClassifier):
         SimpleFeatureClassifier.__init__(self, symbols)
         self.feature_key = 'TFC'
         self.bond_scaling_factor = 1
-        
+
     def get_feature_labels(self):
         """
         Generate a list of feature labels for the topological feature vector.
@@ -306,7 +299,7 @@ class TopologicalFeatureClassifier(SimpleFeatureClassifier):
     def compute_feature_vector(self, particle):
         n_atoms = particle.get_n_atoms()
         n_aa_bonds, n_bb_bonds, n_ab_bonds = self.compute_respective_bond_counts(particle)
-        
+
         coordinated_atoms_a = [len(particle.get_atom_indices_from_coordination_number([cn], symbol=self.symbol_a)) for cn in range(13)]
         coordinated_atoms_b = [len(particle.get_atom_indices_from_coordination_number([cn], symbol=self.symbol_b)) for cn in range(13)]
 
@@ -322,12 +315,12 @@ class AtomicCoordinationTypes(SimpleFeatureClassifier):
         symbols_copy = copy.deepcopy(symbols)
         self.symbols = sorted(symbols_copy)
         self.feature_key = 'ACT'
-        
+
         self.coordination_number_offsets = [int(cn*(cn + 1)/2) for cn in range(13)]
-    
+
     def compute_n_features(self, particle):
         return 182
-    
+
     def compute_atom_feature(self, atom_index, particle):
         symbol = particle.get_symbol(atom_index)
         symbol_index = self.symbols.index(symbol)
@@ -337,9 +330,9 @@ class AtomicCoordinationTypes(SimpleFeatureClassifier):
         coordination_number = len(particle.neighbor_list[atom_index])
         symbols = [particle.get_symbol(neigh_index) for neigh_index in particle.neighbor_list[atom_index]] 
         if symbol == self.symbol_a:
-            n_ab_bonds = symbols.count(self.symbol_a) # it was symbol_b
+            n_ab_bonds = symbols.count(self.symbol_a)  # it was symbol_b
         else:
-            n_ab_bonds = symbols.count(self.symbol_a) # it was symbol_a
+            n_ab_bonds = symbols.count(self.symbol_a)  # it was symbol_a
 
         atoms_feature = int(self.coordination_number_offsets[coordination_number] + n_ab_bonds + element_offset)
 
@@ -387,7 +380,7 @@ class DipoleMomentCalculator(SimpleFeatureClassifier):
         self.feature_key = 'MU'
 
     def compute_feature_vector(self, particle, charges = [1, -1]):
-    
+
         symbols = particle.get_all_symbols()
         fake_charges = {symbols[0] : charges[0], symbols[1] : charges[1]}
         partial_charges = [fake_charges[symbol] for symbol in particle.get_symbols()]
@@ -403,9 +396,10 @@ class DipoleMomentCalculator(SimpleFeatureClassifier):
             dipole_moments.append(np.linalg.norm(dipole_moment))
             environments.append(particle.get_coordination_atoms(central_atom_idx))
 
-        feature_vector = np.average(dipole_moments)#/particle.get_n_atoms()
+        feature_vector = np.average(dipole_moments)  #/particle.get_n_atoms()
 
         particle.set_feature_vector(self.feature_key, feature_vector)
+
 
 class AdsorptionFeatureVector(SimpleFeatureClassifier):
 
@@ -416,7 +410,6 @@ class AdsorptionFeatureVector(SimpleFeatureClassifier):
         self.n_features = 0
 
         self.get_features(symbols)
-
 
     def compute_feature_vector(self, particle):
         feature_vector = np.array([0 for _ in range(self.n_features)])
@@ -431,11 +424,12 @@ class AdsorptionFeatureVector(SimpleFeatureClassifier):
     def get_features(self, symbols):
         symbols = sorted(symbols)
         index = 0
-        for number_of_atom_in_site in range(1,5):
-            for site_type in itertools.combinations_with_replacement(symbols,number_of_atom_in_site):
+        for number_of_atom_in_site in range(1, 5):
+            for site_type in itertools.combinations_with_replacement(symbols, number_of_atom_in_site):
                 self.features_type[site_type] = index
                 index += 1
         self.n_features = len(self.features_type)
+
 
 class GeneralizedCoordinationNumber(SimpleFeatureClassifier):
 
@@ -451,7 +445,7 @@ class GeneralizedCoordinationNumber(SimpleFeatureClassifier):
         self.n_features = len(self.all_gcn)
         self.gcn_site_list = np.zeros(particle.get_total_number_of_sites())
         self.feature_key = 'GCN'
-    
+
         for i, site_atom_indices in enumerate(self.ads_list):
             self.gcn_site_list[i] = particle.get_generalized_coordination_number(site_atom_indices)
 
@@ -464,10 +458,9 @@ class GeneralizedCoordinationNumber(SimpleFeatureClassifier):
             feature_vector[index] += 1  
 
         particle.set_feature_vector(self.feature_key, feature_vector)
-        
+
 
 class LayererTopologicalDescriptors(SimpleFeatureClassifier):
-    
 
     def __init__(self, symbols, particle):
         SimpleFeatureClassifier.__init__(self, symbols)
@@ -475,7 +468,7 @@ class LayererTopologicalDescriptors(SimpleFeatureClassifier):
         self.top =  TopologicalFeatureClassifier(symbols)
         self.layers = self.get_layer_indices(particle)
         self.n1, self.n2 = atomic_numbers[symbols[0]], atomic_numbers[symbols[1]]
-    
+
     def compute_layers(self, particle):
         positions = particle.get_positions()
         x_layer, y_layer, z_layer = [np.unique(particle.positions[:,coord]) for coord in range(3)]
@@ -514,14 +507,12 @@ class LayererTopologicalDescriptors(SimpleFeatureClassifier):
             layers_occupacy_z += abs(len(n_a) - len(n_b))
 
         return np.array([layers_occupacy_x, layers_occupacy_y, layers_occupacy_z])
-        #return np.array([layers_occupacy_x, layers_occupacy_x, layers_occupacy_x])
-        
 
     def compute_feature_vector(self, particle):
         self.top.compute_feature_vector(particle)
         layericity = np.array(self.get_layers_occupacy(particle))
-        
-        feature_vector = np.empty(32) # it should be 32
+
+        feature_vector = np.empty(32)  # it should be 32
         feature_vector[:29] = particle.get_feature_vector(self.top.get_feature_key())
         feature_vector[29:] = layericity
 

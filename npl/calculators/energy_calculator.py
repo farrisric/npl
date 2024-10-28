@@ -37,6 +37,7 @@ class EnergyCalculator:
         with open(name_file, 'rb') as calc:
             return pickle.load(calc)
 
+
 class EMTCalculator(EnergyCalculator):
     """Wrapper class around the asap3 EMT calculator."""
 
@@ -57,15 +58,11 @@ class EMTCalculator(EnergyCalculator):
             particle : Nanoparticle
             relax_atoms : bool
         """
-        cell_width = 1e3
-        cell_height = 1e3
-        cell_length = 1e3
 
         atoms = particle.get_ase_atoms(exclude_x=True)
         if not self.relax_atoms:
             atoms = atoms.copy()
 
-        #atoms.set_cell(np.array([[cell_width, 0, 0], [0, cell_length, 0], [0, 0, cell_height]]))
         atoms.set_calculator(EMT())
         dyn = BFGS(atoms, logfile=None)
         dyn.run(fmax=self.fmax, steps=self.steps)
@@ -80,7 +77,8 @@ class GPRCalculator(EnergyCalculator):
     def __init__(self, feature_key, kernel=None, alpha=0.01, normalize_y=True):
         EnergyCalculator.__init__(self)
         if kernel is None:
-            self.kernel = gp.kernels.ConstantKernel(1., (1e-1, 1e3)) * gp.kernels.RBF(1., (1e-3, 1e3))
+            self.kernel = gp.kernels.ConstantKernel(1., (1e-1, 1e3)) * \
+                          gp.kernels.RBF(1., (1e-3, 1e3))
         else:
             self.kernel = kernel
 
@@ -103,7 +101,9 @@ class GPRCalculator(EnergyCalculator):
         feature_vectors = [p.get_feature_vector(self.feature_key) for p in training_set]
         energies = [p.get_energy(energy_key) for p in training_set]
 
-        self.GPR = gp.GaussianProcessRegressor(kernel=self.kernel, n_restarts_optimizer=20, alpha=self.alpha,
+        self.GPR = gp.GaussianProcessRegressor(kernel=self.kernel,
+                                               n_restarts_optimizer=20,
+                                               alpha=self.alpha,
                                                normalize_y=self.normalize_y)
         self.GPR.fit(feature_vectors, energies)
 
@@ -122,8 +122,8 @@ class GPRCalculator(EnergyCalculator):
 class MixingEnergyCalculator(EnergyCalculator):
     """Compute the mixing energy using an arbitrary energy model.
 
-    For the original energy model it is assumed that all previous steps in the energy pipeline, e.g. calculation
-    of local environment, feature vectors etc. has been carried out.
+    For the original energy model it is assumed that all previous steps in the energy pipeline, e.g.
+    calculation of local environment, feature vectors etc. has been carried out.
     """
     def __init__(self, base_calculator=None, mixing_parameters=None, recompute_energies=False):
         EnergyCalculator.__init__(self)
@@ -152,8 +152,8 @@ class MixingEnergyCalculator(EnergyCalculator):
     def compute_energy(self, particle):
         """Compute the mixing energy of the particle using the base energy model.
 
-        If energies have been computed using the same energy model as the base calculator they are reused if
-        self.recompute_energies == False
+        If energies have been computed using the same energy model as the base calculator they
+        are reused if self.recompute_energies == False
 
         Parameters:
             particle : Nanoparticle
@@ -167,7 +167,8 @@ class MixingEnergyCalculator(EnergyCalculator):
         n_atoms = particle.atoms.get_n_atoms()
 
         for symbol in particle.get_stoichiometry():
-            mixing_energy -= self.mixing_parameters[symbol] * particle.get_stoichiometry()[symbol] / n_atoms
+            mixing_energy -= self.mixing_parameters[symbol] * \
+                                particle.get_stoichiometry()[symbol] / n_atoms
 
         particle.set_energy(self.energy_key, mixing_energy)
 
@@ -179,13 +180,12 @@ class BayesianRRCalculator(EnergyCalculator):
         EnergyCalculator.__init__(self)
 
         self.ridge = BayesianRidge(fit_intercept=False)
-        
         self.energy_key = 'BRR'
         self.feature_key = feature_key
 
     def fit(self, training_set, energy_key, validation_set=None):
         """Fit the Bayesian Ridge Regression (BRR) model.
-        
+
         Parameters:
         ----------
         training_set : list of Nanoparticles
@@ -193,9 +193,9 @@ class BayesianRRCalculator(EnergyCalculator):
         energy_key : str
             The key used to extract energy values from the nanoparticles.
         validation_set : float or list of Nanoparticles, optional
-            If a float is provided, it represents the fraction of the training set to be used as the validation set.
+            If a float is provided, it represents the fraction of the training set to be used as
+            the validation set.
             If a list is provided, it is used as the validation set directly. Default is None.
-        
         Returns:
         -------
         None
@@ -204,7 +204,7 @@ class BayesianRRCalculator(EnergyCalculator):
             split_index = int(len(training_set) * validation_set)
             validation_set = training_set[split_index:]
             training_set = training_set[:split_index]
-        
+
         feature_vectors = [p.get_feature_vector(self.feature_key) for p in training_set]
         energies = [p.get_energy(energy_key) for p in training_set]
 
@@ -215,23 +215,25 @@ class BayesianRRCalculator(EnergyCalculator):
 
     def validate(self, validation_set, energy_key):
         """Validate the Bayesian Ridge Regression (BRR) model.
-        
+
         Parameters:
         ----------
         validation_set : list of Nanoparticles
             The dataset used for validating the model.
         energy_key : str
             The key used to extract energy values from the nanoparticles.
-        
+
         Returns:
         -------
         None
         """
         pred_validation = [self.compute_energy(p) for p in validation_set]
         true_validation = [p.get_energy(energy_key) for p in validation_set]
-        print('Mean Absolute error {:.4f} meV/atom'.format(mean_absolute_error(true_validation, pred_validation)))
-        print('Root Mean Square error {:.4f} meV/atom'.format(root_mean_squared_error(true_validation, pred_validation)))
-            
+        mae = mean_absolute_error(true_validation, pred_validation)
+        rmse = root_mean_squared_error(true_validation, pred_validation)
+        print('Mean Absolute error {:.4f} meV/atom'.format(mae))
+        print('Root Mean Square error {:.4f} meV/atom'.format(rmse))
+
     def get_coefficients(self):
         return self.ridge.coef_
 
@@ -240,7 +242,7 @@ class BayesianRRCalculator(EnergyCalculator):
 
     def set_feature_key(self, feature_key):
         self.feature_key = feature_key
-    
+
     def compute_energy(self, particle):
         """Compute the energy using BRR.
 
@@ -249,23 +251,24 @@ class BayesianRRCalculator(EnergyCalculator):
         Parameters:
             particle : Nanoparticle
         """
-        #brr_energy = self.ridge.predict([particle.get_feature_vector(self.feature_key)])
-        #brr_energy = np.dot(np.transpose(self.ridge.coef_), particle.get_feature_vector(self.feature_key))
-        brr_energy = np.dot(np.transpose(self.ridge.coef_), particle.get_feature_vector(self.feature_key))
+        feature_vector = particle.get_feature_vector(self.feature_key)
+        # brr_energy = self.ridge.predict([particle.get_feature_vector(self.feature_key)])
+        # brr_energy = np.dot(np.transpose(self.ridge.coef_),
+        # particle.get_feature_vector(self.feature_key))
+        brr_energy = np.dot(np.transpose(self.ridge.coef_), feature_vector)
         particle.set_energy(self.energy_key, brr_energy)
         return brr_energy
 
 
 class DipoleMomentCalculator:
-    
+
     def __init__(self):
         self.total_dipole_moment = None
         self.dipole_moments = None
         self.environments = None
-        
 
-    def compute_dipole_moment(self, particle, charges = [1, -1]):
-    
+    def compute_dipole_moment(self, particle, charges=[1, -1]):
+
         symbols = particle.get_all_symbols()
         fake_charges = {symbols[0] : charges[0], symbols[1] : charges[1]}
         partial_charges = [fake_charges[symbol] for symbol in particle.get_symbols()]
@@ -287,7 +290,7 @@ class DipoleMomentCalculator:
 
     def get_total_dipole_moment(self):
         return self.total_dipole_moment
-    
+
     def get_dipole_moments(self):
         return self.dipole_moments
 
@@ -296,7 +299,7 @@ class DipoleMomentCalculator:
 
 
 class LateralInteractionCalculator:
-    
+
     def __init__(self):
         EnergyCalculator.__init__(self)
         self.interaction_matrix = None
@@ -311,7 +314,7 @@ class LateralInteractionCalculator:
             ads_site_list = particle.get_adsorption_list()
             ads_placer = PlaceAddAtoms(particle.get_all_symbols())
             ads_placer.bind_particle(particle)
-            adsorbate_positions = [list(ads_site_list[site]) for site in range(n_sites)] 
+            adsorbate_positions = [list(ads_site_list[site]) for site in range(n_sites)]
             particle = ads_placer.place_add_atom(particle, 'O', adsorbate_positions)
             return particle
 
@@ -343,12 +346,14 @@ class LateralInteractionCalculator:
         for idx, site_index in enumerate(occupied_sites_indices):
             for pair_index in occupied_sites_indices[idx:]:
                 lateral_interaction += self.interaction_matrix[site_index][pair_index]
-                
-        particle.set_energy(self.energy_key, lateral_interaction)        
+        particle.set_energy(self.energy_key, lateral_interaction)
 
 # TODO move to relevant file -> Basin Hopping, Local optimization
 # TODO remove scaling factors from topological descriptors
-def compute_coefficients_for_linear_topological_model(global_topological_coefficients, symbols, n_atoms):
+
+
+def compute_coefficients_for_linear_topological_model(global_topological_coefficients, symbols,
+                                                      n_atoms):
     coordination_numbers = list(range(13))
     symbols_copy = copy.deepcopy(symbols)
     symbols_copy.sort()

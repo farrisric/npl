@@ -1,11 +1,13 @@
+import logging
 import numpy as np
 import copy
-from itertools import chain
 
 from npl.descriptors.local_environment_calculator import NeighborCountingEnvironmentCalculator
 from npl.monte_carlo.random_exchange_operator import RandomExchangeOperator
 
-import time
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def setup_monte_carlo(start_particle, energy_calculator, local_feature_classifier):
     symbols = start_particle.get_all_symbols()
@@ -40,9 +42,13 @@ def update_atomic_features(exchanges, local_env_calculator, local_feature_classi
     local_feature_classifier.compute_feature_vector(particle, recompute_atom_features=False)
     return particle, neighborhood
 
+
 def mc_run(beta, max_steps, start_particle, energy_calculator, local_feature_classifier):
-    energy_key, local_env_calculator, exchange_operator = setup_monte_carlo(start_particle, energy_calculator,
-                                                                            local_feature_classifier)
+    logger.info("MonteCarlo initialized with beta: {} and max_steps: {}".format(beta, max_steps))
+    energy_key, local_env_calculator, exchange_operator = setup_monte_carlo(
+                                                                start_particle,
+                                                                energy_calculator,
+                                                                local_feature_classifier)
 
     start_energy = start_particle.get_energy(energy_key)
     lowest_energy = start_energy
@@ -57,16 +63,14 @@ def mc_run(beta, max_steps, start_particle, energy_calculator, local_feature_cla
     while no_improvement < max_steps:
         total_steps += 1
         if total_steps % 2000 == 0:
-            print("Step: {}".format(total_steps))
-            print("Lowest energy: {}".format(lowest_energy))
-
+            logger.info("Step: {}".format(total_steps))
+            logger.info("Lowest energy: {}".format(lowest_energy))
 
         exchanges = exchange_operator.random_exchange(start_particle)
 
         start_particle, neighborhood = update_atomic_features(exchanges, local_env_calculator, local_feature_classifier,
                                                               start_particle)
 
-        
         energy_calculator.compute_energy(start_particle)
         new_energy = start_particle.get_energy(energy_key)
 
