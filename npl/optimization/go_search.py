@@ -50,12 +50,14 @@ class MCSearch(GOSearch):
         self.energy_calculator = None
         self.local_feature_classifier = None
 
-    def fit_energy_expression(self, training_set, symbols, energy_key = 'EMT'):
+    def fit_energy_expression(self, training_set, symbols, energy_key='EMT'):
         local_env_calculator = LEC.NeighborCountingEnvironmentCalculator(symbols)
         global_feature_classifier = GFC.TopologicalFeatureClassifier(symbols)
 
-        self.energy_calculator = EC.BayesianRRCalculator(global_feature_classifier.get_feature_key())
-        self.local_feature_classifier = LFC.TopologicalEnvironmentClassifier(local_env_calculator, symbols)
+        self.energy_calculator = EC.BayesianRRCalculator(
+            global_feature_classifier.get_feature_key())
+        self.local_feature_classifier = LFC.TopologicalEnvironmentClassifier(
+            local_env_calculator, symbols)
 
         for p in training_set:
             global_feature_classifier.compute_feature_vector(p)
@@ -64,7 +66,8 @@ class MCSearch(GOSearch):
 
         n_atoms = sum(list(training_set[0].get_stoichiometry().values()))
         lin_coef = self.energy_calculator.get_coefficients()
-        topological_coefficients, _ = EC.compute_coefficients_for_linear_topological_model(lin_coef, symbols, n_atoms)
+        topological_coefficients, _ = EC.compute_coefficients_for_linear_topological_model(
+            lin_coef, symbols, n_atoms)
         print(topological_coefficients)
 
         self.energy_calculator.set_coefficients(topological_coefficients)
@@ -78,7 +81,8 @@ class MCSearch(GOSearch):
         else:
             start_config = self.create_start_configuration(*args_start)
 
-        args = [self.beta, self.n_steps, start_config, self.energy_calculator, self.local_feature_classifier]
+        args = [self.beta, self.n_steps, start_config, self.energy_calculator,
+                self.local_feature_classifier]
         if additional_args is not None:
             return args + additional_args
         else:
@@ -98,7 +102,8 @@ class MCSearch(GOSearch):
 
 
 class GASearch(GOSearch):
-    def __init__(self, genetic_algorithm, create_start_population, unsuccessful_gens_for_convergence):
+    def __init__(self, genetic_algorithm, create_start_population,
+                 unsuccessful_gens_for_convergence):
         GOSearch.__init__(self, genetic_algorithm, create_start_population)
         self.unsuccessful_steps_for_convergence = unsuccessful_gens_for_convergence
 
@@ -111,8 +116,10 @@ class GASearch(GOSearch):
         local_env_calculator = LEC.NeighborCountingEnvironmentCalculator(symbols)
         global_feature_classifier = GFC.TopologicalFeatureClassifier(symbols)
 
-        self.energy_calculator = EC.BayesianRRCalculator(global_feature_classifier.get_feature_key())
-        self.local_feature_classifier = LFC.TopologicalEnvironmentClassifier(local_env_calculator, symbols)
+        self.energy_calculator = EC.BayesianRRCalculator(
+            global_feature_classifier.get_feature_key())
+        self.local_feature_classifier = LFC.TopologicalEnvironmentClassifier(
+            local_env_calculator, symbols)
         self.local_env_calculator = local_env_calculator
 
         for p in training_set:
@@ -123,8 +130,9 @@ class GASearch(GOSearch):
         n_atoms = sum(list(training_set[0].get_stoichiometry().values()))
         lin_coef = self.energy_calculator.get_coefficients()
         print(lin_coef)
-        topological_coefficients, self.total_energies = EC.compute_coefficients_for_linear_topological_model(
-            lin_coef, symbols, n_atoms)
+        topological_coefficients, self.total_energies = \
+            EC.compute_coefficients_for_linear_topological_model(
+                lin_coef, symbols, n_atoms)
 
         self.energy_calculator.set_coefficients(topological_coefficients)
         self.energy_calculator.set_feature_key(self.local_feature_classifier.get_feature_key())
@@ -160,7 +168,8 @@ class GuidedSearch(GOSearch):
     def fit_energy_expression(self, training_set, symbols, energy_key='EMT'):
         global_feature_classifier = GFC.testTopologicalFeatureClassifier(symbols)
 
-        self.energy_calculator = EC.BayesianRRCalculator(global_feature_classifier.get_feature_key())
+        self.energy_calculator = EC.BayesianRRCalculator(
+            global_feature_classifier.get_feature_key())
 
         for p in training_set:
             global_feature_classifier.compute_feature_vector(p)
@@ -170,8 +179,9 @@ class GuidedSearch(GOSearch):
         n_atoms = sum(list(training_set[0].get_stoichiometry().values()))
         lin_coef = self.energy_calculator.get_coefficients()
         print(lin_coef)
-        topological_coefficients, self.total_energies = EC.compute_coefficients_for_linear_topological_model(
-            lin_coef, symbols, n_atoms)
+        topological_coefficients, self.total_energies = \
+            EC.compute_coefficients_for_linear_topological_model(
+                lin_coef, symbols, n_atoms)
 
         self.energy_calculator.set_coefficients(topological_coefficients)
         self.energy_calculator.set_feature_key('TEC')

@@ -45,7 +45,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
     logging.info("Starting Monte Carlo simulation")
     logging.info("Beta: {}".format(beta))
     logging.info("Max steps: {}".format(max_steps))
-    logging.info("Starting energy: {}".format(start_particle.get_energy(
+    logging.info("Starting energy: {:.3f}".format(start_particle.get_energy(
         energy_calculator.get_energy_key())))
 
     start_energy = start_particle.get_energy(energy_key)
