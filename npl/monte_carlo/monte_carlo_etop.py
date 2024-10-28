@@ -61,7 +61,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
         total_steps += 1
         if total_steps % 2000 == 0:
             logging.info("Step: {}".format(total_steps))
-            logger.info("Lowest energy: {}".format(lowest_energy))
+            logging.info("Lowest energy: {}".format(lowest_energy))
 
         exchanges = exchange_operator.random_exchange(start_particle)
         neighborhood = features_to_update(start_particle, exchanges)

@@ -11,9 +11,16 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
                       n_hops,
                       local_feature_classifier=None):
 
+    logging.info("Starting Basin Hopping simulation")
+    logging.info("Hopping attempts: {}".format(n_hopping_attempts))
+    logging.info("Hops: {}".format(n_hops))
+
     energy_key, local_env_calculator, local_feature_classifier, exchange_operator = \
         setup_local_optimization(start_particle, energy_calculator, environment_energies,
                                  local_feature_classifier)
+
+    logging.info("Starting energy: {}".format(start_particle.get_energy(
+        energy_calculator.get_energy_key())))
 
     start_energy = start_particle.get_energy(energy_key)
     lowest_energies = [(start_energy, 0)]
@@ -52,7 +59,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
                     lowest_energies.append((lowest_energy, step))
 
             else:
-                if i % 20 == 0:
+                if i % n_hopping_attempts == 0:
                     logging.info('Energy after local_opt: {:.3f}, lowest {:.3f}'.format(
                         start_energy,
                         lowest_energy))
@@ -82,7 +89,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
             new_energy = start_particle.get_energy(energy_key)
 
             start_energy = new_energy
-    print('Lowest energy: {:.3f}'.format(lowest_energy))
+    logging.info('Lowest energy: {:.3f}'.format(lowest_energy))
     lowest_energies.append((lowest_energy, step))
 
     return [best_particle, lowest_energies, flip_energy_list]
