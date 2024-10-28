@@ -1,10 +1,14 @@
+import logging
 import numpy as np
 import copy
 
 from npl.monte_carlo.random_exchange_operator_etop import RandomExchangeOperatorExtended
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 def setup_monte_carlo(start_particle, energy_calculator, feature_classifier):
-    symbols = start_particle.get_all_symbols()
     energy_key = energy_calculator.get_energy_key()
 
     feature_calculator = feature_classifier
@@ -16,6 +20,7 @@ def setup_monte_carlo(start_particle, energy_calculator, feature_classifier):
     exchange_operator.bind_particle(start_particle)
 
     return energy_key, feature_calculator, exchange_operator
+
 
 def features_to_update(start_particle, exchanges):
 
@@ -30,16 +35,24 @@ def features_to_update(start_particle, exchanges):
 
     return neighborhood
 
+
 def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_classifier):
-    energy_key, feature_calculator, exchange_operator = setup_monte_carlo(start_particle, energy_calculator, feature_classifier)
+
+    energy_key, feature_calculator, exchange_operator = setup_monte_carlo(start_particle,
+                                                                          energy_calculator,
+                                                                          feature_classifier)
+
+    logging.info("Starting Monte Carlo simulation")
+    logging.info("Beta: {}".format(beta))
+    logging.info("Max steps: {}".format(max_steps))
+    logging.info("Starting energy: {}".format(start_particle.get_energy(
+        energy_calculator.get_energy_key())))
 
     start_energy = start_particle.get_energy(energy_key)
     lowest_energy = start_energy
     accepted_energies = [(lowest_energy, 0)]
-    accepted_structures = []
 
     found_new_solution = False
-    fields = ['energies', 'symbols', 'positions']
     best_particle = copy.deepcopy(start_particle)
 
     total_steps = 0
@@ -47,13 +60,14 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
     while no_improvement < max_steps:
         total_steps += 1
         if total_steps % 2000 == 0:
-            print("Step: {}".format(total_steps))
-            print("Lowest energy: {}".format(lowest_energy))
+            logging.info("Step: {}".format(total_steps))
+            logger.info("Lowest energy: {}".format(lowest_energy))
 
         exchanges = exchange_operator.random_exchange(start_particle)
         neighborhood = features_to_update(start_particle, exchanges)
-        
-        old_atom_features, change = feature_calculator.update_feature_vector(start_particle, neighborhood)
+
+        old_atom_features, change = feature_calculator.update_feature_vector(start_particle,
+                                                                             neighborhood)
 
         energy_calculator.compute_energy(start_particle)
         new_energy = start_particle.get_energy(energy_key)
@@ -72,7 +86,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
 
             start_energy = new_energy
             accepted_energies.append((new_energy, total_steps))
-            
+
             if new_energy < lowest_energy:
                 no_improvement = 0
                 lowest_energy = new_energy
@@ -87,7 +101,8 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
             # roll back exchanges and make sure features and environments are up-to-date
             start_particle.swap_symbols(exchanges)
             start_particle.set_energy(energy_key, start_energy)
-            feature_calculator.downgrade_feature_vector(start_particle, neighborhood, old_atom_features,change)
+            feature_calculator.downgrade_feature_vector(start_particle, neighborhood,
+                                                        old_atom_features, change)
 
             if found_new_solution:
                 best_particle = copy.deepcopy(start_particle)

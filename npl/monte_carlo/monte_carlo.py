@@ -68,7 +68,8 @@ def mc_run(beta, max_steps, start_particle, energy_calculator, local_feature_cla
 
         exchanges = exchange_operator.random_exchange(start_particle)
 
-        start_particle, neighborhood = update_atomic_features(exchanges, local_env_calculator, local_feature_classifier,
+        start_particle, neighborhood = update_atomic_features(exchanges, local_env_calculator,
+                                                              local_feature_classifier,
                                                               start_particle)
 
         energy_calculator.compute_energy(start_particle)
@@ -113,9 +114,11 @@ def mc_run(beta, max_steps, start_particle, energy_calculator, local_feature_cla
 
     return [best_particle, accepted_energies]
 
-def run_monte_carlo_for_adsorbates(beta, max_steps, start_particle, adsorbates_energy, n_adsorbates):
-    #from Core.GlobalFeatureClassifier import AdsorptionFeatureVector
-    #from Core.EnergyCalculator import LateralInteractionCalculator
+
+def run_monte_carlo_for_adsorbates(beta, max_steps, start_particle, adsorbates_energy,
+                                   n_adsorbates):
+    # from Core.GlobalFeatureClassifier import AdsorptionFeatureVector
+    # from Core.EnergyCalculator import LateralInteractionCalculator
 
     exchange_operator = RandomExchangeOperator(0.5)
     exchange_operator.bind_adsorbates(start_particle, n_adsorbates)

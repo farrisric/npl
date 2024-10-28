@@ -1,15 +1,12 @@
 import numpy as np
 import copy
-from itertools import chain
 
 from npl.monte_carlo.random_exchange_operator import RandomExchangeOperator
 
 
 def setup_monte_carlo(start_particle, energy_calculator, feature_classifier):
-    symbols = start_particle.get_all_symbols()
     energy_key = energy_calculator.get_energy_key()
-
-    feature_calculator = feature_classifier # check this
+    feature_calculator = feature_classifier  # check this
 
     feature_calculator.compute_feature_vector(start_particle)
     energy_calculator.compute_energy(start_particle)
@@ -19,6 +16,7 @@ def setup_monte_carlo(start_particle, energy_calculator, feature_classifier):
 
     return energy_key, feature_calculator, exchange_operator
 
+
 def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_classifier):
     energy_key, feature_calculator, exchange_operator = setup_monte_carlo(start_particle,
                                                                           energy_calculator,
@@ -27,7 +25,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
     start_energy = start_particle.get_energy(energy_key)
     lowest_energy = start_energy
     accepted_energies = [(lowest_energy, 0)]
-    #accepted_structures = []
+    # accepted_structures = []
 
     found_new_solution = False
     best_particle = copy.deepcopy(start_particle)
@@ -41,7 +39,7 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
             print("Lowest energy: {}".format(lowest_energy))
 
         exchanges = exchange_operator.random_exchange(start_particle)
-        
+
         feature_calculator.compute_feature_vector(start_particle)
 
         energy_calculator.compute_energy(start_particle)
@@ -55,12 +53,12 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
                 if new_energy > start_energy:
                     start_particle.swap_symbols(exchanges)
                     best_particle = copy.deepcopy(start_particle)
-                    #accepted_structures.append(copy.deepcopy(start_particle.get_ase_atoms()))
+                    # accepted_structures.append(copy.deepcopy(start_particle.get_ase_atoms()))
                     start_particle.swap_symbols(exchanges)
 
             start_energy = new_energy
             accepted_energies.append((new_energy, total_steps))
-            
+
             if new_energy < lowest_energy:
                 no_improvement = 0
                 lowest_energy = new_energy
@@ -79,9 +77,9 @@ def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, feature_
 
             if found_new_solution:
                 best_particle = copy.deepcopy(start_particle)
-                #accepted_structures.append(copy.deepcopy(start_particle.get_ase_atoms()))
+                # accepted_structures.append(copy.deepcopy(start_particle.get_ase_atoms()))
                 found_new_solution = False
 
     accepted_energies.append((accepted_energies[-1][0], total_steps))
 
-    return best_particle, accepted_energies# accepted_structures]
+    return best_particle, accepted_energies  # accepted_structures]
