@@ -6,8 +6,8 @@ from scipy.special import sph_harm
 class LocalEnvironmentCalculator:
     """Base class for local environment calculators.
 
-    Intended use: Implementations should implement predict_local_environment() which calculates and returns
-    the local environment of a single atom.
+    Intended use: Implementations should implement predict_local_environment() which calculates
+    and returns the local environment of a single atom.
     """
     def __init__(self):
         pass
@@ -25,7 +25,8 @@ class LocalEnvironmentCalculator:
 
 
 class SOAPCalculator(LocalEnvironmentCalculator):
-    """ Experimental class. Compute the spherical harmonics power spectrum for each atom and element.
+    """ Experimental class. Compute the spherical harmonics power spectrum for each atom and
+    element.
 
     Based on the code provided by Dr. Johannes Margraf.
     See https://arxiv.org/abs/1901.10971v1 Ceriotti et al. for details, used convention etc.
@@ -36,14 +37,15 @@ class SOAPCalculator(LocalEnvironmentCalculator):
 
     def predict_local_environment(self, particle, lattice_index):
         def map_onto_unit_sphere(cartesian_coordinates):
-            # different use of the scipy.special.sph_harm notation for phi and theta (opposite of Wikipedia)
+            # different use of the scipy.special.sph_harm notation for phi and theta (opposite of
+            # Wikipedia)
             def angular_from_cartesian_coordinates(cartesian_coordinates):
                 x = cartesian_coordinates[0]
                 y = cartesian_coordinates[1]
                 z = cartesian_coordinates[2]
 
                 hxy = np.hypot(x, y)
-                r = np.hypot(hxy, z)
+                # r = np.hypot(hxy, z)
                 el = np.arctan2(z, hxy)
                 az = np.arctan2(y, x)
                 return np.abs(az + np.pi), np.abs(el + np.pi / 2.0)
@@ -61,7 +63,8 @@ class SOAPCalculator(LocalEnvironmentCalculator):
             cartesian_coordinates = particle.atoms.get_positions(neighbors)
 
             center_atom_position = particle.atoms.get_positions([lattice_index])[0]
-            cartesian_coordinates = list(map(lambda x: x - center_atom_position, cartesian_coordinates))
+            cartesian_coordinates = list(map(lambda x: x - center_atom_position,
+                                             cartesian_coordinates))
 
             angular_coordinates = map_onto_unit_sphere(cartesian_coordinates)
 
@@ -90,7 +93,9 @@ class SOAPCalculator(LocalEnvironmentCalculator):
                 for l in range(self.l_max + 1):
                     q_l = 0
                     for m in range(-l, l + 1):
-                        q_l += np.conj(sh_expansion_coefficients[symbol_index_1][i]) * sh_expansion_coefficients[symbol_index_2][i]
+                        q_l += np.conj(
+                            sh_expansion_coefficients[symbol_index_1][i]
+                            ) * sh_expansion_coefficients[symbol_index_2][i]
                         i += 1
                     q_ls_symbol.append(np.pi*np.sqrt(8.0/(2*l + 1)*q_l))
                 bond_parameters.append(q_ls_symbol)
@@ -104,9 +109,11 @@ class SOAPCalculator(LocalEnvironmentCalculator):
 
 
 class NeighborCountingEnvironmentCalculator(LocalEnvironmentCalculator):
-    """Calculate a local environment of the form [n_a, n_b], where n_a denotes the number of surrounding a atoms.
+    """Calculate a local environment of the form [n_a, n_b], where n_a denotes the number of
+    surrounding a atoms.
 
-    Currently restricted to two elements which are ordered alphabetically. Requires a valid neighbor list.
+    Currently restricted to two elements which are ordered alphabetically. Requires a valid
+    neighbor list.
     """
     def __init__(self, symbols):
         LocalEnvironmentCalculator.__init__(self)
@@ -127,6 +134,3 @@ class NeighborCountingEnvironmentCalculator(LocalEnvironmentCalculator):
                 n_b_atoms += 1
 
         return np.array([n_a_atoms, n_b_atoms])
-
-
-

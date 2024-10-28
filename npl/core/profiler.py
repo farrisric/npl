@@ -1,4 +1,6 @@
-import cProfile, pstats, io
+import cProfile
+import pstats
+import io
 
 
 def profile(fnc):

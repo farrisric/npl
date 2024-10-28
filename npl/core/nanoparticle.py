@@ -12,7 +12,8 @@ class Nanoparticle(BaseNanoparticle):
         BaseNanoparticle.__init__(self)
         self.adsorption = FindAdsorptionSites()
 
-    def truncated_octahedron(self, height, cutoff, stoichiometry, lattice_constant=3.9, alloy=False):
+    def truncated_octahedron(self, height, cutoff, stoichiometry,
+                             lattice_constant=3.9, alloy=False):
         octa = Octahedron('Pt', height, cutoff, latticeconstant=lattice_constant, alloy=alloy)
         atoms = Atoms(octa.symbols, octa.positions)
         com = atoms.get_center_of_mass()
@@ -36,7 +37,8 @@ class Nanoparticle(BaseNanoparticle):
                 difference = self.get_stoichiometry()[symbol]
 
             if difference > 0:
-                excess_atoms = np.append(excess_atoms, choose_n_atoms_with_symbol(symbol, difference), 0)
+                excess_atoms = np.append(excess_atoms, choose_n_atoms_with_symbol(symbol,
+                                                                                  difference), 0)
 
         np.random.shuffle(excess_atoms)
         excess_atoms = excess_atoms.astype(np.int)
@@ -48,6 +50,3 @@ class Nanoparticle(BaseNanoparticle):
             self.transform_atoms(excess_atoms[-difference:], [symbol]*difference)
             excess_atoms = excess_atoms[:-difference]
         return
-
-
-

@@ -5,7 +5,8 @@ import copy
 
 class LocalEnvironmentFeatureClassifier:
     """
-    LocalEnvironmentFeatureClassifier is a class that classifies features of local environments around atoms in a particle.
+    LocalEnvironmentFeatureClassifier is a class that classifies features of local environments
+    around atoms in a particle.
 
     Attributes:
         local_environment_calculator: An instance responsible for computing local environments.
@@ -16,10 +17,13 @@ class LocalEnvironmentFeatureClassifier:
             Initializes the classifier with a local environment calculator.
 
         compute_atom_features(particle, recompute_local_environments=False):
-            Computes features for each atom in the particle. Optionally recomputes local environments.
+            Computes features for each atom in the particle. Optionally recomputes local
+            environments.
 
-        compute_feature_vector(particle, recompute_atom_features=True, recompute_local_environments=False):
-            Computes the feature vector for the particle. Optionally recomputes atom features and local environments.
+        compute_feature_vector(particle, recompute_atom_features=True,
+        recompute_local_environments=False):
+            Computes the feature vector for the particle. Optionally recomputes atom features and
+            local environments.
 
         compute_atom_feature(particle, atom_index, recompute_local_environment=False):
             Computes the feature for a specific atom in the particle.
@@ -31,10 +35,12 @@ class LocalEnvironmentFeatureClassifier:
             Sets the feature key.
 
         compute_n_features(particle):
-            Abstract method to compute the number of features for the particle. Must be implemented by subclasses.
+            Abstract method to compute the number of features for the particle. Must be implemented
+            by subclasses.
 
         predict_atom_feature(particle, lattice_index, recompute_local_environment=False):
-            Abstract method to predict the feature of a specific atom. Must be implemented by subclasses.
+            Abstract method to predict the feature of a specific atom. Must be implemented by
+            subclasses.
     """
     def __init__(self, local_environment_calculator):
         self.local_environment_calculator = local_environment_calculator
@@ -47,7 +53,8 @@ class LocalEnvironmentFeatureClassifier:
         for atom_index in particle.get_indices():
             self.compute_atom_feature(particle, atom_index, recompute_local_environments)
 
-    def compute_feature_vector(self, particle, recompute_atom_features=True, recompute_local_environments=False):
+    def compute_feature_vector(self, particle, recompute_atom_features=True,
+                               recompute_local_environments=False):
         if recompute_atom_features:
             self.compute_atom_features(particle, recompute_local_environments)
 
@@ -97,7 +104,9 @@ class KMeansClassifier(LocalEnvironmentFeatureClassifier):
 
         offset = symbol_index*self.n_cluster
         if recompute_local_environment:
-            environment = self.kMeans.predict([self.local_environment_calculator.predict_local_environment(particle, atom_index)])[0]
+            environment = self.kMeans.predict([
+                self.local_environment_calculator.predict_local_environment(particle, atom_index)]
+                                              )[0]
         else:
             environment = self.kMeans.predict([particle.get_local_environment(atom_index)])[0]
         return offset + environment
@@ -105,7 +114,8 @@ class KMeansClassifier(LocalEnvironmentFeatureClassifier):
     def kmeans_clustering(self, training_set):
         local_environments = list()
         for particle in training_set:
-            local_environments = local_environments + list(particle.get_local_environments().values())
+            local_environments = local_environments + list(
+                particle.get_local_environments().values())
 
         print("Starting kMeans")
         self.kMeans = KMeans(n_clusters=self.n_cluster, random_state=0).fit(local_environments)
@@ -138,7 +148,8 @@ class TopologicalEnvironmentClassifier(LocalEnvironmentFeatureClassifier):
         environment = particle.get_local_environment(atom_index)
         coordination_number = len(particle.neighbor_list[atom_index])
 
-        atom_feature = int(element_offset + self.coordination_number_offsets[coordination_number] + environment[0])
+        atom_feature = int(element_offset + self.coordination_number_offsets[coordination_number]
+                           + environment[0])
 
         return atom_feature
 
@@ -167,9 +178,11 @@ class CoordinationNumberClassifier(LocalEnvironmentFeatureClassifier):
             self.local_environment_calculator.compute_local_environment(particle, atom_index)
 
         environment = particle.get_local_environment(atom_index)
-        coordination_number = environment[0]  # TODO not robust, only works if 'X' as 'empty site' is second entry
+        coordination_number = environment[0]
+        # TODO not robust, only works if 'X' as 'empty site' is second entry
         # TODO should specify index of non-vacancy element
 
-        atom_feature = element_offset + self.coordination_number_offsets[coordination_number] + environment[0]
+        atom_feature = element_offset + self.coordination_number_offsets[coordination_number]
+        + environment[0]
 
         return atom_feature
