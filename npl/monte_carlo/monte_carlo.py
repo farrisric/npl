@@ -40,7 +40,7 @@ def update_atomic_features(exchanges, local_env_calculator, local_feature_classi
     local_feature_classifier.compute_feature_vector(particle, recompute_atom_features=False)
     return particle, neighborhood
 
-def run_monte_carlo(beta, max_steps, start_particle, energy_calculator, local_feature_classifier):
+def mc_run(beta, max_steps, start_particle, energy_calculator, local_feature_classifier):
     energy_key, local_env_calculator, exchange_operator = setup_monte_carlo(start_particle, energy_calculator,
                                                                             local_feature_classifier)
 
