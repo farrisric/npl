@@ -6,6 +6,8 @@ from npl.descriptors import TopologicalFeatureClassifier as TOP
 import pickle
 import json
 import numpy as np
+import os
+import npl
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,14 +31,15 @@ class TOPCalculator(Calculator):
         Calculator.__init__(self, **kwargs)
 
         self.feature_key = feature_key
-        
+        self.energy_key = feature_key
+
         if model_paths:
             self.model = self.load_model(model_paths)
 
         if stoichiometry:
-            self.coeffcients = self.load_coefficients(stoichiometry)
-            self.ridge = LinearRegression()
-            self.ridge.coef_ = self.coeffcients
+            self.coefficients = self.load_coefficients(stoichiometry)
+            self.model = LinearRegression()
+            self.model.coef_ = self.coefficients
 
     def load_coefficients(self, stoichiometry):
         logging.info("Loading top parameters of {}".format(stoichiometry))
@@ -69,7 +72,9 @@ class TOPCalculator(Calculator):
         Returns:
             dict: The data for the specified stoichiometry, or None if not found.
         """
-        data = data = json.load(open('../../data/new_data.json', 'r'))
+        params = os.path.join(os.path.dirname(npl.__file__), '../data', 'params.json')
+        data = json.load(open(params))
+        logging.debug("Data loaded from {}".format(params))
         return data.get(stoichiometry, None)
 
     def load_model(self, model_path):
@@ -80,3 +85,22 @@ class TOPCalculator(Calculator):
         self.results = {}
         feature_vector = atoms.info[self.feature_key]
         self.results['energy'] = self.model.predict(feature_vector)
+
+    def compute_energy(self, particle):
+        feature_vector = particle.get_feature_vector(self.feature_key)
+        top_energy = np.dot(np.transpose(self.model.coef_), feature_vector)
+        particle.set_energy(self.energy_key, top_energy)
+        return top_energy
+
+    def set_coefficients(self, coefficients):
+        self.coefficients = coefficients
+        self.model.coef_ = self.coefficients
+
+    def get_coefficients(self):
+        return self.coefficients
+
+    def get_energy_key(self):
+        return self.energy_key
+
+    def get_feature_key(self):
+        return self.feature_key

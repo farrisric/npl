@@ -2,9 +2,9 @@ from npl.descriptors.local_environment_calculator import NeighborCountingEnviron
 from npl.optimization.local_optimization.guided_exchange_operator import GuidedExchangeOperator
 from npl.descriptors.local_environment_feature_classifier import TopologicalEnvironmentClassifier
 
-import numpy as np
 
-def setup_local_optimization(start_particle, energy_calculator, environment_energies, local_feature_classifier=None):
+def setup_local_optimization(start_particle, energy_calculator, environment_energies,
+                             local_feature_classifier=None):
     symbols = start_particle.get_all_symbols()
     local_env_calculator = NeighborCountingEnvironmentCalculator(symbols)
     if local_feature_classifier is None:
@@ -28,7 +28,7 @@ def update_atomic_features(index1, index2, local_env_calculator, local_feature_c
     neighborhood = {index1, index2}
     neighborhood = neighborhood.union(particle.neighbor_list[index1])
     neighborhood = neighborhood.union(particle.neighbor_list[index2])
-    
+
     for x in neighborhood:
         neighborhood = neighborhood.union(particle.neighbor_list[x])
 
