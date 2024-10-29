@@ -1,14 +1,11 @@
 NPL - Nanoparticle Library
 ===========================
 
-
-
 Overview
 .. image:: images/logo.png
    :alt: NPL Logo
    :width: 200px
    :align: center
-
 
 `NPL` is a Python library for the simulation and structural optimization of nanoparticles, specifically tailored for bimetallic nanoparticles. Built on the robust `ASE` (Atomic Simulation Environment), it enables users to easily set up and analyze complex nanoparticle structures across a range of chemical compositions and structures. `NPL` provides high-level abstractions, making it accessible for both beginners and experienced researchers aiming to perform detailed nanoparticle simulations.
 
