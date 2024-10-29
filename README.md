@@ -1,5 +1,7 @@
 # <span style="font-size:larger;">NanoParticleLibrary (NPL)</span>
 
+![NPL Logo](/home/riccardo/bin/repos/NPlib/docs/images/logo.png)
+
 <!-- [![GitHub release](https://img.shields.io/github/release/yourusername/npl.svg)](https://GitHub.com/yourusername/npl/releases/) -->
 [![License](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://opensource.org/licenses/mit)
 [![GitHub issues](https://img.shields.io/github/issues/farrisric/nplib.svg)](https://GitHub.com/farrisric/NPlib/issues)

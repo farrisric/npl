@@ -60,7 +60,6 @@ class EMTCalculator(EnergyCalculator):
             steps (int): The maximum number of steps for the BFGS optimizer. Default is 50.
             relax_atoms (bool): Flag indicating whether to relax the atoms during energy
             calculation. Default is False.
-        pass
 
         Compute the energy using EMT.
 
@@ -73,6 +72,7 @@ class EMTCalculator(EnergyCalculator):
             >>> from npl.calculators.energy_calculator import EMTCalculator
             >>> from npl.nanoparticle import Nanoparticle
             >>> particle = Nanoparticle()
+            >>> particle.truncated_octahedron(7,2, {'Au' : 0.5, 'Ag' : 0.5})
             >>> calculator = EMTCalculator(fmax=0.02, steps=100, relax_atoms=True)
             >>> calculator.compute_energy(particle)
             >>> energy = particle.get_energy('EMT')
@@ -212,7 +212,44 @@ class MixingEnergyCalculator(EnergyCalculator):
 
 
 class BayesianRRCalculator(EnergyCalculator):
-    """Energy calculator using global feature vectors and Bayesian Ridge Regression."""
+    """
+    BayesianRRCalculator is a class for performing Bayesian Ridge Regression (BRR) on nanoparticle
+    datasets.
+    Attributes:
+    -----------
+    ridge : BayesianRidge
+        The Bayesian Ridge Regression model.
+        The key used to store energy values in the nanoparticles.
+    feature_key : str
+        The key used to extract feature vectors from the nanoparticles.
+    Methods:
+    --------
+    __init__(self, feature_key):
+        Initializes the BayesianRRCalculator with a given feature key.
+    fit(self, training_set, energy_key, validation_set=None):
+        Fits the Bayesian Ridge Regression model using the provided training set.
+    validate(self, validation_set, energy_key):
+        Validates the Bayesian Ridge Regression model using the provided validation set.
+    get_coefficients(self):
+        Returns the coefficients of the Bayesian Ridge Regression model.
+    set_coefficients(self, new_coefficients):
+        Sets the coefficients of the Bayesian Ridge Regression model.
+    set_feature_key(self, feature_key):
+        Sets the feature key used to extract feature vectors from the nanoparticles.
+    compute_energy(self, particle):
+        Computes the energy of a given nanoparticle using the Bayesian Ridge Regression model.
+    Examples:
+    ---------
+    >>> from npl.calculators.energy_calculator import BayesianRRCalculator
+    >>> calculator = BayesianRRCalculator(feature_key='some_feature_key')
+    >>> training_set = [...]  # List of Nanoparticles for training
+    >>> validation_set = [...]  # List of Nanoparticles for validation
+    >>> calculator.fit(training_set, energy_key='some_energy_key', validation_set=validation_set)
+    >>> coefficients = calculator.get_coefficients()
+    >>> calculator.set_coefficients(new_coefficients)
+    >>> calculator.set_feature_key('new_feature_key')
+    >>> energy = calculator.compute_energy(some_nanoparticle)
+    """
 
     def __init__(self, feature_key):
         EnergyCalculator.__init__(self)
