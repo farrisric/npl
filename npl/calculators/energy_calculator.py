@@ -39,7 +39,45 @@ class EnergyCalculator:
 
 
 class EMTCalculator(EnergyCalculator):
-    """Wrapper class around the asap3 EMT calculator."""
+    """EMTCalculator is a class for calculating the energy of a nanoparticle using the Effective
+    Medium Theory (EMT) method.
+
+    Attributes:
+        fmax (float): The maximum force tolerance for the BFGS optimizer. Default is 0.01.
+        steps (int): The maximum number of steps for the BFGS optimizer. Default is 50.
+        energy_key (str): The key used to store the calculated energy in the particle object.
+        Default is 'EMT'.
+        relax_atoms (bool): Flag indicating whether to relax the atoms during energy calculation.
+        Default is False.
+
+    Methods:
+        compute_energy(particle):
+            Compute the energy of the given nanoparticle using EMT.
+
+        Initialize the EMTCalculator with the given parameters.
+
+            fmax (float): The maximum force tolerance for the BFGS optimizer. Default is 0.01.
+            steps (int): The maximum number of steps for the BFGS optimizer. Default is 50.
+            relax_atoms (bool): Flag indicating whether to relax the atoms during energy
+            calculation. Default is False.
+        pass
+
+        Compute the energy using EMT.
+
+        BFGS is used for relaxation. By default, the atoms are NOT relaxed, i.e., the
+
+            particle (Nanoparticle): The nanoparticle object for which the energy is to be
+            calculated.
+
+        Example:
+            >>> from npl.calculators.energy_calculator import EMTCalculator
+            >>> from npl.nanoparticle import Nanoparticle
+            >>> particle = Nanoparticle()
+            >>> calculator = EMTCalculator(fmax=0.02, steps=100, relax_atoms=True)
+            >>> calculator.compute_energy(particle)
+            >>> energy = particle.get_energy('EMT')
+            >>> print(f"Computed energy: {energy}")
+    """
 
     def __init__(self, fmax=0.01, steps=50, relax_atoms=False):
         EnergyCalculator.__init__(self)
