@@ -38,7 +38,7 @@ Loading a Pretrained TOP Model and Performing Chemical Ordering Optimization
 
 This tutorial demonstrates how to load a pretrained TOP model and perform a chemical ordering optimization using the `npl` library.
 
-.. toc:: 
+.. toctree::
    :maxdepth: 1
 
    examples/loading_pretrain_top.rst
