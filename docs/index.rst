@@ -2,6 +2,7 @@ NPL - Nanoparticle Library
 ===========================
 
 Overview
+
 .. image:: images/logo.png
    :alt: NPL Logo
    :width: 200px
