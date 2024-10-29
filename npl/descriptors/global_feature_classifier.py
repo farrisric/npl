@@ -184,7 +184,7 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
         Returns:
             list: A list of feature labels.
         """
-        bond_labels = [f'{a}-{b}' for a, b in self.bond_types.keys()]
+        bond_labels = [f'{a}{b}' for a, b in self.bond_types.keys()]
         sublayer_labels = [f'sublayer_{symbol}' for symbol in self.symbols]
         coordination_labels = [f'{symbol}(cn={i})' for symbol in self.symbols for i in range(13)]
         return bond_labels + sublayer_labels + coordination_labels

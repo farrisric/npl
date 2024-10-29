@@ -192,6 +192,7 @@ def plot_learning_curves(X, y, n_atoms, estimator, n_splits=10,
 
 
 def plot_parted_particle(atoms, separation=3):
+    atoms = atoms.get_ase_atoms()
     atoms.center()
     atoms1 = atoms[[a.index for a in atoms if a.position[2] < atoms.get_cell()[2][2]/2 + 1.0]]
     atoms2 = atoms[[a.index for a in atoms if a.position[2] > atoms.get_cell()[2][2]/2 + 1.0]]

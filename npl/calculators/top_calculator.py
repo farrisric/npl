@@ -2,12 +2,13 @@ from typing import Union
 import logging
 from ase.calculators.calculator import Calculator
 from sklearn.linear_model import LinearRegression
-from npl.descriptors import TopologicalFeatureClassifier as TOP
+import npl.descriptors
 import pickle
 import json
 import numpy as np
 import os
 import npl
+import npl.descriptors
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,12 +27,16 @@ class TOPCalculator(Calculator):
                  feature_key : str,
                  stoichiometry : str = None,
                  model_paths : Union[list, str] = None,
+                 feature_classifier : npl.descriptors = None,
                  **kwargs
                  ):
         Calculator.__init__(self, **kwargs)
 
         self.feature_key = feature_key
         self.energy_key = feature_key
+
+        if feature_classifier:
+            self.feature_classifier = feature_classifier
 
         if model_paths:
             self.model = self.load_model(model_paths)
@@ -45,20 +50,24 @@ class TOPCalculator(Calculator):
         logging.info("Loading top parameters of {}".format(stoichiometry))
 
         params = self.get_data_by_stoichiometry(stoichiometry)
-        top = TOP(params['symbols'])
-        feature_name = top.get_feature_labels()
+        self.feature_classifier = self.feature_classifier(params['symbols'])
+        feature_name = self.feature_classifier.get_feature_labels()
         coefficients = np.zeros(len(feature_name))
 
         for i, feature in enumerate(feature_name):
             coefficients[i] = params.get(feature, 0)
 
         for i, feature in enumerate(feature_name):
-            if len(feature) > 4:
+            if 'cn' in feature:
                 symbol = feature[:2]
                 cn = feature[3:-1]
                 coefficients[i] = params['data'][symbol][cn]
 
         logging.info("Parameters obtained from reference: {}".format(params['reference']))
+        logging.info("Parameters loaded successfully")
+        non_zero_params = {feature_name[i]: coef for i, coef in enumerate(coefficients)
+                           if coef != 0}
+        logging.info("Parameters: \n{}".format(non_zero_params))
         return coefficients
 
     def get_data_by_stoichiometry(self, stoichiometry):
@@ -104,3 +113,6 @@ class TOPCalculator(Calculator):
 
     def get_feature_key(self):
         return self.feature_key
+
+    def get_feature_classifier(self):
+        return self.feature_classifier

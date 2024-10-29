@@ -32,3 +32,13 @@ For a detailed tutorial on training a model using the Extended Topological Descr
    :maxdepth: 1
 
    examples/multimet_go.rst
+
+Loading a Pretrained TOP Model and Performing Chemical Ordering Optimization
+---------------------------------------------------------------------------
+
+This tutorial demonstrates how to load a pretrained TOP model and perform a chemical ordering optimization using the `npl` library.
+
+.. toc:: 
+   :maxdepth: 1
+
+   examples/loading_pretrain_top.rst

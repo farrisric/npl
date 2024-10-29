@@ -24,7 +24,8 @@ def setup_local_optimization(start_particle, energy_calculator, environment_ener
     return energy_key, local_env_calculator, local_feature_classifier, exchange_operator
 
 
-def update_atomic_features(index1, index2, local_env_calculator, local_feature_classifier, particle):
+def update_atomic_features(index1, index2, local_env_calculator, local_feature_classifier,
+                           particle):
     neighborhood = {index1, index2}
     neighborhood = neighborhood.union(particle.neighbor_list[index1])
     neighborhood = neighborhood.union(particle.neighbor_list[index2])
@@ -41,9 +42,11 @@ def update_atomic_features(index1, index2, local_env_calculator, local_feature_c
     return particle, neighborhood
 
 
-def local_optimization(start_particle, energy_calculator, environment_energies, local_feature_classifier=None):
-    energy_key, local_env_calculator, local_feature_classifier, exchange_operator = setup_local_optimization(
-        start_particle, energy_calculator, environment_energies, local_feature_classifier)
+def local_optimization(start_particle, energy_calculator, environment_energies,
+                       local_feature_classifier=None):
+    energy_key, local_env_calculator, local_feature_classifier, exchange_operator = \
+        setup_local_optimization(start_particle, energy_calculator,
+                                 environment_energies, local_feature_classifier)
 
     start_energy = start_particle.get_energy(energy_key)
     accepted_energies = [(start_energy, 0)]
@@ -55,7 +58,8 @@ def local_optimization(start_particle, energy_calculator, environment_energies, 
         exchanged_indices = [index1, index2]
 
         start_particle, neighborhood = update_atomic_features(index1, index2, local_env_calculator,
-                                                              local_feature_classifier, start_particle)
+                                                              local_feature_classifier,
+                                                              start_particle)
         exchange_operator.update(start_particle, neighborhood, exchanged_indices)
 
         energy_calculator.compute_energy(start_particle)
