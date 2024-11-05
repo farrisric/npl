@@ -58,18 +58,39 @@ Finally, we evaluate the results of our Monte Carlo simulations by looking at th
 .. code-block:: python
 
     import matplotlib.pyplot as plt
-    from npl.visualization import plot_topological_descriptor
+    from npl.visualize import plot_parted_particle
 
-    # Plot cumulative success rate
-    plt.figure()
-    plt.plot(range(1, len(energies_MC) + 1), sorted(energies_MC))
-    plt.xlabel('Simulation Run')
-    plt.ylabel('Minimum Energy')
-    plt.title('Cumulative Success Rate')
+    plot_parted_particle(best_particle)
+    threshold = 1e-16
+    filtered_indices = [i for i, coef in enumerate(calc.coefficients) if abs(coef) > threshold]
+    feature_names = feature_classifier.get_feature_labels()
+
+    feature_vector = best_particle.get_feature_vector(feature_classifier.get_feature_key())
+    filtered_feature_vector = [feature_vector[i] for i in filtered_indices]
+    filtered_feature_names = [feature_names[i] for i in filtered_indices]
+
+    # Plot the filtered feature vector
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar(filtered_feature_names, filtered_feature_vector)
+    plt.xlabel('Feature Name')
+    plt.ylabel('Feature Count')
+    plt.title('Topological Descriptor of Global Minimum Nanoparticle')
+    plt.xticks(rotation=90)
+    plt.grid(True)
+
+    # Annotate bars with their heights
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), ha='center', va='bottom')
+
     plt.show()
 
-    # Visualize global minimum chemical ordering
-    global_minimum.visualize()
+.. figure:: ../images/tutorial4_image1.png
 
-    # Plot topological descriptor of the global minimum
-    plot_topological_descriptor(global_minimum)
+    :alt: Global Minimum Nanoparticle
+    :align: center
+
+.. figure:: ../images/tutorial4_image2.png
+
+    :alt: Topological Descriptor of Global Minimum Nanoparticle
+    :align: center
