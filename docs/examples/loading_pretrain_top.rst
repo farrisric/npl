@@ -57,7 +57,28 @@ Finally, we evaluate the results of our Monte Carlo simulations by looking at th
 
 .. code-block:: python
 
-    import matplotlib.pyplot as plt
+    from npl.visualize import plot_cummulative_success_rate
+
+    plot_cummulative_success_rate(energies_MC, steps_MC)
+
+.. figure:: ../images/tutorial4_image3.png
+
+    :alt: Cumulative Success Rate Plot
+    :align: center
+
+.. code-block:: python
+
+    from npl.visualize import plot_parted_particle
+
+    plot_parted_particle(best_particle)
+
+.. figure:: ../images/tutorial4_image1.png
+
+    :alt: Global Minimum Nanoparticle
+    :align: center
+
+.. code-block:: python
+
     from npl.visualize import plot_parted_particle
 
     plot_parted_particle(best_particle)
@@ -84,11 +105,6 @@ Finally, we evaluate the results of our Monte Carlo simulations by looking at th
         plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), ha='center', va='bottom')
 
     plt.show()
-
-.. figure:: ../images/tutorial4_image1.png
-
-    :alt: Global Minimum Nanoparticle
-    :align: center
 
 .. figure:: ../images/tutorial4_image2.png
 
