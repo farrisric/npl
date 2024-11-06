@@ -140,11 +140,11 @@ def run_monte_carlo_for_adsorbates(beta, max_steps, start_particle, adsorbates_e
         lateral_interaction = start_particle.get_energy(lateral_interaction_energy_key)
         particle.set_energy('TOT', adsorbates_energy+lateral_interaction)
         return particle.get_energy('TOT')
-    #energy_key, local_env_calculator, exchange_operator = setup_monte_carlo(start_particle, energy_calculator, local_feature_classifier)
+    # energy_key, local_env_calculator, exchange_operator = setup_monte_carlo(start_particle,
+    # energy_calculator, local_feature_classifier)
 
 
-    #initial_adsorbed_sites = start_particle.get_indices_of_adsorbates()
-    
+    # initial_adsorbed_sites = start_particle.get_indices_of_adsorbates()
 
     start_energy = get_ordering_and_adsorbates_energy(start_particle)
     lowest_energy = start_energy

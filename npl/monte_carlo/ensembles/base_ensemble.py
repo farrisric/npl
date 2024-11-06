@@ -1,16 +1,9 @@
-import os
 import random
-import warnings
 import logging
 
-from abc import ABC, abstractmethod
-from collections import OrderedDict
-from math import gcd
-from time import time
-from typing import Any, Dict, List, Optional, Type, Union
+from abc import ABC
+from typing import Optional
 from ase.io.trajectory import Trajectory
-
-import numpy as np
 
 from ase import Atoms
 from ase.calculators.calculator import Calculator
@@ -19,6 +12,7 @@ from ase.calculators.calculator import Calculator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class BaseEnsemble(ABC):
     def __init__(self,
                  structure: Atoms,
@@ -26,7 +20,7 @@ class BaseEnsemble(ABC):
                  user_tag: Optional[str] = None,
                  random_seed: Optional[int] = None,
                  trajectory_write_interval: Optional[int] = None,
-                 traj_file: str = 'traj_test.traj', 
+                 traj_file: str = 'traj_test.traj',
                  outfile: str = 'outfile.out',
                  outfile_write_interval: int = 10) -> None:
         """
@@ -36,11 +30,15 @@ class BaseEnsemble(ABC):
             structure (Atoms): The initial configuration of the system.
             calculator (Calculator): The calculator object used for energy calculations.
             user_tag (str, optional): A user-defined tag for the ensemble. Defaults to None.
-            random_seed (int, optional): The random seed for the random number generator. Defaults to None.
-            trajectory_write_interval (int, optional): The interval at which to write trajectory files. Defaults to None.
-            traj_file (str, optional): The file to write trajectory data. Defaults to 'traj_test.traj'.
+            random_seed (int, optional): The random seed for the random number generator. Defaults
+            to None.
+            trajectory_write_interval (int, optional): The interval at which to write trajectory
+            files. Defaults to None.
+            traj_file (str, optional): The file to write trajectory data. Defaults to
+            'traj_test.traj'.
             outfile (str, optional): The file to write output data. Defaults to 'outfile.out'.
-            outfile_write_interval (int, optional): The interval at which to write output files. Defaults to 10.
+            outfile_write_interval (int, optional): The interval at which to write output files.
+            Defaults to 10.
         """
         self._accepted_trials = 0
         self._step = 0
@@ -53,7 +51,7 @@ class BaseEnsemble(ABC):
         self._traj_file = traj_file
         self._outfile = outfile
         self._outfile_write_interval = outfile_write_interval
-        
+
         # random number generator
         if random_seed is None:
             self._random_seed = random.randint(0, int(1e16))
@@ -65,12 +63,12 @@ class BaseEnsemble(ABC):
     def structure(self) -> Atoms:
         """ Current configuration (copy). """
         return self._structure
-    
+
     @property
     def step(self) -> int:
         """ Current trial step counter. """
         return self._step
-    
+
     def write_outfile(self, step: int, energy: float) -> None:
         """
         Write the step and energy to the output file.
@@ -84,7 +82,7 @@ class BaseEnsemble(ABC):
                 outfile.write(f'STEP: {step} ENERGY: {energy}\n')
         except IOError as e:
             logger.error(f"Error writing to file {self._outfile}: {e}")
-    
+
     def write_traj_file(self, atoms: Atoms) -> None:
         """
         Write the trajectory file.

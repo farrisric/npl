@@ -79,9 +79,6 @@ Finally, we evaluate the results of our Monte Carlo simulations by looking at th
 
 .. code-block:: python
 
-    from npl.visualize import plot_parted_particle
-
-    plot_parted_particle(best_particle)
     threshold = 1e-16
     filtered_indices = [i for i, coef in enumerate(calc.coefficients) if abs(coef) > threshold]
     feature_names = feature_classifier.get_feature_labels()
