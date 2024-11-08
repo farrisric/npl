@@ -4,9 +4,7 @@ from ase.calculators.calculator import Calculator
 from sklearn.linear_model import LinearRegression
 import npl.descriptors
 import pickle
-import json
 import numpy as np
-import os
 import npl
 import npl.descriptors
 
@@ -81,10 +79,8 @@ class TOPCalculator(Calculator):
         Returns:
             dict: The data for the specified stoichiometry, or None if not found.
         """
-        params = os.path.join(os.path.dirname(npl.__file__), '../data', 'params.json')
-        data = json.load(open(params))
-        logging.debug("Data loaded from {}".format(params))
-        return data.get(stoichiometry, None)
+        from .parameters import top_parameters
+        return top_parameters[stoichiometry]
 
     def load_model(self, model_path):
         with open(model_path, 'rb') as calc:
