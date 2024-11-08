@@ -104,3 +104,8 @@ docs/_build/
 
 # test notebooks
 test*ipynb
+
+# ASE
+*.traj
+*.xyz
+*.db
