@@ -58,7 +58,11 @@ pip install ./NPlib
 
 ### Monte Carlo Run Example
 
-Here is an example of how to perform a Monte Carlo run using NPL:
+
+Here’s a revised version without using lists:
+
+This example demonstrates how to perform a Monte Carlo simulation using NPL. First, pre-trained topological coefficients are loaded to guide the simulation. A truncated octahedral Pt151Cu50 nanoparticle is then initialized as the system for the simulation. The Monte Carlo simulation is set up with a temperature parameter of β = 250 and a total of 10,000 steps. Once the simulation is executed, the positions of the nanoparticle atoms are optimized. Finally, the optimized positions are printed for analysis.
+
 
 ```python
 
@@ -87,8 +91,6 @@ plot_parted_particle(best_particle)
 ```
 
 ![Tutorial Image](https://github.com/farrisric/NPlib/blob/main/docs/images/tutorial4_image1.png?raw=true)
-
-This example load pre-trained Topological coefficients, initializes a truncated octahedral Pt151Cu50 nanoparticle, sets up a Monte Carlo simulation at beta 250 for 10000 steps, runs the simulation, and then prints the optimized positions of the particle.
 
 ## References
 
