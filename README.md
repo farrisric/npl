@@ -133,7 +133,7 @@ If you use this code, please cite our papers:
 
 For any questions or issues, please contact:
 
-- Riccardo Farris: [farrisric@example.com](mailto:rfarris@ub.edu)
+- Riccardo Farris: [rfarris@ub.edu](mailto:rfarris@ub.edu)
 - GitHub Issues: [NPlib Issues](https://github.com/farrisric/NPlib/issues)
 
 ## License
