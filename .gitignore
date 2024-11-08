@@ -105,6 +105,7 @@ docs/_build/
 test*ipynb
 
 # ASE
-examples/*.traj
-examples/*.xyz
-examples/*.db
+*.traj
+*.xyz
+*.db
+*.out
