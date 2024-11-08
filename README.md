@@ -72,7 +72,6 @@ from npl.visualize import plot_parted_particle
 
 energy_calculator = TOPCalculator('ETOP', stoichiometry='Pt151Cu50',
                                   feature_classifier=ExtendedTopologicalFeaturesClassifier)
-
 feature_classifier = energy_calculator.get_feature_classifier()
 
 temperature = 250
