@@ -8,21 +8,24 @@ from npl.core.adsorption import AdsorptionSiteList
 
 # TODO update local environment handling with keys
 class BaseNanoparticle:
-    """Represent a nanoparticle.
-
-    Geometric information is stored in the form of an AtomWrapper object and
-    a NeighborList object. Multiple energies, feature vectors and lcoal environments
-    can be accesed by storing them with their respective key.
-
-    BaseNanoparticle is a dataholder class in the sense that all common calculations
-    such as the calculation of feature vectors, atomic descriptors or energies should
-    be done by calculator classes that obtain the necessary data from BaseNanoparticle.
-    This makes sure that BaseNanoparticle remains as general as possible.
-
-    For project specific behavior the Nanoparticle class, which inherits from
-    BaseNanoparticle should be used.
     """
-
+    Represent a nanoparticle.
+    a NeighborList object. Multiple energies, feature vectors, and local environments
+    can be accessed by storing them with their respective key.
+    BaseNanoparticle is a data holder class in the sense that all common calculations
+    such as the calculation of feature vectors, atomic descriptors, or energies should
+    This ensures that BaseNanoparticle remains as general as possible.
+    For project-specific behavior, the Nanoparticle class, which inherits from
+    BaseNanoparticle, should be used.
+    Attributes:
+        atoms (AtomWrapper): An object that wraps atomic information.
+        neighbor_list (NeighborList): An object that stores the neighbor list.
+        adsorption_site_list (AdsorptionSiteList): An object that stores adsorption sites.
+        energies (dict): A dictionary to store multiple energy values.
+        local_environments (dict): A dictionary to store local environments.
+        atom_features (dict): A dictionary to store atomic features.
+        feature_vectors (dict): A dictionary to store feature vectors.
+        """
     def __init__(self):
         self.atoms = AtomWrapper()
         self.neighbor_list = NeighborList()
@@ -367,15 +370,61 @@ class BaseNanoparticle:
                         and self.atoms.get_symbol(x) == symbol, self.atoms.get_indices()))
 
     def get_coordination_number(self, atom_idx):
+        """
+        Get the coordination number for a given atom.
+
+        The coordination number is the number of nearest neighbors
+        surrounding a specific atom in the nanoparticle.
+
+        Parameters:
+        atom_idx (int): The index of the atom for which to get the coordination number.
+
+        Returns:
+        int: The coordination number of the specified atom.
+        """
         return self.neighbor_list.get_coordination_number(atom_idx)
 
     def get_coordination_atoms(self, atom_idx):
+        """
+        Get the coordination atoms for a given atom index.
+
+        Parameters:
+        atom_idx (int): The index of the atom for which to find the coordination atoms.
+
+        Returns:
+        list: A list of coordination atoms for the specified atom index.
+        """
         return self.neighbor_list.get_coordination_atoms(atom_idx)
 
     def get_generalized_coordination_number(self, indices):
+        """
+        Calculate the generalized coordination number for the given indices.
+
+        Parameters:
+        indices (list or array-like): The indices of the atoms for which the
+                                      generalized coordination number is to be calculated.
+
+        Returns:
+        float: The generalized coordination number for the specified indices.
+        """
         return self.neighbor_list.get_generalized_coordination_number(indices)
 
     def get_generalized_coordination_numbers(self, sites):
+        """
+        Calculate the generalized coordination numbers for a list of sites.
+
+        This method iterates over a list of sites, calculates the generalized
+        coordination number for each site using the `get_generalized_coordination_number`
+        method, and groups the sites by their generalized coordination numbers in a dictionary.
+
+        Args:
+            sites (list): A list of sites for which to calculate the generalized coordination
+            numbers.
+
+        Returns:
+            dict: A dictionary where the keys are generalized coordination numbers and the values
+                  are lists of sites that have the corresponding generalized coordination number.
+        """
 
         gcn_dict = dict()
         for site in sites:
@@ -387,6 +436,22 @@ class BaseNanoparticle:
         return gcn_dict
 
     def get_atoms_in_the_surface_plane(self, atom_idx, edges_corner=False):
+        """
+        Get the atoms in the surface plane of a nanoparticle.
+
+        Parameters:
+        -----------
+        atom_idx : int
+            The index of the atom for which to find the surface plane atoms.
+        edges_corner : bool, optional
+            If True, include atoms at the edges and corners of the surface plane.
+            Default is False.
+
+        Returns:
+        --------
+        list
+            A list of atom indices that are in the surface plane.
+        """
         return self.neighbor_list.get_atoms_in_the_surface_plane(atom_idx,
                                                                  edges_corner=edges_corner)
 
@@ -395,6 +460,12 @@ class BaseNanoparticle:
         return self.atoms.get_n_atoms()
 
     def get_neighbor_list(self):
+        """
+        Retrieve the list of neighboring particles.
+
+        Returns:
+            list: A list containing the neighboring particles.
+        """
         return self.neighbor_list
 
     def get_ase_atoms(self, indices=None, exclude_x=True):
@@ -423,6 +494,15 @@ class BaseNanoparticle:
             return self.atoms.get_ase_atoms(indices)
 
     def get_atoms(self, indices):
+        """
+        Retrieve atoms based on the provided indices.
+
+        Parameters:
+        indices (list or array-like): A list or array of indices specifying which atoms to retrieve.
+
+        Returns:
+        list: A list of atoms corresponding to the specified indices.
+        """
         return self.atoms.get_atoms(indices)
 
     def get_position(self, idx):
@@ -449,35 +529,125 @@ class BaseNanoparticle:
         self.feature_vectors[feature_key] = feature_vector
 
     def get_feature_vector(self, feature_key):
+        """
+        Retrieve the feature vector associated with the given feature key.
+
+        Args:
+            feature_key (str): The key corresponding to the desired feature vector.
+
+        Returns:
+            numpy.ndarray: The feature vector associated with the provided feature key.
+
+        Raises:
+            KeyError: If the feature_key is not found in the feature_vectors dictionary.
+        """
         return self.feature_vectors[feature_key]
 
     def set_atom_features(self, atom_features, feature_key):
+        """
+        Sets the features of an atom in the nanoparticle.
+
+        Parameters:
+        atom_features (dict): A dictionary containing the features of the atom.
+        feature_key (str): The key under which the atom features will be stored in the
+        atom_features dictionary.
+
+        Returns:
+        None
+        """
         self.atom_features[feature_key] = atom_features
 
     def set_atom_feature(self, feature_key, index, atom_feature):
+        """
+        Sets the feature of a specific atom in the nanoparticle.
+
+        Parameters:
+        feature_key (str): The key identifying the feature to be set.
+        index (int): The index of the atom whose feature is to be set.
+        atom_feature: The new feature value to be assigned to the atom.
+
+        Returns:
+        None
+        """
         self.atom_features[feature_key][index] = atom_feature
 
     def get_atom_feature(self, feature_key, index):
+        """
+        Retrieve a specific feature of an atom by its index.
+
+        Args:
+            feature_key (str): The key corresponding to the desired feature.
+            index (int): The index of the atom for which the feature is to be retrieved.
+
+        Returns:
+            The value of the specified feature for the atom at the given index.
+        """
         return self.atom_features[feature_key][index]
 
     def get_atom_features(self, feature_key):
+        """
+        Retrieve or initialize the features of an atom based on the given feature key.
+
+        If the feature key does not exist in the atom_features dictionary, it initializes
+        an empty dictionary for that feature key.
+
+        Args:
+            feature_key (str): The key representing the specific feature of the atom.
+
+        Returns:
+            dict: The dictionary containing the features associated with the given feature key.
+        """
         if feature_key not in self.atom_features:
             self.atom_features[feature_key] = dict()
         return self.atom_features[feature_key]
 
     def set_local_environment(self, atom_idx, local_environment):
+        """
+        Sets the local environment for a specified atom.
+
+        Parameters:
+        atom_idx (int): The index of the atom for which the local environment is being set.
+        local_environment (object): The local environment to be assigned to the atom.
+        """
         self.local_environments[atom_idx] = local_environment
 
     def get_local_environment(self, atom_idx):
+        """
+        Retrieve the local environment of a specified atom.
+
+        Parameters:
+        atom_idx (int): The index of the atom for which the local environment is to be retrieved.
+
+        Returns:
+        object: The local environment corresponding to the specified atom index.
+        """
         return self.local_environments[atom_idx]
 
     def set_local_environments(self, local_environments):
+        """
+        Sets the local environments for the nanoparticle.
+
+        Parameters:
+        local_environments (dict): A dictionary containing the local environments to be set.
+        """
         self.local_environments = local_environments
 
     def get_local_environments(self):
+        """
+        Retrieve the local environments of the nanoparticle.
+
+        Returns:
+            list: A list containing the local environments.
+        """
         return self.local_environments
 
     def is_pure(self):
+        """
+        Check if the nanoparticle is composed of a single element.
+
+        Returns:
+            bool: True if the nanoparticle is composed of a single element, False otherwise.
+        """
         if len(self.get_all_symbols()) == 1:
             return True
         return False
@@ -505,16 +675,56 @@ class BaseNanoparticle:
         self.adsorption_site_list.random_occupation(number_of_adsorbates)
 
     def get_occupation_vector(self):
+        """
+        Retrieve the occupation vector from the adsorption site list.
+
+        Returns:
+            list: A list representing the occupation vector of the adsorption sites.
+        """
         return self.adsorption_site_list.get_occupation_vector()
 
     def get_occupation_status_by_indices(self, status):
+        """
+        Retrieve the occupation status of adsorption sites by their indices.
+
+        Args:
+            status (list or array-like): A list or array of indices representing the adsorption
+            sites.
+
+        Returns:
+            list: A list of occupation statuses corresponding to the provided indices.
+        """
         return self.adsorption_site_list.get_occupation_status_by_indices(status)
 
     def get_number_of_adsorbates(self):
+        """
+        Get the number of adsorbates on the nanoparticle.
+
+        This method retrieves the number of adsorbates from the adsorption site list.
+
+        Returns:
+            int: The number of adsorbates.
+        """
         return self.adsorption_site_list.get_number_of_adsorbates()
 
     def get_indices_of_adsorbates(self):
+        """
+        Retrieve the indices of adsorbates.
+
+        This method returns the indices of adsorption sites that are occupied by adsorbates.
+
+        Returns:
+            list: A list of indices where adsorbates are present.
+        """
         return self.adsorption_site_list.get_occupation_status_by_indices(1)
 
     def swap_status(self, index_pairs):
+        """
+        Swap the status of adsorption sites based on the provided index pairs.
+
+        Parameters:
+        index_pairs (list of tuple): A list of tuples where each tuple contains two indices.
+                                     The status of the adsorption sites at these indices will be
+                                     swapped.
+        """
         self.adsorption_site_list.swap_status(index_pairs)
