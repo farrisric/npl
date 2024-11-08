@@ -69,8 +69,8 @@ Here is an example of how to perform a Monte Carlo run using NPL:
 
 from npl.descriptors import ExtendedTopologicalFeaturesClassifier
 from npl.calculators import TOPCalculator
-from npl.monte_carlo import run_monte_carlo
 from npl.core import Nanoparticle
+from npl.monte_carlo import run_monte_carlo
 from npl.visualize import plot_parted_particle
 
 energy_calculator = TOPCalculator('ETOP', stoichiometry='Pt151Cu50',
@@ -79,7 +79,7 @@ energy_calculator = TOPCalculator('ETOP', stoichiometry='Pt151Cu50',
 feature_classifier = calc.get_feature_classifier()
 
 beta = 250
-max_steps = 1000
+max_steps = 10000
 
 start_particle = Nanoparticle()
 start_particle.truncated_octahedron(7, 2, {'Pt': 151, 'Cu': 50})
@@ -93,7 +93,7 @@ plot_parted_particle(best_particle)
 
 ![Tutorial Image](https://github.com/farrisric/NPlib/blob/main/docs/images/tutorial4_image1.png?raw=true)
 
-This example initializes a truncated octahedral Pt151Cu50 nanoparticle, sets up a Monte Carlo simulation at beta 250 for 1000 steps, runs the simulation, and then prints the optimized positions of the particle.
+This example load pre-trained Topological coefficients, initializes a truncated octahedral Pt151Cu50 nanoparticle, sets up a Monte Carlo simulation at beta 250 for 10000 steps, runs the simulation, and then prints the optimized positions of the particle.
 
 ## References
 
