@@ -1,10 +1,15 @@
 from setuptools import setup, find_packages
+from pathlib import Path
+
+# Read the contents of the README file
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="npl",
     version="1.0.1",
     description="Nanoparticle Library for computational analysis of nanoparticles",
-    long_description="This is a long description for the Nanoparticle Library.",
+    long_description=long_description,
     long_description_content_type="text/markdown",
     author="Riccardo Farris",
     author_email="rfarris@ub.edu",
