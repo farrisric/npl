@@ -11,18 +11,13 @@
 ## Table of contents
 
 - [NanoParticleLibrary (NPL)](#nanoparticlelibrary-npl)
-  - [Table of contents](#table-of-contents)
   - [About NPL](#about-npl)
   - [Documentation](#documentation)
   - [Installation](#installation)
     - [Requirements](#requirements)
     - [Installation from PyPI](#installation-from-pypi)
     - [Installation from source](#installation-from-source)
-  - [Usage](#usage)
-    - [Local Optimization](#local-optimization)
-    - [Basin-Hopping](#basin-hopping)
   - [Examples](#examples)
-  - [Development](#development)
   - [References](#references)
   - [Contact](#contact)
   - [License](#license)
@@ -133,3 +128,14 @@ If you use this code, please cite our papers:
     doi = {10.1063/5.0214377}
 }
 ```
+
+## Contact
+
+For any questions or issues, please contact:
+
+- Riccardo Farris: [farrisric@example.com](mailto:rfarris@ub.edu)
+- GitHub Issues: [NPlib Issues](https://github.com/farrisric/NPlib/issues)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](https://opensource.org/licenses/MIT) file for details.
