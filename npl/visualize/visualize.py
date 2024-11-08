@@ -201,3 +201,4 @@ def plot_parted_particle(atoms, separation=3):
     atoms = atoms1 + atoms2
     plot_atoms(atoms, rotation=('0x,75y,0z'))
     plt.axis('off')
+    plt.show()
