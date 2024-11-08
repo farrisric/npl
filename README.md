@@ -60,7 +60,7 @@ pip install ./NPlib
 
 Here’s a revised version without using lists:
 
-This example demonstrates how to perform a Monte Carlo simulation using NPL. First, pre-trained topological coefficients are loaded to guide the simulation. A truncated octahedral Pt151Cu50 nanoparticle is then initialized as the system for the simulation. The Monte Carlo simulation is set up with a temperature parameter of β = 250 and a total of 10,000 steps. Once the simulation is executed, the positions of the nanoparticle atoms are optimized. Finally, the optimized positions are printed for analysis.
+This example demonstrates how to perform a Monte Carlo simulation using NPL. First, pre-trained topological coefficients are loaded to guide the simulation. A truncated octahedral Pt151Cu50 nanoparticle is then initialized as the system for the simulation. The Monte Carlo simulation is set up with a temperature parameter of 250 K and a total of 10,000 steps. Once the simulation is executed, the positions of the nanoparticle atoms are optimized. Finally, the optimized positions are printed for analysis.
 
 ```python
 
@@ -71,19 +71,20 @@ from npl.monte_carlo import run_monte_carlo
 from npl.visualize import plot_parted_particle
 
 energy_calculator = TOPCalculator('ETOP', stoichiometry='Pt151Cu50',
-                     feature_classifier=ExtendedTopologicalFeaturesClassifier)
+                                  feature_classifier=ExtendedTopologicalFeaturesClassifier)
 
 feature_classifier = energy_calculator.get_feature_classifier()
 
-beta = 250
+temperature = 250
 max_steps = 10000
 
 start_particle = Nanoparticle()
 start_particle.truncated_octahedron(7, 2, {'Pt': 151, 'Cu': 50})
-best_particle, accepted_energies = run_monte_carlo(beta, max_steps,
-                                                    start_particle,
-                                                    energy_calculator,
-                                                    feature_classifier)
+best_particle, accepted_energies = run_monte_carlo(temperature,
+                                                   max_steps,
+                                                   start_particle,
+                                                   energy_calculator,
+                                                   feature_classifier)
 
 plot_parted_particle(best_particle)
 ```
