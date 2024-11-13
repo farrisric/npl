@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-import pandas as pd
 from sklearn.model_selection import learning_curve, ShuffleSplit
 from ase.visualize.plot import plot_atoms
 
@@ -99,16 +97,14 @@ def plot_elemental_concentration_per_layer(particle):
     numbers = [atomic_numbers[symbol] for symbol in symbols]
     atom_colors = [colors.jmol_colors[number] for number in numbers]
     concentration_layers, layers_n_atoms = get_concentration_per_layer(particle, symbols)
-    layer_conc = pd.DataFrame(concentration_layers, columns=symbols)
-    cmap = LinearSegmentedColormap.from_list("", atom_colors)
+    layer_conc = np.array(concentration_layers)
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    layer_conc.plot(kind='bar',
-                    stacked=True,
-                    colormap=cmap,
-                    width=1,
-                    edgecolor='k',
-                    ax=ax)
+    bottom = np.zeros(len(layer_conc))
+    for i, symbol in enumerate(symbols):
+        ax.bar(range(len(layer_conc)), layer_conc[:, i], bottom=bottom, color=atom_colors[i],
+               edgecolor='k', label=symbol)
+        bottom += layer_conc[:, i]
 
     for i, (concentration, n_atoms) in enumerate(zip(concentration_layers, layers_n_atoms)):
         for j, (symbol, conc) in enumerate(zip(symbols, concentration)):
