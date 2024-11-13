@@ -4,6 +4,7 @@ import pickle
 from npl.core.atom_wrapper import AtomWrapper
 from npl.core.neighbor_list import NeighborList
 from npl.core.adsorption import AdsorptionSiteList
+from npl.utils import get_crystalline_structure
 
 
 # TODO update local environment handling with keys
@@ -181,7 +182,8 @@ class BaseNanoparticle:
         else:
             self.build_from_dictionary(dictionary)
 
-    def read(self, filename, construct_neighbor_list=True, energy_key=None):
+    def read(self, filename, construct_neighbor_list=True, energy_key=None,
+             crystal_structure=False):
         """Wrapper class around ase.io.read.
 
         By default a neighbor list will be constructed. Energies that are present in
@@ -194,6 +196,8 @@ class BaseNanoparticle:
             energy_key : str
         """
         atoms = read(filename)
+        if crystal_structure:
+            atoms = get_crystalline_structure(atoms)
         self.atoms.add_atoms(atoms)
 
         if construct_neighbor_list:
@@ -213,7 +217,7 @@ class BaseNanoparticle:
         atoms = self.atoms.get_ase_atoms()
         write(filename, atoms)
 
-    def add_atoms(self, atoms, recompute_neighbor_list=True):
+    def add_atoms(self, atoms, recompute_neighbor_list=True, crystal=False):
         """Add atoms to the nanoparticle.
 
         Neighbor list will be recomputed after the addition by default.
@@ -223,6 +227,8 @@ class BaseNanoparticle:
             atoms: Atoms
             recompute_neighbor_list: bool
         """
+        if crystal:
+            atoms = get_crystalline_structure(atoms)
         self.atoms.add_atoms(atoms)
 
         if recompute_neighbor_list:
