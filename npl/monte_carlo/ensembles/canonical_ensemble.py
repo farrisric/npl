@@ -195,8 +195,8 @@ class CanonicalEnsemble(BaseEnsemble):
         if self._acceptance_condition(potential_diff):
             if new_atoms.info['key_value_pairs']['potential_energy'] < self.lowest_energy:
                 self.lowest_energy = new_atoms.info['key_value_pairs']['potential_energy']
-                self.write_traj_file(self.atoms)
             self.atoms = new_atoms
+            self.write_traj_file(self.atoms)
             return 1
         return 0
 
