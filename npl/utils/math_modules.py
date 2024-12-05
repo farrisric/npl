@@ -1,10 +1,13 @@
 import numpy as np
 
+
 def get_atom_position(atom):
     return atom.position
 
+
 def get_dot_product(v1, v2):
-    return np.dot(v1,v2)
+    return np.dot(v1, v2)
+
 
 def get_unit_vector(position):
     length = np.linalg.norm(position)
@@ -12,16 +15,19 @@ def get_unit_vector(position):
 
     return unit_vector, length
 
-def get_perpendicular_vector(v, tolerance = 1e-04):
+
+def get_perpendicular_vector(v, tolerance=1e-04):
     if abs(v[1]) < tolerance and abs(v[2]) < tolerance:
         if abs(v[0]) < tolerance:
             raise ValueError('zero vector')
         else:
             return np.cross(v, [0, 1, 0])
-    return np.cross(v, [1, 0 , 0])
+    return np.cross(v, [1, 0, 0])
+
 
 def find_middle_point(positions):
-    return sum(positions)/len(positions)    
+    return sum(positions)/len(positions)
+
 
 def get_perpendicular_edge_vector(position, tolerance=1e-4):
     final_vector = np.array([0,0,0])
