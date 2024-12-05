@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class BaseEnsemble(ABC):
     def __init__(self,
-                 structure: Atoms,
+                 atoms: Atoms,
                  calculator: Calculator,
                  user_tag: Optional[str] = None,
                  random_seed: Optional[int] = None,
@@ -27,7 +27,7 @@ class BaseEnsemble(ABC):
         Base class for ensembles in Monte Carlo simulations.
 
         Args:
-            structure (Atoms): The initial configuration of the system.
+            atoms (Atoms): The initial configuration of the system.
             calculator (Calculator): The calculator object used for energy calculations.
             user_tag (str, optional): A user-defined tag for the ensemble. Defaults to None.
             random_seed (int, optional): The random seed for the random number generator. Defaults
@@ -44,7 +44,7 @@ class BaseEnsemble(ABC):
         self._step = 0
 
         # calculator and configuration
-        self._structure = structure
+        self._atoms = atoms
         self._calculator = calculator
         self._user_tag = user_tag
 
@@ -60,9 +60,13 @@ class BaseEnsemble(ABC):
         random.seed(a=self._random_seed)
 
     @property
-    def structure(self) -> Atoms:
+    def atoms(self) -> Atoms:
         """ Current configuration (copy). """
-        return self._structure
+        return self._atoms
+
+    @atoms.setter
+    def atoms(self, atoms):
+        self._atoms = atoms
 
     @property
     def step(self) -> int:

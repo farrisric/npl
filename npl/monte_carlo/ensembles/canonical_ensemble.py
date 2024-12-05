@@ -218,7 +218,7 @@ class CanonicalEnsemble(BaseEnsemble):
         self.write_traj_file(self.atoms)
         self.write_outfile(self._step, self.lowest_energy)
         self.lowest_energy = self.atoms.get_potential_energy()
-        
+
         for _ in range(steps):
             accepted = self.trial_step()
             self._step += 1
