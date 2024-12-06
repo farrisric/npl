@@ -19,8 +19,8 @@ class BaseEnsemble(ABC):
                  calculator: Calculator,
                  user_tag: Optional[str] = None,
                  random_seed: Optional[int] = None,
-                 trajectory_write_interval: Optional[int] = None,
                  traj_file: str = 'traj_test.traj',
+                 trajectory_write_interval: Optional[int] = None,
                  outfile: str = 'outfile.out',
                  outfile_write_interval: int = 10) -> None:
         """
@@ -49,6 +49,7 @@ class BaseEnsemble(ABC):
         self._user_tag = user_tag
 
         self._traj_file = traj_file
+        self._trajectory_write_interval = trajectory_write_interval
         self._outfile = outfile
         self._outfile_write_interval = outfile_write_interval
 

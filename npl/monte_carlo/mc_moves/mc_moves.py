@@ -4,6 +4,7 @@ from npl.utils import RandomNumberGenerator
 import numpy as np
 from ase.geometry import wrap_positions
 
+
 class BaseMove(ABC):
     """Abstract base class for Monte Carlo moves."""
 
@@ -64,7 +65,7 @@ class DeletionMove(BaseMove):
         selected_species = self.rng.random.choice(self.species)
         indices_of_species = [atom.index for atom in atoms_new if atom.symbol in selected_species]
         if len(indices_of_species) == 0:
-            return False
+            return False, -1, 'X'
         remove_index = self.rng.random.choice(indices_of_species)
         del atoms_new[remove_index]
         return atoms_new, -1, selected_species
