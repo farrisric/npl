@@ -25,6 +25,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                  temperature : float,
                  moves: dict,
                  max_displacement: float,
+                 min_max_insert: list[float],
                  user_tag: Optional[str] = None,
                  random_seed: Optional[int] = None,
                  traj_file: str = 'traj_test.traj',
@@ -52,6 +53,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         self.n_displ = moves[1]
         self.n_moves = self.n_ins_del + self.n_displ
         self.max_displacement = max_displacement
+        self.min_distance, self.max_distance = min_max_insert
 
         self.frac_ins_del = self.n_ins_del/self.n_moves
         self.rng_move_choice = RandomNumberGenerator(seed=self._random_seed)
@@ -68,6 +70,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         self.count_acceptance = {'Displacements' : 0, 'Insertions' : 0, 'Deletions' : 0}
 
     def _acceptance_condition(self,
+                              atoms_new: Atoms,
                               potential_diff: float,
                               delta_particles: int,
                               species: str) -> bool:
@@ -94,6 +97,9 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         lambda_db = PLANCK_CONSTANT / np.sqrt(2 * np.pi * self.masses[species] * (1 / self._beta))
 
         if delta_particles == 1:  # Insertion move
+            min_distance = min(atoms_new.get_distances(-1, range(len(atoms_new)-1), mic=True))
+            if min_distance < self.min_distance or min_distance > self.max_distance:
+                return False
             db_term = (self.volume / ((self.n_atoms+1)*lambda_db**3))
             p = db_term * np.exp(-self._beta * (potential_diff - self._mu[species]))
 
@@ -134,7 +140,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
 
             E_new = self.compute_energy(atoms_new)
             delta_E = E_new - self.E_old
-            if self._acceptance_condition(delta_E, delta_particles, species):
+            if self._acceptance_condition(atoms_new, delta_E, delta_particles, species):
                 self.atoms = atoms_new
                 self.n_atoms = len(self.atoms)
                 self.E_old = E_new
@@ -187,7 +193,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                     step,
                     self.n_atoms,
                     self.E_old,
-                    ", ".join(f"{ratio:.2f} %" if not np.isnan(ratio)
+                    ", ".join(f"{ratio:.3f}" if not np.isnan(ratio)
                               else "N/A" for ratio in acceptance_ratios)
                 ))
                 self.write_outfile(step, self.E_old)

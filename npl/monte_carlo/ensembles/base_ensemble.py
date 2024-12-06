@@ -48,11 +48,11 @@ class BaseEnsemble(ABC):
         self._calculator = calculator
         self._user_tag = user_tag
 
-        self._traj_file = traj_file
         self._trajectory_write_interval = trajectory_write_interval
         self._outfile = outfile
         self._outfile_write_interval = outfile_write_interval
 
+        self._traj = Trajectory(traj_file, 'w')
         # random number generator
         if random_seed is None:
             self._random_seed = random.randint(0, int(1e16))
@@ -96,7 +96,6 @@ class BaseEnsemble(ABC):
             atoms (Atoms): The atomic configuration.
         """
         try:
-            with Trajectory(self._traj_file, 'a') as traj:
-                traj.write(atoms)
+            self._traj.write(atoms)
         except IOError as e:
             logger.error(f"Error writing to trajectory file {self._traj_file}: {e}")
