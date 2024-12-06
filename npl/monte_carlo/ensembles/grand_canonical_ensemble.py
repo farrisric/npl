@@ -43,6 +43,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
 
         self.volume = atoms.get_volume()
         self.masses = masses
+        self.initial_atoms = len(self.atoms)
         self.n_atoms = len(self.atoms)
         self.species = species
         self._temperature = temperature
@@ -97,7 +98,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         lambda_db = PLANCK_CONSTANT / np.sqrt(2 * np.pi * self.masses[species] * (1 / self._beta))
 
         if delta_particles == 1:  # Insertion move
-            min_distance = min(atoms_new.get_distances(-1, range(len(atoms_new)-1), mic=True))
+            min_distance = min(atoms_new.get_distances(-1, range(self.initial_atoms), mic=True))
             if min_distance < self.min_distance or min_distance > self.max_distance:
                 return False
             db_term = (self.volume / ((self.n_atoms+1)*lambda_db**3))
