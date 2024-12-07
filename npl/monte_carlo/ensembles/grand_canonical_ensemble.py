@@ -41,7 +41,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                          outfile=outfile,
                          outfile_write_interval=outfile_write_interval)
 
-        self.volume = atoms.get_volume()
+        self.volume = atoms.get_volume()*1e-30
         self.masses = masses
         self.initial_atoms = len(self.atoms)
         self.n_atoms = len(self.atoms)
@@ -103,10 +103,12 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                 return False
             db_term = (self.volume / ((self.n_atoms+1)*lambda_db**3))
             p = db_term * np.exp(-self._beta * (potential_diff - self._mu[species]))
+            #logger.info(f"Beta: {self._beta}, ΔE: {potential_diff}, μ: {self._mu[species]}, Exponential: {np.exp(-self._beta * (potential_diff - self._mu[species]))}")
 
         elif delta_particles == -1:  # Deletion move
             db_term = (lambda_db**3*self.n_atoms / self.volume)
             p = db_term * np.exp(-self._beta * (potential_diff + self._mu[species]))
+            #logger.info(f"Beta: {self._beta}, ΔE: {potential_diff}, μ: {self._mu[species]}, Exponential: {np.exp(-self._beta * (potential_diff - self._mu[species]))}")
 
         if p > 1:
             return True
@@ -172,6 +174,11 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         logger.info(f"Temperature (K): {self._temperature}")
         logger.info(f"Volume (Å³): {self.volume:.3f}")
         logger.info(f"Chemical potentials: {self._mu}")
+        logger.info(f"Number of Insertion-Deletion moves: {self.n_ins_del}")
+        logger.info(
+            f"Interval instance to accept an Insertion Move: {self.min_distance}-{self.max_distance} Å³")
+        logger.info(f"Number of Displacement moves: {self.n_displ}")
+        logger.info(f"Maximum Displacement distance: {self.max_displacement}")
         logger.info(f"Number of Monte Carlo steps: {steps}")
         logger.info("Starting simulation...\n")
 
