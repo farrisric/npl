@@ -8,7 +8,7 @@ from typing import Optional
 import logging
 
 
-PLANCK_CONSTANT = 4.135667696e-15  # 6.62607e-34  # Planck's constant in m²kg/s
+PLANCK_CONSTANT = 6.62607e-34  # 4.135667696e-15  #Planck's constant in m²kg/s
 BOLTZMANN_CONSTANT = 8.617333262e-5  # 1.38066e-23  # Boltzmann constant in J/K
 
 logging.basicConfig(level=logging.INFO)
@@ -51,6 +51,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         self._temperature = temperature
         self._mu = mu
         self._beta = 1/(self._temperature*BOLTZMANN_CONSTANT)
+        self._beta_J = 1/(self._temperature*1.38066e-23)
 
         self.n_ins_del = moves[0]
         self.n_displ = moves[1]
@@ -96,7 +97,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                 return p > self.rng_acceptance.get_uniform()
 
         # de Broglie wavelength in meters
-        lambda_db = PLANCK_CONSTANT / np.sqrt(2 * np.pi * self.masses[species] * (1 / self._beta))
+        lambda_db = PLANCK_CONSTANT / np.sqrt(2 * np.pi * self.masses[species] * (1 / self._beta_J))
 
         if delta_particles == 1:  # Insertion move
             min_distance_surf = min(atoms_new.get_distances(-1, self.surface_indices, mic=True))
@@ -107,15 +108,19 @@ class GrandCanonicalEnsemble(BaseEnsemble):
             if min_distace_new < self.min_distance:
                 return False
             db_term = (self.volume / ((self.n_atoms+1)*lambda_db**3))
-            p = db_term * np.exp(-self._beta * (potential_diff - self._mu[species]))
+            exp_term = np.exp(-self._beta * (potential_diff - self._mu[species]))
+            p = db_term * exp_term
             logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
-                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
+                        f"Exp: {exp_term:.3e}, Exp Arg {potential_diff - self._mu[species]}"
+                        f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
 
         elif delta_particles == -1:  # Deletion move
             db_term = (lambda_db**3*self.n_atoms / self.volume)
-            p = db_term * np.exp(-self._beta * (potential_diff + self._mu[species]))
+            exp_term = np.exp(-self._beta * (potential_diff + self._mu[species]))
+            p = db_term * exp_term
             logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
-                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
+                        f"Exp: {exp_term:.3e}, Exp Arg {potential_diff + self._mu[species]}, "
+                        f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
 
         if p > 1:
             return True
