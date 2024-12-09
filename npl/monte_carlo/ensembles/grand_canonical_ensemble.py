@@ -57,13 +57,13 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         self.min_distance, self.max_distance = min_max_insert
 
         self.frac_ins_del = self.n_ins_del/self.n_moves
-        self.rng_move_choice = RandomNumberGenerator(seed=self._random_seed)
-        self.rng_acceptance = RandomNumberGenerator(seed=self._random_seed)
+        self.rng_move_choice = RandomNumberGenerator(seed=self._random_seed+1)
+        self.rng_acceptance = RandomNumberGenerator(seed=self._random_seed+2)
         # Initialize GCMC moves
-        self.insert_move = InsertionMove(species=self.species, seed=self._random_seed)
-        self.deletion_move = DeletionMove(species=self.species, seed=self._random_seed)
+        self.insert_move = InsertionMove(species=self.species, seed=self._random_seed+3)
+        self.deletion_move = DeletionMove(species=self.species, seed=self._random_seed+4)
         self.displace_move = DisplacementMove(species=self.species,
-                                              seed=self._random_seed,
+                                              seed=self._random_seed+5,
                                               max_displacement=self.max_displacement)
 
         # COUNTERS
@@ -94,7 +94,6 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                 return p > self.rng_acceptance.get_uniform()
 
         # de Broglie wavelength in meters
-        lambda_db = 1
         lambda_db = PLANCK_CONSTANT / np.sqrt(2 * np.pi * self.masses[species] * (1 / self._beta))
 
         if delta_particles == 1:  # Insertion move
@@ -103,12 +102,14 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                 return False
             db_term = (self.volume / ((self.n_atoms+1)*lambda_db**3))
             p = db_term * np.exp(-self._beta * (potential_diff - self._mu[species]))
-            #logger.info(f"Beta: {self._beta}, ΔE: {potential_diff}, μ: {self._mu[species]}, Exponential: {np.exp(-self._beta * (potential_diff - self._mu[species]))}")
+            logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
+                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
 
         elif delta_particles == -1:  # Deletion move
             db_term = (lambda_db**3*self.n_atoms / self.volume)
             p = db_term * np.exp(-self._beta * (potential_diff + self._mu[species]))
-            #logger.info(f"Beta: {self._beta}, ΔE: {potential_diff}, μ: {self._mu[species]}, Exponential: {np.exp(-self._beta * (potential_diff - self._mu[species]))}")
+            logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
+                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
 
         if p > 1:
             return True
@@ -167,9 +168,9 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         Returns:
             None
         """
-        logger.info("+----------------------------------------------+")
+        logger.info("+-------------------------------------------------+")
         logger.info("| Grand Canonical Ensemble Monte Carlo Simulation |")
-        logger.info("+----------------------------------------------+")
+        logger.info("+-------------------------------------------------+")
         logger.info("Simulation Parameters:")
         logger.info(f"Temperature (K): {self._temperature}")
         logger.info(f"Volume (Å³): {self.volume:.3f}")
@@ -182,7 +183,6 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         logger.info(f"Number of Monte Carlo steps: {steps}")
         logger.info("Starting simulation...\n")
 
-        # Header for periodic updates
         logger.info("{:<10} {:<10} {:<15} {:<20}".format(
             "Step", "N_atoms", "Energy (eV)", "Acceptance Ratios (Displ, Ins, Del)"
         ))
