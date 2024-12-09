@@ -33,6 +33,14 @@ class BaseMove(ABC):
 
 class InsertionMove(BaseMove):
     """Class for performing an insertion move."""
+    def __init__(self,
+                 species: list[str],
+                 seed : int,
+                 operating_box : list[list] = None,
+                 z_shift : float = None):
+        super().__init__(species, seed)
+        self.box = operating_box
+        self.z_shift = z_shift
 
     def do_trial_move(self, atoms) -> Atoms:
         """
@@ -42,17 +50,26 @@ class InsertionMove(BaseMove):
         Atoms: Updated ASE Atoms object after the insertion.
         """
         atoms_new = atoms.copy()
-        box = atoms_new.get_cell()
         selected_species = self.rng.random.choice(self.species)
         position = np.array([
-            box[i]*self.rng.get_uniform() for i in range(3)
-            ]).sum(axis=1)
+            self.box[i]*self.rng.get_uniform() for i in range(3)
+            ]).sum(axis=0)
+        if self.z_shift:
+            position[2] += self.z_shift
         atoms_new += Atoms(selected_species, positions=[position])
         return atoms_new, 1, selected_species
 
 
 class DeletionMove(BaseMove):
     """Class for performing a deletion move."""
+    def __init__(self,
+                 species: list[str],
+                 seed : int,
+                 operating_box : list[list] = None,
+                 z_shift : float = None):
+        super().__init__(species, seed)
+        self.box = operating_box
+        self.z_shift = z_shift
 
     def do_trial_move(self, atoms) -> int:
         """
@@ -61,12 +78,21 @@ class DeletionMove(BaseMove):
         Returns:
         Atoms: Updated ASE Atoms object after the deletion.
         """
+        trials = True
         atoms_new = atoms.copy()
         selected_species = self.rng.random.choice(self.species)
         indices_of_species = [atom.index for atom in atoms_new if atom.symbol in selected_species]
         if len(indices_of_species) == 0:
             return False, -1, 'X'
-        remove_index = self.rng.random.choice(indices_of_species)
+        if not self.z_shift:
+            remove_index = self.rng.random.choice(indices_of_species)
+            del atoms_new[remove_index]
+            return atoms_new, -1, selected_species
+        while trials:
+            remove_index = self.rng.random.choice(indices_of_species)
+            position = atoms_new[remove_index].position - np.array([0, 0, self.z_shift])
+            if position[2] >= 0 and position[2] <= self.box[2][2]:
+                trials = False
         del atoms_new[remove_index]
         return atoms_new, -1, selected_species
 

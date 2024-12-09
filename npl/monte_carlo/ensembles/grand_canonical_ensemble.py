@@ -9,7 +9,8 @@ import logging
 
 
 PLANCK_CONSTANT = 6.62607e-34  # 4.135667696e-15  #Planck's constant in m²kg/s
-BOLTZMANN_CONSTANT = 8.617333262e-5  # 1.38066e-23  # Boltzmann constant in J/K
+BOLTZMANN_CONSTANT_eV_K = 8.617333262e-5  # 1.38066e-23  # Boltzmann constant in J/K
+BOLTZMANN_CONSTANT_J_K = 1.38066e-23
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,6 +27,8 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                  moves: dict,
                  max_displacement: float,
                  min_max_insert: list[float],
+                 operating_box: list[list[float]] = None,
+                 z_shift: float = None,
                  surface_indices: list[float] = None,
                  user_tag: Optional[str] = None,
                  random_seed: Optional[int] = None,
@@ -42,7 +45,13 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                          outfile=outfile,
                          outfile_write_interval=outfile_write_interval)
 
-        self.volume = atoms.get_volume()*1e-30
+        self.operating_box = operating_box if operating_box else atoms.get_cell()
+        self.z_shift = z_shift if z_shift else None
+        if operating_box:
+            from ase.cell import Cell
+            self.volume = Cell(operating_box).volume*1e-30
+        else:
+            self.volume = atoms.get_volume()*1e-30
         self.masses = masses
         self.surface_indices = surface_indices if surface_indices else None
         self.initial_atoms = len(self.atoms)
@@ -50,8 +59,8 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         self.species = species
         self._temperature = temperature
         self._mu = mu
-        self._beta = 1/(self._temperature*BOLTZMANN_CONSTANT)
-        self._beta_J = 1/(self._temperature*1.38066e-23)
+        self._beta = 1/(self._temperature*BOLTZMANN_CONSTANT_eV_K)
+        self._beta_J = 1/(self._temperature*BOLTZMANN_CONSTANT_J_K)
 
         self.n_ins_del = moves[0]
         self.n_displ = moves[1]
@@ -63,8 +72,14 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         self.rng_move_choice = RandomNumberGenerator(seed=self._random_seed+1)
         self.rng_acceptance = RandomNumberGenerator(seed=self._random_seed+2)
         # Initialize GCMC moves
-        self.insert_move = InsertionMove(species=self.species, seed=self._random_seed+3)
-        self.deletion_move = DeletionMove(species=self.species, seed=self._random_seed+4)
+        self.insert_move = InsertionMove(species=self.species,
+                                         operating_box=self.operating_box,
+                                         z_shift=self.z_shift,
+                                         seed=self._random_seed+3)
+        self.deletion_move = DeletionMove(species=self.species,
+                                          operating_box=self.operating_box,
+                                          z_shift=self.z_shift,
+                                          seed=self._random_seed+4)
         self.displace_move = DisplacementMove(species=self.species,
                                               seed=self._random_seed+5,
                                               max_displacement=self.max_displacement)
@@ -111,16 +126,16 @@ class GrandCanonicalEnsemble(BaseEnsemble):
             exp_term = np.exp(-self._beta * (potential_diff - self._mu[species]))
             p = db_term * exp_term
             logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
-                        f"Exp: {exp_term:.3e}, Exp Arg {potential_diff - self._mu[species]}"
-                        f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
+                         f"Exp: {exp_term:.3e}, Exp Arg {potential_diff - self._mu[species]}"
+                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
 
         elif delta_particles == -1:  # Deletion move
             db_term = (lambda_db**3*self.n_atoms / self.volume)
             exp_term = np.exp(-self._beta * (potential_diff + self._mu[species]))
             p = db_term * exp_term
             logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
-                        f"Exp: {exp_term:.3e}, Exp Arg {potential_diff + self._mu[species]}, "
-                        f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
+                         f"Exp: {exp_term:.3e}, Exp Arg {potential_diff + self._mu[species]}, "
+                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
 
         if p > 1:
             return True
@@ -212,7 +227,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                     step,
                     self.n_atoms,
                     self.E_old,
-                    ", ".join(f"{ratio:.3f}" if not np.isnan(ratio)
+                    ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
                               else "N/A" for ratio in acceptance_ratios)
                 ))
                 self.write_outfile(step, self.E_old)
