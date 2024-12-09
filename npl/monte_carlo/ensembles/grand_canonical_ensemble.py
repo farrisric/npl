@@ -26,6 +26,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                  moves: dict,
                  max_displacement: float,
                  min_max_insert: list[float],
+                 surface_indices: list[float] = None,
                  user_tag: Optional[str] = None,
                  random_seed: Optional[int] = None,
                  traj_file: str = 'traj_test.traj',
@@ -43,6 +44,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
 
         self.volume = atoms.get_volume()*1e-30
         self.masses = masses
+        self.surface_indices = surface_indices if surface_indices else None
         self.initial_atoms = len(self.atoms)
         self.n_atoms = len(self.atoms)
         self.species = species
@@ -97,8 +99,12 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         lambda_db = PLANCK_CONSTANT / np.sqrt(2 * np.pi * self.masses[species] * (1 / self._beta))
 
         if delta_particles == 1:  # Insertion move
-            min_distance = min(atoms_new.get_distances(-1, range(self.initial_atoms), mic=True))
-            if min_distance < self.min_distance or min_distance > self.max_distance:
+            min_distance_surf = min(atoms_new.get_distances(-1, self.surface_indices, mic=True))
+            if min_distance_surf > self.max_distance:
+                return False
+            added_atoms_indices = range(len(atoms_new)-1)
+            min_distace_new = min(atoms_new.get_distances(-1, added_atoms_indices, mic=True))
+            if min_distace_new < self.min_distance:
                 return False
             db_term = (self.volume / ((self.n_atoms+1)*lambda_db**3))
             p = db_term * np.exp(-self._beta * (potential_diff - self._mu[species]))
