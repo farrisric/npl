@@ -82,6 +82,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                                           seed=self._random_seed+4)
         self.displace_move = DisplacementMove(species=self.species,
                                               seed=self._random_seed+5,
+                                              constraints=atoms.constraints,
                                               max_displacement=self.max_displacement)
 
         # COUNTERS

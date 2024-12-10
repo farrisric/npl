@@ -103,7 +103,9 @@ class DisplacementMove(BaseMove):
     def __init__(self,
                  species: list[str],
                  seed: int,
-                 max_displacement: float = 0.1) -> None:
+                 constraints: list,
+                 max_displacement: float = 0.1
+                 ) -> None:
         """
         Initializes the displacement move with a maximum displacement.
 
@@ -112,6 +114,8 @@ class DisplacementMove(BaseMove):
         """
         super().__init__(species, seed)
         self.max_displacement = max_displacement
+        if len(constraints) > 0:
+            self.constraints = constraints[0].todict()['kwargs']['indices']
 
     def do_trial_move(self, atoms) -> Atoms:
         """
@@ -123,7 +127,8 @@ class DisplacementMove(BaseMove):
         atoms_new = atoms.copy()
         if len(atoms_new) == 0:
             raise ValueError("No atoms to displace.")
-        atom_index = self.rng.random.randint(0, len(atoms_new) - 1)
+        to_move = np.setdiff1d(np.arange(len(atoms_new)), self.constraints)
+        atom_index = self.rng.random.choice(to_move)
         displacement = [
             self.rng.get_uniform(-self.max_displacement, self.max_displacement) for _ in range(3)
             ]
