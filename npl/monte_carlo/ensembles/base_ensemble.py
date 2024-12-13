@@ -42,7 +42,7 @@ class BaseEnsemble(ABC):
         """
         self._accepted_trials = 0
         self._step = 0
-        
+
         self._atoms = atoms
         self._calculator = calculator
         self._user_tag = user_tag
@@ -52,7 +52,7 @@ class BaseEnsemble(ABC):
         self._outfile_write_interval = outfile_write_interval
         self._traj = Trajectory(traj_file, 'w')
 
-        self.initialize_outfile()
+        #self.initialize_outfile()
 
         # random number generator
         if random_seed is None:
@@ -99,7 +99,7 @@ class BaseEnsemble(ABC):
         except IOError as e:
             logger.error(f"Failed to initialize output file '{self._outfile}': {e}")
             raise
-        
+
     def write_traj_file(self, atoms: Atoms) -> None:
         """
         Write the trajectory file.

@@ -45,8 +45,6 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                          outfile=outfile,
                          outfile_write_interval=outfile_write_interval)
 
-        self.initialize_outfile()
-
         self.operating_box = operating_box if operating_box else atoms.get_cell()
         self.z_shift = z_shift if z_shift else None
         if operating_box:
@@ -70,6 +68,8 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         self.max_displacement = max_displacement
         self.min_distance, self.max_distance = min_max_insert
 
+        self.initialize_outfile()
+
         self.frac_ins_del = self.n_ins_del/self.n_moves
         self.rng_move_choice = RandomNumberGenerator(seed=self._random_seed+1)
         self.rng_acceptance = RandomNumberGenerator(seed=self._random_seed+2)
@@ -90,6 +90,62 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         # COUNTERS
         self.count_moves = {'Displacements' : 0, 'Insertions' : 0, 'Deletions' : 0}
         self.count_acceptance = {'Displacements' : 0, 'Insertions' : 0, 'Deletions' : 0}
+
+    def initialize_outfile(self) -> None:
+        """
+        Initializes the output file by overwriting any existing content and writing a header.
+        """
+        try:
+            with open(self._outfile, 'w') as outfile:
+                # Write the header with proper formatting
+                outfile.write("+-------------------------------------------------+\n")
+                outfile.write("| Grand Canonical Ensemble Monte Carlo Simulation |\n")
+                outfile.write("+-------------------------------------------------+\n\n")
+
+                # Write simulation parameters
+                outfile.write("Simulation Parameters:\n")
+                outfile.write(f"  Temperature (K): {self._temperature}\n")
+                outfile.write(f"  Volume (Å³): {self.volume:.3f}\n")
+                outfile.write(f"  Chemical potentials: {self._mu}\n")
+                outfile.write(f"  Number of Insertion-Deletion moves: {self.n_ins_del}\n")
+                outfile.write(f"  Interval instance to accept an Insertion Move: "
+                              f"{self.min_distance}-{self.max_distance} Å³\n")
+                outfile.write(f"  Number of Displacement moves: {self.n_displ}\n")
+                outfile.write(f"  Maximum Displacement distance: {self.max_displacement}\n\n")
+
+                # Simulation start message
+                outfile.write("Starting simulation...\n")
+                outfile.write("-" * 60 + "\n")
+
+                # Write table header
+                outfile.write("{:<10} {:<10} {:<15} {:<20}\n".format(
+                              "Step", "N_atoms", "Energy (eV)",
+                              "Acceptance Ratios (Displ, Ins, Del)"))
+        except IOError as e:
+            logger.error(f"Failed to initialize output file '{self._outfile}': {e}")
+            raise
+
+    def write_outfile(self, step: int) -> None:
+        """
+        Write the step and energy to the output file.
+
+        Args:
+            step (int): The current step.
+        """
+        acceptance_ratios = np.array(list(self.count_acceptance.values())) / np.array(
+                    list(self.count_moves.values())
+                )
+        try:
+            with open(self._outfile, 'a') as outfile:
+                outfile.write("{:<10} {:<10} {:<15.6f} {:<20}\n".format(
+                    step,
+                    self.n_atoms,
+                    self.E_old,
+                    ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
+                              else "N/A" for ratio in acceptance_ratios)
+                ))
+        except IOError as e:
+            logger.error(f"Error writing to file {self._outfile}: {e}")
 
     def _acceptance_condition(self,
                               atoms_new: Atoms,
@@ -245,38 +301,3 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         logger.info(f"Total Moves Attempted: {self.n_moves * steps}")
         logger.info(f"Acceptance Ratios: {self.count_acceptance}")
         logger.info(f"Final Energy (eV): {self.E_old:.6f}")
-
-    def initialize_outfile(self) -> None:
-        """
-        Initializes the output file by overwriting any existing content and writing a header.
-        """
-        try:
-            with open(self._outfile, 'w') as outfile:
-                outfile.write("{:<10} {:<10} {:<15} {:<20}".format(
-                              "Step", "N_atoms", "Energy (eV)",
-                              "Acceptance Ratios (Displ, Ins, Del)\n"))
-        except IOError as e:
-            logger.error(f"Failed to initialize output file '{self._outfile}': {e}")
-            raise
-
-    def write_outfile(self, step: int) -> None:
-        """
-        Write the step and energy to the output file.
-
-        Args:
-            step (int): The current step.
-        """
-        acceptance_ratios = np.array(list(self.count_acceptance.values())) / np.array(
-                    list(self.count_moves.values())
-                )
-        try:
-            with open(self._outfile, 'a') as outfile:
-                outfile.write("{:<10} {:<10} {:<15.6f} {:<20}\n".format(
-                    step,
-                    self.n_atoms,
-                    self.E_old,
-                    ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
-                              else "N/A" for ratio in acceptance_ratios)
-                ))
-        except IOError as e:
-            logger.error(f"Error writing to file {self._outfile}: {e}")
