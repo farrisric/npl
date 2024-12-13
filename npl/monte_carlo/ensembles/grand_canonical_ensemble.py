@@ -27,6 +27,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                  moves: dict,
                  max_displacement: float,
                  min_max_insert: list[float],
+                 volume: float = None,
                  operating_box: list[list[float]] = None,
                  z_shift: float = None,
                  surface_indices: list[float] = None,
@@ -52,7 +53,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
             self.z_shift = z_shift
         else:
             self.operating_box = atoms.get_cell()
-            self.volume = atoms.get_volume()*1e-30
+            self.volume = volume if volume else atoms.get_volume()*1e-30
             self.z_shift = None
 
         self.masses = masses
