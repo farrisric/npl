@@ -45,6 +45,8 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                          outfile=outfile,
                          outfile_write_interval=outfile_write_interval)
 
+        self.initialize_outfile()
+
         self.operating_box = operating_box if operating_box else atoms.get_cell()
         self.z_shift = z_shift if z_shift else None
         if operating_box:
@@ -127,17 +129,18 @@ class GrandCanonicalEnsemble(BaseEnsemble):
             exp_term = np.exp(-self._beta * (potential_diff - self._mu[species]))
             p = db_term * exp_term
             logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
-                         f"Exp: {exp_term:.3e}, Exp Arg {potential_diff - self._mu[species]}"
-                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
+                         f"Exp: {exp_term:.3e}, Exp Arg {potential_diff - self._mu[species]}, "
+                         f"Potential diff: {potential_diff:.3e}, "
+                         f"Delta_particles: {delta_particles}")
 
         elif delta_particles == -1:  # Deletion move
             db_term = (lambda_db**3*self.n_atoms / self.volume)
             exp_term = np.exp(-self._beta * (potential_diff + self._mu[species]))
             p = db_term * exp_term
             logger.debug(f"Lambda_db: {lambda_db:.3e}, p: {p:.3e}, Beta: {self._beta:.3e}, "
-                         f"Exp: {exp_term:.3e}, Exp Arg {potential_diff + self._mu[species]}, "
-                         f"Potential diff: {potential_diff:.3e}, Delta_particles: {delta_particles}")
-
+                         f"Exp: {exp_term:.3e}, Exp Arg {potential_diff - self._mu[species]}, "
+                         f"Potential diff: {potential_diff:.3e}, "
+                         f"Delta_particles: {delta_particles}")
         if p > 1:
             return True
         else:
@@ -203,8 +206,8 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         logger.info(f"Volume (Å³): {self.volume:.3f}")
         logger.info(f"Chemical potentials: {self._mu}")
         logger.info(f"Number of Insertion-Deletion moves: {self.n_ins_del}")
-        logger.info(
-            f"Interval instance to accept an Insertion Move: {self.min_distance}-{self.max_distance} Å³")
+        logger.info(f"Interval instance to accept an Insertion Move: "
+                    f"{self.min_distance}-{self.max_distance} Å³")
         logger.info(f"Number of Displacement moves: {self.n_displ}")
         logger.info(f"Maximum Displacement distance: {self.max_displacement}")
         logger.info(f"Number of Monte Carlo steps: {steps}")
@@ -231,7 +234,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                     ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
                               else "N/A" for ratio in acceptance_ratios)
                 ))
-                self.write_outfile(step, self.E_old)
+                self.write_outfile(step)
 
             if step % self._trajectory_write_interval == 0:
                 self.write_traj_file(self.atoms)
@@ -243,39 +246,37 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         logger.info(f"Acceptance Ratios: {self.count_acceptance}")
         logger.info(f"Final Energy (eV): {self.E_old:.6f}")
 
-    # def run(self, steps):
-    #     """
-    #     Runs the Grand Canonical Monte Carlo simulation.
+    def initialize_outfile(self) -> None:
+        """
+        Initializes the output file by overwriting any existing content and writing a header.
+        """
+        try:
+            with open(self._outfile, 'w') as outfile:
+                outfile.write("{:<10} {:<10} {:<15} {:<20}".format(
+                              "Step", "N_atoms", "Energy (eV)",
+                              "Acceptance Ratios (Displ, Ins, Del)\n"))
+        except IOError as e:
+            logger.error(f"Failed to initialize output file '{self._outfile}': {e}")
+            raise
 
-    #     Returns:
-    #         None
-    #     """
-    #     logger.info('+---------------------------------+')
-    #     logger.info('| Grand Canonical Ensemble Monte Carlo  |')
-    #     logger.info('+---------------------------------+')
-    #     logger.info('Starting simulation...')
-    #     logger.info('Temperature: {}'.format(self._temperature))
-    #     logger.info('Number of steps: {}'.format(steps))
+    def write_outfile(self, step: int) -> None:
+        """
+        Write the step and energy to the output file.
 
-    #     self.E_old = self.compute_energy(self.atoms)
-    #     # self.write_traj_file(self.atoms)
-    #     # self.write_outfile(self._step, self.lowest_energy)
-    #     for _ in range(steps):
-    #         self.do_trial_step()
-    #         self._step += 1
-
-    #         if self._step % self._outfile_write_interval == 0:
-    #             self.write_outfile(self._step, self.E_old)
-    #             print(self._step,
-    #                   self.n_atoms,
-    #                   self.E_old,
-    #                   np.array(list(self.count_acceptance.values())) /
-    #                   np.array(list(self.count_moves.values())))
-
-    #         if self._step % self._trajectory_write_interval == 0:
-    #             self.write_traj_file(self.atoms)
-
-    #         #     self.write_outfile(self._step, self.lowest_energy)
-    #         #     logger.info('Step: {}'.format(self._step))
-    #         #     logger.info('Lowest energy: {}'.format(self.lowest_energy))
-    #         #     logger.info('Accepted trials: {}'.format(self._accepted_trials))
+        Args:
+            step (int): The current step.
+        """
+        acceptance_ratios = np.array(list(self.count_acceptance.values())) / np.array(
+                    list(self.count_moves.values())
+                )
+        try:
+            with open(self._outfile, 'a') as outfile:
+                outfile.write("{:<10} {:<10} {:<15.6f} {:<20}\n".format(
+                    step,
+                    self.n_atoms,
+                    self.E_old,
+                    ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
+                              else "N/A" for ratio in acceptance_ratios)
+                ))
+        except IOError as e:
+            logger.error(f"Error writing to file {self._outfile}: {e}")
