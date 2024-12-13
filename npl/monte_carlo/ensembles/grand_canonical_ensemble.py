@@ -49,13 +49,15 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         if operating_box:
             from ase.cell import Cell
             self.operating_box = operating_box
-            self.volume = Cell(operating_box).volume*1e-30
+            self.volume = Cell(operating_box).volume
             self.z_shift = z_shift
         else:
             self.operating_box = atoms.get_cell()
-            self.volume = volume if volume else atoms.get_volume()*1e-30
+            self.volume = volume if volume else atoms.get_volume()
             self.z_shift = None
 
+        self.volume = self.volume*1e-30
+        
         self.masses = masses
         self.surface_indices = surface_indices if surface_indices else None
         self.initial_atoms = len(self.atoms)
