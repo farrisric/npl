@@ -21,7 +21,7 @@ class NeighborList:
 
         if not cutoffs:
             cutoffs = natural_cutoffs(atoms, mult=scale_factor)
-            
+
         neighbor_list = build_neighbor_list(atoms,
                                             cutoffs=cutoffs,
                                             bothways=True,
@@ -101,3 +101,20 @@ class NeighborList:
                         atoms_indices_in_plane.append(neighbor)
 
         return atoms_indices_in_plane
+
+    def get_atom_indices_from_coordination_number(self, atoms, coordination_numbers, symbol=None):
+        """Return atom indices of atoms with certain coordination numbers.
+
+        In addition, the search can be restricted to a spcific symbol.
+
+        Parameters:
+            coordination_numbers : list/array of int
+            symbol : str
+        """
+        if symbol is None:
+            return list(
+                filter(lambda x: self.get_coordination_number(x) in coordination_numbers,
+                       self.atoms.get_indices()))
+        else:
+            return list(filter(lambda x: self.get_coordination_number(x) in coordination_numbers
+                        and self.atoms.get_symbol(x) == symbol, self.atoms.get_indices()))

@@ -52,8 +52,6 @@ class BaseEnsemble(ABC):
         self._outfile_write_interval = outfile_write_interval
         self._traj = Trajectory(traj_file, 'w')
 
-        #self.initialize_outfile()
-
         # random number generator
         if random_seed is None:
             self._random_seed = random.randint(0, int(1e16))

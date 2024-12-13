@@ -45,13 +45,16 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                          outfile=outfile,
                          outfile_write_interval=outfile_write_interval)
 
-        self.operating_box = operating_box if operating_box else atoms.get_cell()
-        self.z_shift = z_shift if z_shift else None
         if operating_box:
             from ase.cell import Cell
+            self.operating_box = operating_box
             self.volume = Cell(operating_box).volume*1e-30
+            self.z_shift = z_shift
         else:
+            self.operating_box = atoms.get_cell()
             self.volume = atoms.get_volume()*1e-30
+            self.z_shift = None
+
         self.masses = masses
         self.surface_indices = surface_indices if surface_indices else None
         self.initial_atoms = len(self.atoms)
@@ -225,7 +228,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                 delta_particles = 0
                 species = 'X'
 
-            if not atoms_new:  # CHECK THIS SHIT
+            if not atoms_new:  # NOTE: be carful here
                 continue
 
             E_new = self.compute_energy(atoms_new)
