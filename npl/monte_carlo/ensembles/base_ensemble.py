@@ -3,7 +3,6 @@ import logging
 
 from abc import ABC
 from typing import Optional
-from ase.io.trajectory import Trajectory
 
 from ase import Atoms
 from ase.calculators.calculator import Calculator
@@ -50,7 +49,9 @@ class BaseEnsemble(ABC):
         self._trajectory_write_interval = trajectory_write_interval
         self._outfile = outfile
         self._outfile_write_interval = outfile_write_interval
-        self._traj = Trajectory(traj_file, 'w')
+        self._traj_file = traj_file
+        with open(self._traj_file, 'w') as traj_file:
+            pass
 
         # random number generator
         if random_seed is None:
@@ -98,7 +99,7 @@ class BaseEnsemble(ABC):
             logger.error(f"Failed to initialize output file '{self._outfile}': {e}")
             raise
 
-    def write_traj_file(self, atoms: Atoms) -> None:
+    def write_coordinates(self, atoms: Atoms) -> None:
         """
         Write the trajectory file.
 
@@ -106,6 +107,25 @@ class BaseEnsemble(ABC):
             atoms (Atoms): The atomic configuration.
         """
         try:
-            self._traj.write(atoms)
+            write_xyz(atoms, self._traj_file)
         except IOError as e:
             logger.error(f"Error writing to trajectory file {self._traj_file}: {e}")
+
+
+def write_xyz(atoms, filename):
+    """
+    Write an XYZ file from an ASE Atoms object.
+
+    Args:
+        atoms (ase.Atoms): The ASE Atoms object to write.
+        filename (str): The path of the XYZ file to write to.
+    """
+    with open(filename, 'a') as xyz_file:
+        xyz_file.write(f"{len(atoms)}\n")
+        energy = atoms.get_potential_energy() if atoms.calc else 0.0
+        comment = f"Energy: {energy:.6f} eV"
+        xyz_file.write(comment + "\n")
+        for atom in atoms:
+            element = atom.symbol
+            x, y, z = atom.position
+            xyz_file.write(f"{element} {x:.8f} {y:.8f} {z:.8f}\n")

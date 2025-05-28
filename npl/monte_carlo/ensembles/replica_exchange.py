@@ -1,134 +1,124 @@
-# monte_carlo/Ensembles/replica_exchange.py
-
+from mpi4py import MPI
 import numpy as np
-from ..mc_moves import InsertionMove, DeletionMove, DisplacementMove  # Import specific move classes
-
-class Replica:
-    def __init__(self, atoms, mu, T, U, N):
-        """
-        Initialize a single replica with its properties.
-        Args:
-            atoms (Atoms): The atom configuration for the replica.
-            mu (float): The chemical potential.
-            T (float): The temperature.
-            U (float): The potential energy of the configuration.
-            N (int): The number of particles in the replica.
-        """
-        self.atoms = atoms
-        self.mu = mu
-        self.T = T
-        self.U = U
-        self.N = N
+import logging
+from npl.utils import RandomNumberGenerator
 
 
-class ReplicaExchangeGCMC:
+BOLTZMANN_CONSTANT_eV_K = 8.617333262e-5
+
+
+class ReplicaExchange:
     def __init__(self,
-                 replicas,
-                 exchange_interval,
-                 beta,
-                 rng_acceptance,
-                 volume,
-                 masses,
-                 min_distance,
-                 max_distance):
+                 gcmc_factory,
+                 gcmc_properties,
+                 gcmc_steps=100,
+                 exchange_interval=10,
+                 seed=31):
         """
-        Initialize the ReplicaExchangeGCMC object.
+        Parallel Tempering for GCMC.
 
-        Args:
-            replicas (list of Replica): The list of replicas.
-            exchange_interval (int): The interval between replica exchanges.
-            beta (float): The inverse temperature (1/kT).
-            rng_acceptance (RandomNumberGenerator): A random number generator for move acceptance.
-            volume (float): The system volume.
-            masses (dict): A dictionary of particle masses.
-            min_distance (float): Minimum particle distance for insertion moves.
-            max_distance (float): Maximum particle distance for insertion moves.
+        Parameters:
+        - gcmc_factory (function): Function to create a GCMC instance for a given temperature.
+        - gcmc_properties (list): List of gcmc_properties for each replica.
+        - n_steps (int): Total number of GCMC steps.
+        - exchange_interval (int): Steps between exchange attempts.
         """
-        self.replicas = replicas
+        self.comm = MPI.COMM_WORLD
+        self.rank = self.comm.Get_rank()
+        self.size = self.comm.Get_size()
+
+        assert len(gcmc_properties) == self.size, "Number of temperatures must match MPI ranks."
+        self.gcmc_properties = gcmc_properties
+        self.gcmc_steps = gcmc_steps
         self.exchange_interval = exchange_interval
-        self._beta = beta
-        self.rng_acceptance = rng_acceptance
-        self.volume = volume
-        self.masses = masses
-        self.min_distance = min_distance
-        self.max_distance = max_distance
 
-    def perform_exchange(self, replica_i, replica_j):
+        self.gcmc = gcmc_factory(gcmc_properties[self.rank])
+        self.rng = RandomNumberGenerator(seed=seed)
+
+        logging.basicConfig(level=logging.INFO, format=f"Rank {self.rank}: %(message)s")
+        self.logger = logging.getLogger()
+
+    def _acceptance_condition(self, state1, beta1, state2, beta2):
         """
-        Perform the exchange of configurations between two replicas.
+        Determines whether to accept a replica exchange between two replicas.
 
         Args:
-            replica_i (Replica): The first replica.
-            replica_j (Replica): The second replica.
-        """
-        # Calculate the energy difference and decide whether to exchange replicas
-        energy_diff = replica_i.U - replica_j.U
-        exchange_prob = np.exp(self._beta * energy_diff)
-
-        if exchange_prob > self.rng_acceptance.get_uniform():
-            # Perform the exchange
-            replica_i.atoms, replica_j.atoms = replica_j.atoms, replica_i.atoms
-            replica_i.U, replica_j.U = replica_j.U, replica_i.U
-            replica_i.N, replica_j.N = replica_j.N, replica_i.N
-            # You can update other properties like mu or T if needed
-
-    def simulate_replica(self, replica, steps):
-        """
-        Simulate one replica for a given number of steps.
-        This will be executed in parallel for each replica.
-
-        Args:
-            replica (Replica): The replica to simulate.
-            steps (int): The number of Monte Carlo steps to simulate.
+            state1 (dict): State of the first replica, including its energy.
+            temp1 (float): Temperature of the first replica.
+            state2 (dict): State of the second replica, including its energy.
+            temp2 (float): Temperature of the second replica.
 
         Returns:
-            Replica: The final state of the replica.
+            bool: True if the exchange is accepted, False otherwise.
         """
-        for step in range(steps):
-            move_type = self.rng_acceptance.get_uniform()
+        energy1 = state1['energy']
+        energy2 = state2['energy']
 
-            if move_type < 0.33:
-                move = InsertionMove(replica)  # Create an insertion move object
-                move_result = move.perform_move()
-                if self._acceptance_condition(*move_result):
-                    move.apply_move()
-            elif move_type < 0.66:
-                move = DeletionMove(replica)  # Create a deletion move object
-                move_result = move.perform_move()
-                if self._acceptance_condition(*move_result):
-                    move.apply_move()
-            else:
-                move = DisplacementMove(replica)  # Create a translation move object
-                move_result = move.perform_move()
-                if self._acceptance_condition(*move_result):
-                    move.apply_move()
+        delta = (beta2 - beta1) * (energy2 - energy1)
+        exchange_prob = min(1.0, np.exp(delta))
+        return self.rng.get_uniform() < exchange_prob
 
-        return replica  # Return the final state of the replica after the simulation
-
-    def run_simulation(self, total_MC_steps):
+    def _acceptance_criterion_(self, mu_i, mu_j, energy_i, energy_j, particle_counts, temperature):
         """
-        Run the full simulation, simulating replicas in parallel and performing replica exchanges.
-        
-        Args:
-            total_MC_steps (int): The total number of Monte Carlo steps for the simulation.
-        """
-        steps_per_replica = total_MC_steps // len(self.replicas)
-        
-        # Parallelize the simulation of replicas
-        with Pool(processes=len(self.replicas)) as pool:
-            results = pool.starmap(self.simulate_replica, [(replica, steps_per_replica) for replica in self.replicas])
+        Calculate the acceptance probability for exchanging replicas with the same temperature
+        but different chemical potentials.
 
-        # Perform replica exchanges after each batch of steps
-        self.exchange_replicas(results)
+        Parameters:
+            mu_i (dict): Chemical potentials for replica i (e.g., {'Ag': -4.0, 'O': -2.5}).
+            mu_j (dict): Chemical potentials for replica j.
+            energy_i (float): Energy of replica i.
+            energy_j (float): Energy of replica j.
+            particle_counts (dict): Number of particles for each species in the replica
+                                    (e.g., {'Ag': 100, 'O': 25}).
+            temperature (float): Temperature of the replicas (K).
 
-    def exchange_replicas(self, replicas):
+        Returns:
+            float: The acceptance probability.
         """
-        Perform replica exchange between replicas at regular intervals.
-        
-        Args:
-            replicas (list of Replica): The list of replicas to perform the exchange.
-        """
-        for i in range(0, len(replicas) - 1, 2):
-            replica_i = replicas[i]
-            replica_j = replicas[i + 1]
-            self.perform_exchange(replica_i, replica_j)
+        beta = 1 / (BOLTZMANN_CONSTANT_eV_K * temperature)
+        delta_energy = energy_i - energy_j
+        delta_mu = 0.0
+        for species, count in particle_counts.items():
+            delta_mu += count * (mu_j[species] - mu_i[species])
+        delta = beta * (delta_energy + delta_mu)
+        return min(1.0, np.exp(-delta))
+
+    def do_exchange(self):
+        """Attempt an exchange with a neighboring replica."""
+        if self.rank % 2 == 0:
+            partner_rank = self.rank + 1
+        else:
+            partner_rank = self.rank - 1
+
+        if partner_rank < 0 or partner_rank >= self.size:
+            return
+
+        rank_state = self.gcmc.get_state()
+        rank_temperature = self.temperatures[self.rank]
+
+        partner_state, partner_temp = self.comm.sendrecv(
+            sendobj=(rank_state, rank_temperature),
+            dest=partner_rank,
+            source=partner_rank,
+        )
+        rank_beta = 1/(rank_temperature*BOLTZMANN_CONSTANT_eV_K)
+        partner_beta = 1/(partner_temp*BOLTZMANN_CONSTANT_eV_K)
+        if self._acceptance_condition(rank_state, rank_beta, partner_state, partner_beta):
+            self.logger.info(f"Accepted exchange with rank {partner_rank}")
+            self.gcmc.set_state(partner_state)
+        else:
+            self.logger.info(f"Rejected exchange with rank {partner_rank}")
+
+    def run(self):
+        """Run the Parallel Tempering GCMC simulation."""
+        for step in range(self.gcmc_steps):
+            self.gcmc.run(1)
+
+            if step > 0 and step % self.exchange_interval == 0:
+                self.do_exchange()
+
+        self.gcmc.finalize_run()
+
+        final_states = self.comm.gather(self.gcmc.get_state(), root=0)
+        if self.rank == 0:
+            self.logger.info(f"Final states: {final_states}")

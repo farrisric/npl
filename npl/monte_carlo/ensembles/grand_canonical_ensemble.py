@@ -4,9 +4,8 @@ from npl.utils.random_number_generator import RandomNumberGenerator
 import numpy as np
 from ase import Atoms
 from ase.calculators.calculator import Calculator
-from typing import Optional
+from typing import Optional, List
 import logging
-
 
 PLANCK_CONSTANT = 6.62607e-34  # 4.135667696e-15  #Planck's constant in m²kg/s
 BOLTZMANN_CONSTANT_eV_K = 8.617333262e-5  # 1.38066e-23  # Boltzmann constant in J/K
@@ -26,12 +25,11 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                  temperature : float,
                  moves: dict,
                  max_displacement: float,
-                 min_max_insert: list[float],
+                 min_max_insert: List[float],
                  volume: float = None,
-                 operating_box: list[list[float]] = None,
+                 operating_box: List[List[float]] = None,
                  z_shift: float = None,
-                 surface_indices: list[float] = None,
-                 user_tag: Optional[str] = None,
+                 surface_indices: List[float] = None,
                  random_seed: Optional[int] = None,
                  traj_file: str = 'traj_test.traj',
                  trajectory_write_interval: Optional[int] = None,
@@ -53,12 +51,12 @@ class GrandCanonicalEnsemble(BaseEnsemble):
             self.z_shift = z_shift
         else:
             self.operating_box = atoms.get_cell()
-            self.volume = volume if volume else atoms.get_volume()
+            self.volume = volume or atoms.get_volume()
             self.z_shift = None
 
         self.volume = self.volume*1e-30  # Converting the volume in meters
         self.masses = masses
-        self.surface_indices = surface_indices if surface_indices else None
+        self.surface_indices = surface_indices or None
         self.initial_atoms = len(self.atoms)
         self.n_atoms = len(self.atoms)
         self.species = species
@@ -92,9 +90,24 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                                               constraints=atoms.constraints,
                                               max_displacement=self.max_displacement)
 
+        self._step = 0
         # COUNTERS
         self.count_moves = {'Displacements' : 0, 'Insertions' : 0, 'Deletions' : 0}
         self.count_acceptance = {'Displacements' : 0, 'Insertions' : 0, 'Deletions' : 0}
+
+    def get_state(self):
+        return {
+            "atoms" : self.atoms,
+            "energy" : self.E_old,
+            "mu": self._mu,
+            "temperature": self._temperature,
+        }
+
+    def set_state(self, state):
+        self.atoms = state["atoms"]
+        self.E_old = state["energy"]
+        # self._mu = state["mu"]
+        # self._temperature = state["temperature"]
 
     def initialize_outfile(self) -> None:
         """
@@ -143,7 +156,7 @@ class GrandCanonicalEnsemble(BaseEnsemble):
         try:
             with open(self._outfile, 'a') as outfile:
                 outfile.write("{:<10} {:<10} {:<15.6f} {:<20}\n".format(
-                    step,
+                    self._step,
                     self.n_atoms,
                     self.E_old,
                     ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
@@ -249,15 +262,10 @@ class GrandCanonicalEnsemble(BaseEnsemble):
     def compute_energy(self, atoms):
         return self._calculator.get_potential_energy(atoms)
 
-    def run(self, steps):
+    def initialize_run(self):
         """
-        Runs the Grand Canonical Monte Carlo simulation.
-
-        Args:
-            steps (int): The number of Monte Carlo steps to run.
-
-        Returns:
-            None
+        Initializes the Grand Canonical Monte Carlo simulation.
+        Prepares logging and computes the initial state.
         """
         logger.info("+-------------------------------------------------+")
         logger.info("| Grand Canonical Ensemble Monte Carlo Simulation |")
@@ -271,38 +279,60 @@ class GrandCanonicalEnsemble(BaseEnsemble):
                     f"{self.min_distance}-{self.max_distance} Å³")
         logger.info(f"Number of Displacement moves: {self.n_displ}")
         logger.info(f"Maximum Displacement distance: {self.max_displacement}")
-        logger.info(f"Number of Monte Carlo steps: {steps}")
         logger.info("Starting simulation...\n")
-
         logger.info("{:<10} {:<10} {:<15} {:<20}".format(
             "Step", "N_atoms", "Energy (eV)", "Acceptance Ratios (Displ, Ins, Del)"
         ))
         logger.info("-" * 60)
 
+        # Compute the initial energy
         self.E_old = self.compute_energy(self.atoms)
+        self._initialized = True  # Mark the ensemble as initialized
+
+    def run(self, steps):
+        """
+        Runs the main loop of the Grand Canonical Monte Carlo simulation.
+
+        Args:
+            steps (int): The number of Monte Carlo steps to run.
+        """
+        if not getattr(self, '_initialized', False):
+            self.initialize_run()
 
         for step in range(1, steps + 1):
-            self.do_trial_step()
+            self._run(step)
+            self._step += 1
 
-            if step % self._outfile_write_interval == 0:
-                acceptance_ratios = np.array(list(self.count_acceptance.values())) / np.array(
-                    list(self.count_moves.values())
-                )
-                logger.info("{:<10} {:<10} {:<15.6f} {:<20}".format(
-                    step,
-                    self.n_atoms,
-                    self.E_old,
-                    ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
-                              else "N/A" for ratio in acceptance_ratios)
-                ))
-                self.write_outfile(step)
-
-            if step % self._trajectory_write_interval == 0:
-                self.write_traj_file(self.atoms)
-
-        # Final statistics
+    def finalize_run(self):
+        """
+        Finalizes the Grand Canonical Monte Carlo simulation.
+        Logs the summary statistics.
+        """
         logger.info("\nSimulation Complete.")
         logger.info("Final Statistics:")
-        logger.info(f"Total Moves Attempted: {self.n_moves * steps}")
+        logger.info(f"Total Moves Attempted: {self.n_moves}")
         logger.info(f"Acceptance Ratios: {self.count_acceptance}")
         logger.info(f"Final Energy (eV): {self.E_old:.6f}")
+        self._initialized = False  # Reset the initialization flag
+
+    def _run(self, step):
+        """
+        Performs a single Monte Carlo step and handles logging and writing.
+        """
+        self.do_trial_step()
+
+        if step % self._outfile_write_interval == 0:
+            acceptance_ratios = np.array(list(self.count_acceptance.values())) / np.array(
+                list(self.count_moves.values())
+            )
+            logger.info("{:<10} {:<10} {:<15.6f} {:<20}".format(
+                self._step,
+                self.n_atoms,
+                self.E_old,
+                ", ".join(f"{ratio*100:.1f}%" if not np.isnan(ratio)
+                        else "N/A" for ratio in acceptance_ratios)
+            ))
+            self.write_outfile(step)
+
+        if step % self._trajectory_write_interval == 0:
+            self.write_coordinates(self.atoms)
