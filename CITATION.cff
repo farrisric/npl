@@ -1,12 +1,11 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "mcpy"
+title: "The NanoParticleLibrary (NPL): a Python library for simulating and optimizing nanoparticle structures."
 authors:
 - family-names: Farris
   given-names: Riccardo
   affiliation: "Universitat de Barcelona"
 date-released: "2025-05-01"
-title: "The NanoParticleLibrary (NPL): a Python library for simulating and optimizing nanoparticle structures."
 version: "1.0.5"
 url: "https://github.com/farrisric/NPlib"
 doi: "10.5072/zenodo.262135"
