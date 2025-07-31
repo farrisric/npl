@@ -12,8 +12,8 @@ Open a terminal and run the following commands:
 
 .. code-block:: bash
 
-    git clone https://github.com/farrisric/NPlib.git
-    cd NPlib
+    git clone https://github.com/farrisric/npl.git
+    cd npl
     pip install .
 
 Option 2: Install via pip
