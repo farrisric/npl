@@ -29,7 +29,7 @@ NPL is a Python library for the simulation and structural optimization of nanopa
 
 ## Documentation
 
-A partial documentation is available at: https://npl.readthedocs.io/en/latest/
+A partial documentation is available at: https://nplib.readthedocs.io/en/latest/
 
 ## Installation
 
