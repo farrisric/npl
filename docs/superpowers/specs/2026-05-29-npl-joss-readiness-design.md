@@ -1,7 +1,7 @@
 # NPL JOSS-Readiness — Design
 
 **Date:** 2026-05-29
-**Author:** Riccardo Farris (with Claude Code)
+**Author:** Riccardo Farris 
 **Status:** Draft for review
 
 ## Goal
@@ -65,9 +65,14 @@ Pre-existing brokenness independent of deps:
 - `data/params.json` is unused — `TOPCalculator` reads coefficients from the
   Python dict `npl/calculators/parameters.py:top_parameters`.
 - Dead-code suspects to confirm during implementation: the whole
-  `npl/monte_carlo/` tree (to be removed), `garbage_exchange_operator.py`,
+  `npl/monte_carlo/` tree (to be removed),
   `compute_coefficients_for_shape_optimization`, commented-out code blocks in
   `energy_calculator.py`, and the misspelled `genetic_algoritm` directory.
+- **NOT dead (user-confirmed):** `garbage_exchange_operator.py` is the exchange
+  operator for the basin-hopping + ACT (atomic coordination types) workflow,
+  while `guided_exchange_operator.py` is the basin-hopping + TOP path. A static
+  grep shows no importer only because the BH+ACT path is not wired into a
+  current example — both operators must be preserved and exercised.
 
 ## Approach
 
@@ -104,18 +109,30 @@ not import, so there is no running behavior to characterize first.)
 - **Exit criterion:** no remaining references to `npl.monte_carlo` in code,
   examples, or docs; the new flagship example runs end-to-end.
 
-### Phase 3 — Dead-code sweep
+### Phase 3 — Dead-code sweep, latent-bug fixes, operator clean-up
 - Remove commented-out code, unused functions, and broken/duplicate exports.
-- Confirm-then-remove suspects (`garbage_exchange_operator.py`,
-  `compute_coefficients_for_shape_optimization`, etc.); keep anything still
-  referenced by examples, docs, or the public API.
+- Confirm-then-remove suspects (`compute_coefficients_for_shape_optimization`,
+  the `LateralInteractionCalculator`/`DipoleMomentCalculator` in
+  `energy_calculator.py`, commented `brr_energy` lines, etc.); keep anything
+  still referenced by examples, docs, or the public API.
 - Remove the unused `data/params.json` (or wire it in) — decide during
   implementation; default is removal since `parameters.py` is the source of
   truth.
-- Rename `genetic_algoritm` → `genetic_algorithm`, preserving the public import
-  path used elsewhere (update all references).
+- Fix the latent basin-hopping `flip` expression bug
+  (`basin_hopping.py:38-39`, a dangling `+` continuation that drops a term).
+- **Exchange operators (user-confirmed design):** there are two same-named
+  `GuidedExchangeOperator` classes — `guided_exchange_operator.py` is the
+  basin-hopping + TOP path, `garbage_exchange_operator.py` is the
+  basin-hopping + ACT path. Rename the ACT file/class to
+  `act_exchange_operator.py` / `ACTExchangeOperator` (resolving the duplicate
+  name and the "garbage" name) and remove its dead commented-out `update()`.
+  Parameterize `setup_local_optimization` / `run_basin_hopping` /
+  `local_optimization` with a `model` selector (`"TOP"` default, `"ACT"`) so
+  both operators are first-class and testable.
+- Rename `genetic_algoritm` → `genetic_algorithm`, updating all references.
 - **Exit criterion:** `flake8` clean (config already present); no unused
-  imports/exports; every removal traceable to this spec.
+  imports/exports; both BH+TOP and BH+ACT paths reachable via the runner;
+  every removal traceable to this spec.
 
 ### Phase 4 — Test suite + CI
 - Build a `pytest` suite under `test/` (rename to `tests/` to match mcpy) with
