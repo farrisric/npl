@@ -41,7 +41,7 @@ class Nanoparticle(BaseNanoparticle):
                                                                                   difference), 0)
 
         np.random.shuffle(excess_atoms)
-        excess_atoms = excess_atoms.astype(np.int)
+        excess_atoms = excess_atoms.astype(int)
 
         for symbol in target_stoichiometry:
             difference = target_stoichiometry[symbol]

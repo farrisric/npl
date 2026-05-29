@@ -101,7 +101,7 @@ class EMTCalculator(EnergyCalculator):
         if not self.relax_atoms:
             atoms = atoms.copy()
 
-        atoms.set_calculator(EMT())
+        atoms.calc = EMT()
         dyn = BFGS(atoms, logfile=None)
         dyn.run(fmax=self.fmax, steps=self.steps)
 
