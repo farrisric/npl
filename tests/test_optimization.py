@@ -88,3 +88,30 @@ def test_etop_guided_exchange_swaps_unlike_species():
     assert sym_a(A) == op.atom_symbol[B]
     assert sym_a(B) == op.atom_symbol[A]
     assert isinstance(flip, float)
+
+
+def test_etop_update_matches_fresh_bind():
+    particle, calc, fc = _build_etop()
+    coeffs = calc.get_coefficients()
+    op = ETOPExchangeOperator(coeffs, fc)
+    op.bind_particle(particle)
+
+    for _ in range(5):
+        a, b, _flip = op.guided_exchange(particle)
+        neighborhood = {a, b}
+        neighborhood |= set(particle.neighbor_list[a])
+        neighborhood |= set(particle.neighbor_list[b])
+        fc.update_feature_vector(particle, neighborhood)
+        op.update(particle, neighborhood, [a, b])
+
+    fresh = ETOPExchangeOperator(coeffs, fc)
+    fresh.bind_particle(particle)
+    for pair in op.flip_gain:
+        assert op.flip_gain[pair].keys() == fresh.flip_gain[pair].keys()
+        for idx in op.flip_gain[pair]:
+            assert op.flip_gain[pair][idx] == pytest.approx(fresh.flip_gain[pair][idx])
+        # SortedKeyList order is insertion-order-dependent for tied gains, so
+        # compare the sorted gain sequences rather than the index sequences.
+        op_gains = [op.flip_gain[pair][idx] for idx in op.indices[pair]]
+        fresh_gains = [fresh.flip_gain[pair][idx] for idx in fresh.indices[pair]]
+        assert op_gains == pytest.approx(fresh_gains)

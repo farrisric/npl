@@ -74,3 +74,15 @@ class ETOPExchangeOperator:
         gain, index_a, index_b = best
         particle.swap_symbols([(index_a, index_b)])
         return index_a, index_b, gain
+
+    def update(self, particle, indices, exchange_indices):
+        # exchange_indices is accepted for interface parity with the binary
+        # operators; ETOP refreshes every atom in `indices` from self.atom_symbol.
+        for index in indices:
+            sym_old = self.atom_symbol[index]
+            for sym_j in self.symbols:
+                if sym_j != sym_old:
+                    self.indices[(sym_old, sym_j)].remove(index)
+                    del self.flip_gain[(sym_old, sym_j)][index]
+        for index in indices:
+            self._set_gains(particle, index)
