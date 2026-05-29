@@ -26,8 +26,8 @@ optimization) and CI (`.github/workflows/test.yml`) runs it on Python 3.10–3.1
 when changing behavior.
 
 **Examples**: `examples/top_energy_evaluation.py` is the runnable flagship example (build a
-particle → topological features → `TOPCalculator` energy); `train_top.ipynb` covers fitting. Monte
-Carlo / GCMC examples live in the companion repo `mcpy` (see Gotchas).
+particle → topological features → `TOPCalculator` energy); `train_top.ipynb` covers fitting;
+`multimet_go.ipynb` is the trimetallic (Pd/Au/Cu) Monte Carlo ordering-optimization workflow.
 
 ## Architecture
 
@@ -75,14 +75,23 @@ computed on the particle.
   coordination types, `ACTExchangeOperator`) — see `EXCHANGE_OPERATORS` in
   `local_optimization/local_optimization.py`.
 
+- **`npl.monte_carlo`** — Metropolis Monte Carlo over chemical ordering at fixed composition
+  (canonical). `run_monte_carlo(temperature, max_steps, start_particle, energy_calculator,
+  feature_classifier)` (in `monte_carlo_etop.py`) is the main entry point and the **only multi-metal
+  ordering optimizer** — the basin-hopping / guided-exchange path in `npl.optimization` is restricted
+  to two elements (`symbol_a`/`symbol_b`), so trimetallic+ ordering goes through MC. Uses random
+  exchange operators with incremental feature updates (only the swapped atoms' neighborhood is
+  recomputed). `monte_carlo.py`'s `mc_run` is an older adsorbate-MC variant.
+
 - **`npl.visualize`**, **`npl.utils`** — plotting helpers and math/geometry utilities.
 
 ## Gotchas
 
-- **Monte Carlo lives in the companion repo `mcpy`** (https://github.com/farrisric/mcpy), not here.
-  `npl.monte_carlo` was removed; `npl` covers structure, descriptors, energy models, and
-  chemical-ordering optimization. New MC / ML-potential (MACE, alchemi) work belongs in `mcpy`. The
-  additional working directory `/home/energystorage/projects/mcpy/mcpy/calculators` is its home.
+- **`npl.monte_carlo` is canonical MC over chemical ordering** (fixed composition). It is distinct
+  from the companion repo `mcpy` (https://github.com/farrisric/mcpy), which does *grand-canonical*
+  MC with machine-learning interatomic potentials (variable particle number, MACE/alchemi). New
+  GCMC / ML-potential work belongs in `mcpy`; chemical-ordering MC stays here. mcpy's calculators
+  live at the additional working directory `/home/energystorage/projects/mcpy/mcpy/calculators`.
 - `import npl` runs `setup_logging()`, which writes an `npl.log` file in the current working
   directory and logs to stdout at INFO. Several modules also call `logging.basicConfig` again.
 - `TOPCalculator` reads its coefficients from the Python dict `top_parameters` in

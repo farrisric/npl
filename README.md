@@ -82,7 +82,9 @@ energy = calculator.compute_energy(particle)
 print(f"TOP energy of Pt151Cu50: {float(energy):.4f}")
 ```
 
-> **Looking for Monte Carlo / grand-canonical sampling?** That functionality now lives in the companion package [mcpy](https://github.com/farrisric/mcpy).
+NPL also optimizes the chemical ordering of multi-metallic nanoparticles by Metropolis Monte Carlo over a fitted energy model (`npl.monte_carlo.run_monte_carlo`); see `examples/multimet_go.ipynb` for a trimetallic (Pd/Au/Cu) workflow.
+
+> **Note:** `npl`'s Monte Carlo samples chemical ordering at fixed composition (canonical). For *grand-canonical* Monte Carlo with machine-learning interatomic potentials (variable particle number, MACE/alchemi), see the companion package [mcpy](https://github.com/farrisric/mcpy).
 
 ## References
 

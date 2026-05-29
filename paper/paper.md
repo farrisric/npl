@@ -36,7 +36,8 @@ coefficients are fitted with scikit-learn [@scikit-learn] regressors (Bayesian
 ridge regression) against reference energies, or loaded from pretrained
 parameters shipped with the package. Given an energy model, `npl` searches for
 low-energy chemical orderings with guided local optimization, basin hopping,
-and genetic-algorithm strategies. The topological descriptors and the
+genetic algorithms, and Metropolis Monte Carlo (the route for ordering
+optimization in particles with three or more elements). The topological descriptors and the
 optimal-exchange ideas behind these methods were introduced in
 [@neumann2021; @farris2024ordering] and applied to catalytic nanoparticles in
 [@farris2024zr].
@@ -74,9 +75,10 @@ implement a common `compute_energy(particle)` interface and write into the
 particle's energy dictionary; they include an ASE EMT calculator, scikit-learn
 regressors over feature vectors, and the linear topological model with
 pretrained coefficients. *Optimizers* search chemical-ordering space using
-guided exchanges, basin hopping, and genetic algorithms. This separation lets
-users swap energy models and search strategies without touching the particle
-representation.
+guided exchanges, basin hopping, genetic algorithms, and Metropolis Monte Carlo;
+the guided-exchange methods target two-element particles, while Monte Carlo
+handles three or more elements. This separation lets users swap energy models
+and search strategies without touching the particle representation.
 
 # Acknowledgements
 
