@@ -45,7 +45,7 @@ def locate_convex_hull(start_population, unsuccessful_gens_for_convergence,
 
         else:
             # random mutation
-            parent = population.npl.optimization.genetic_algoritmussian_tournament(1, 5)[0]
+            parent = population.gaussian_tournament(1, 5)[0]
             new_particle = mutation_operator.random_mutation(parent)
 
         # check that it is not a pure particle
