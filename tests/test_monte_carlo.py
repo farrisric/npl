@@ -42,3 +42,6 @@ def test_run_monte_carlo_trimetallic_runs_and_conserves_composition():
     assert np.isfinite(accepted[-1][0])
     # canonical MC: composition is conserved by the exchange moves
     assert dict(best.get_stoichiometry()) == start_stoich
+    # best_particle must be the lowest-energy configuration actually sampled
+    min_accepted = min(e for e, _ in accepted)
+    assert abs(best.get_energy(calc.get_energy_key()) - min_accepted) < 1e-9

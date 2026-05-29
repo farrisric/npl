@@ -64,10 +64,13 @@ class NeighborList:
 
     def get_generalized_coordination_number(self, indices):
         max_coordination = self.get_max_coordination_number(indices)
+        indices_set = set(indices)
+        seen = set()
         coordination_atoms = []
         for atom_idx in indices:
             for neigh in self.get_coordination_atoms(atom_idx):
-                if neigh not in coordination_atoms and neigh not in indices:
+                if neigh not in seen and neigh not in indices_set:
+                    seen.add(neigh)
                     coordination_atoms.append(neigh)
 
         tot_cns = 0
@@ -101,20 +104,3 @@ class NeighborList:
                         atoms_indices_in_plane.append(neighbor)
 
         return atoms_indices_in_plane
-
-    def get_atom_indices_from_coordination_number(self, atoms, coordination_numbers, symbol=None):
-        """Return atom indices of atoms with certain coordination numbers.
-
-        In addition, the search can be restricted to a spcific symbol.
-
-        Parameters:
-            coordination_numbers : list/array of int
-            symbol : str
-        """
-        if symbol is None:
-            return list(
-                filter(lambda x: self.get_coordination_number(x) in coordination_numbers,
-                       self.atoms.get_indices()))
-        else:
-            return list(filter(lambda x: self.get_coordination_number(x) in coordination_numbers
-                        and self.atoms.get_symbol(x) == symbol, self.atoms.get_indices()))

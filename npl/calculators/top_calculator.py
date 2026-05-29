@@ -93,7 +93,7 @@ class TOPCalculator(Calculator):
 
     def compute_energy(self, particle):
         feature_vector = particle.get_feature_vector(self.feature_key)
-        top_energy = np.dot(np.transpose(self.model.coef_), feature_vector)
+        top_energy = np.dot(self.model.coef_, feature_vector)
         particle.set_energy(self.energy_key, top_energy)
         return top_energy
 

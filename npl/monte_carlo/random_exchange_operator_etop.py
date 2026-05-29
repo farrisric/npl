@@ -42,12 +42,12 @@ class RandomExchangeOperatorExtended(RandomExchangeOperator):
         swap_type_probability = np.random.choice(self.n_swap_types, 1,
                                                  p=self.swap_types_probability)[0]
         symbol1, symbol2 = self.swap_types[swap_type_probability]
-        max_exchanges = 1
-        n_exchanges = min(np.random.geometric(p=self.p_geometric, size=1)[0], max_exchanges)
+        n_exchanges = 1
         symbol1_indices = np.random.choice(particle.get_indices_by_symbol(symbol1), n_exchanges,
                                            replace=False)
         symbol2_indices = np.random.choice(particle.get_indices_by_symbol(symbol2), n_exchanges,
                                            replace=False)
 
-        particle.swap_symbols(list(zip(symbol1_indices, symbol2_indices)))
-        return list(zip(symbol1_indices, symbol2_indices))
+        exchanges = list(zip(symbol1_indices, symbol2_indices))
+        particle.swap_symbols(exchanges)
+        return exchanges

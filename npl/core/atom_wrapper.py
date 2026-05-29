@@ -87,10 +87,8 @@ class AtomWrapper:
         Parameters:
             symbol : str
         """
-        if symbol in self.atoms.symbols.indices():
-            return self.atoms.symbols.indices()[symbol]
-        else:
-            return np.array([])
+        indices = self.atoms.symbols.indices()
+        return indices.get(symbol, np.array([]))
 
     def get_n_atoms(self):
         """Return the number of atoms."""

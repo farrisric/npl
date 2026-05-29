@@ -327,7 +327,7 @@ class BayesianRRCalculator(EnergyCalculator):
             particle : Nanoparticle
         """
         feature_vector = particle.get_feature_vector(self.feature_key)
-        brr_energy = np.dot(np.transpose(self.ridge.coef_), feature_vector)
+        brr_energy = np.dot(self.ridge.coef_, feature_vector)
         particle.set_energy(self.energy_key, brr_energy)
         return brr_energy
 

@@ -3,6 +3,8 @@ import numpy as np
 import copy
 
 from npl.descriptors.local_environment_calculator import NeighborCountingEnvironmentCalculator
+from npl.descriptors.global_feature_classifier import AdsorptionFeatureVector
+from npl.calculators.energy_calculator import LateralInteractionCalculator
 from npl.monte_carlo.random_exchange_operator import RandomExchangeOperator
 
 logging.basicConfig(level=logging.INFO)
@@ -165,8 +167,6 @@ def run_monte_carlo_for_adsorbates(beta, max_steps, start_particle, adsorbates_e
 
         exchanges = exchange_operator.random_adsorbate_migration(start_particle)
 
-        accepted_particle = copy.deepcopy(start_particle)
-
         global_feature_classifier.compute_feature_vector(start_particle)
         adsorbates_energy.compute_energy(start_particle)
         lateral_interaction_calculator.compute_energy(start_particle)
@@ -219,9 +219,6 @@ def run_monte_carlo_for_adsorbates(beta, max_steps, start_particle, adsorbates_e
 
 
 def run_monte_carlo_ordering_adsorbates(beta, max_steps, start_particle, ordering_energy_calculator, adsorbates_energy_calculator, n_adsorbates, local_feature_classifier):
-    from npl.descriptors.global_feature_classifier import AdsorptionFeatureVector
-    from npl.calculators.energy_calculator import LateralInteractionCalculator
-
     exchange_operator = RandomExchangeOperator(0.5)
     exchange_operator.bind_adsorbates(start_particle, n_adsorbates)
 
@@ -233,8 +230,6 @@ def run_monte_carlo_ordering_adsorbates(beta, max_steps, start_particle, orderin
     adsorbates_energy_calculator.compute_energy(start_particle)
 
     ordering_energy_key, local_env_calculator, ordering_exchange_operator = setup_monte_carlo(start_particle, ordering_energy_calculator, local_feature_classifier)
-
-    initial_adsorbed_sites = start_particle.get_indices_of_adsorbates()
 
     lateral_interaction_calculator = LateralInteractionCalculator()
     lateral_interaction_energy_key = lateral_interaction_calculator.energy_key
@@ -272,7 +267,6 @@ def run_monte_carlo_ordering_adsorbates(beta, max_steps, start_particle, orderin
         start_particle, neighborhood = update_atomic_features(ordering_exchanges, local_env_calculator, local_feature_classifier,
                                                               start_particle)
 
-        accepted_particle = copy.deepcopy(start_particle)
         adsorbate_feature_classifier.compute_feature_vector(start_particle)
 
         ordering_energy_calculator.compute_energy(start_particle)

@@ -139,9 +139,12 @@ class testTopologicalFeatureClassifier(SimpleFeatureClassifier):
     def compute_feature_vector(self, particle):
         n_atoms = particle.get_n_atoms()
         n_aa_bonds, n_bb_bonds, n_ab_bonds = self.compute_respective_bond_counts(particle)
-        coordinated_atoms = [len(
-            particle.get_atom_indices_from_coordination_number([cn], symbol=self.symbol_a)
-            ) for cn in range(13)]
+        # single pass over symbol_a atoms, bucketed by coordination number (0..12)
+        coordinated_atoms = [0] * 13
+        for idx in particle.get_indices_by_symbol(self.symbol_a):
+            cn = particle.get_coordination_number(idx)
+            if cn < 13:
+                coordinated_atoms[cn] += 1
 
         M = particle.get_stoichiometry()[self.symbol_a]*0.1
 
@@ -311,12 +314,17 @@ class TopologicalFeatureClassifier(SimpleFeatureClassifier):
     def compute_feature_vector(self, particle):
         n_aa_bonds, n_bb_bonds, n_ab_bonds = self.compute_respective_bond_counts(particle)
 
-        coordinated_atoms_a = [len(
-            particle.get_atom_indices_from_coordination_number([cn], symbol=self.symbol_a)
-            ) for cn in range(13)]
-        coordinated_atoms_b = [len(
-            particle.get_atom_indices_from_coordination_number([cn], symbol=self.symbol_b)
-            ) for cn in range(13)]
+        # single pass per symbol, bucketed by coordination number (0..12)
+        coordinated_atoms_a = [0] * 13
+        for idx in particle.get_indices_by_symbol(self.symbol_a):
+            cn = particle.get_coordination_number(idx)
+            if cn < 13:
+                coordinated_atoms_a[cn] += 1
+        coordinated_atoms_b = [0] * 13
+        for idx in particle.get_indices_by_symbol(self.symbol_b):
+            cn = particle.get_coordination_number(idx)
+            if cn < 13:
+                coordinated_atoms_b[cn] += 1
 
         feature_vector = np.array([n_aa_bonds*self.bond_scaling_factor,
                                    n_bb_bonds*self.bond_scaling_factor,
