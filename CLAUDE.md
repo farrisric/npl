@@ -68,12 +68,17 @@ computed on the particle.
   `model_paths`. `compute_coefficients_for_linear_topological_model` converts fitted linear/BRR
   coefficients into the per-coordination-type topological coefficients.
 
-- **`npl.optimization`** — chemical-ordering optimization drivers. `GOSearch` is the base,
-  specialized by `MCSearch`, `GASearch`, `GuidedSearch`. Subpackages: `basin_hopping`,
-  `local_optimization`, and `genetic_algorithm`. Basin hopping / local optimization select the
-  exchange operator via `model="TOP"` (guided, `GuidedExchangeOperator`) or `model="ACT"` (atomic
-  coordination types, `ACTExchangeOperator`) — see `EXCHANGE_OPERATORS` in
-  `local_optimization/local_optimization.py`.
+- **`npl.optimization`** — chemical-ordering optimization for **two-element** particles via basin
+  hopping. Subpackages: `basin_hopping`, `local_optimization`, and `genetic_algorithm`. Basin
+  hopping / local optimization select the exchange operator via `model="TOP"` (guided,
+  `GuidedExchangeOperator`) or `model="ACT"` (atomic coordination types, `ACTExchangeOperator`) —
+  see `EXCHANGE_OPERATORS` in `local_optimization/local_optimization.py`. The guided exchange is
+  driven by per-atom energies from the **TEC** local descriptor: for `model="TOP"`, fit/convert the
+  global TOP (`TopologicalFeatureClassifier`) coefficients with
+  `compute_coefficients_for_linear_topological_model` and load them onto a `TOPCalculator('TEC', …)`
+  via `set_coefficients`; `model="ACT"` is already trained on the TEC descriptors directly. Guided
+  exchange only exists for two elements, so **multi-metal (ETOP) ordering has no basin hopping —
+  use the canonical Metropolis MC in `npl.monte_carlo` instead** (see `examples/multimet_go.ipynb`).
 
 - **`npl.monte_carlo`** — Metropolis Monte Carlo over chemical ordering at fixed composition
   (canonical). `run_monte_carlo(temperature, max_steps, start_particle, energy_calculator,
