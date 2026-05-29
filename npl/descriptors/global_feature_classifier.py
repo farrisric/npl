@@ -235,6 +235,26 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
 
         return atom_feature
 
+    def compute_atom_feature_for_symbol(self, particle, index, symbol):
+        """ETOP per-atom feature the atom at ``index`` would have as ``symbol``.
+
+        Geometry (coordination number, sublayer index) and neighbor symbols are
+        held fixed; only the atom's own species is hypothetically changed. Relies
+        on ``self.sublayer_indices`` being populated (call ``compute_feature_vector``
+        once first).
+        """
+        atom_feature = np.zeros(self.n_features)
+        atom_feature[self.layer_types[symbol]] = self.sublayer_indices[index]
+        coordination = particle.get_coordination_number(index)
+        cn_index = (self.n_bond_features + self.n_sub_layers + coordination +
+                    13 * self.symbols.index(symbol))
+        for neigh_index in particle.neighbor_list[index]:
+            element2 = particle.get_symbol(neigh_index)
+            bond_type = tuple(sorted([symbol, element2]))
+            atom_feature[self.bond_types[bond_type]] += 0.5
+        atom_feature[cn_index] += 1
+        return atom_feature
+
     def compute_atom_features(self, particle):
         self.get_sublayer_indices(particle)
         particle.set_atom_features(np.zeros((particle.get_n_atoms(),
