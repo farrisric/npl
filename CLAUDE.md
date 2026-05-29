@@ -6,28 +6,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NanoParticleLibrary (`npl`) — a Python library for simulating and optimizing the structure and
 chemical ordering of (primarily bimetallic) nanoparticles. It is built on top of ASE (Atomic
-Simulation Environment) and targets Python 3.9+.
+Simulation Environment) and targets Python 3.10+.
 
 ## Commands
 
 ```bash
-pip install -e .                  # editable install
-pip install -r requirements.txt   # pinned dev/runtime deps (acat, scikit-learn, nbconvert, ...)
+pip install -e ".[test]"          # editable install + test deps (pytest); deps live in pyproject.toml
 
+pytest                            # run the test suite (config in pyproject.toml: testpaths=tests)
 flake8                            # lint; config in .flake8 (max line 100, single quotes, E203 ignored)
 
-python setup.py sdist bdist_wheel # build distributions (PyPI publish runs on pushing a v* tag)
+python -m build                   # build sdist+wheel (PyPI publish runs on pushing a v* tag)
 
 cd docs && make html              # build Sphinx docs into docs/_build/
 ```
 
-**Tests**: there is effectively no test suite yet. `test/test_core.py` is empty and the `pytest`
-step in `.github/workflows/test.yml` is commented out — CI only installs deps. Don't assume a
-passing test run validates a change; verify behavior through the example notebooks instead.
+**Tests**: a real `pytest` suite lives in `tests/` (imports, core, descriptors, calculators,
+optimization) and CI (`.github/workflows/test.yml`) runs it on Python 3.10–3.13. Add/adjust tests
+when changing behavior.
 
-**Examples are the real documentation.** The tutorials live as Jupyter notebooks in `examples/`
-(`global_optimization.ipynb`, `train_top.ipynb`, `loading_pretrain_top.ipynb`, `multimet_go.ipynb`,
-`adsorbate_optimization.ipynb`) and are mirrored as `.rst` under `docs/examples/`.
+**Examples**: `examples/top_energy_evaluation.py` is the runnable flagship example (build a
+particle → topological features → `TOPCalculator` energy); `train_top.ipynb` covers fitting. Monte
+Carlo / GCMC examples live in the companion repo `mcpy` (see Gotchas).
 
 ## Architecture
 
@@ -35,7 +35,7 @@ The standard workflow is a pipeline tied together by **string keys**:
 
 ```
 build Nanoparticle  →  feature_classifier.compute_feature_vector(p)  →
-energy_calculator.compute_energy(p)  →  optimization / monte_carlo
+energy_calculator.compute_energy(p)  →  optimization
 ```
 
 A `feature_key` identifies which feature vector a calculator reads; an `energy_key` identifies where
@@ -68,33 +68,27 @@ computed on the particle.
   `model_paths`. `compute_coefficients_for_linear_topological_model` converts fitted linear/BRR
   coefficients into the per-coordination-type topological coefficients.
 
-- **`npl.optimization`** — global-optimization drivers. `GOSearch` is the base, specialized by
-  `MCSearch`, `GASearch`, `GuidedSearch` (each fits an energy expression then runs a search and can
-  repeat runs via `run_multiple_simulations`). Subpackages: `basin_hopping`, `local_optimization`,
-  and `genetic_algoritm` (note the spelling — that is the actual directory name).
-
-- **`npl.monte_carlo`** — Metropolis MC over chemical ordering. `run_monte_carlo(temperature,
-  max_steps, start_particle, energy_calculator, feature_classifier)` is the main entry point. It uses
-  random exchange operators and **incremental feature updates** — after a swap only the neighborhood
-  of the exchanged atoms is recomputed (`features_to_update`), so don't introduce full
-  recomputation in the MC loop.
+- **`npl.optimization`** — chemical-ordering optimization drivers. `GOSearch` is the base,
+  specialized by `MCSearch`, `GASearch`, `GuidedSearch`. Subpackages: `basin_hopping`,
+  `local_optimization`, and `genetic_algorithm`. Basin hopping / local optimization select the
+  exchange operator via `model="TOP"` (guided, `GuidedExchangeOperator`) or `model="ACT"` (atomic
+  coordination types, `ACTExchangeOperator`) — see `EXCHANGE_OPERATORS` in
+  `local_optimization/local_optimization.py`.
 
 - **`npl.visualize`**, **`npl.utils`** — plotting helpers and math/geometry utilities.
 
 ## Gotchas
 
-- **The atomistic Monte Carlo work moved to a separate repo, `mcpy`** (commit `6616c23`,
-  https://github.com/farrisric/mcpy). The additional working directory
-  `/home/energystorage/projects/mcpy/mcpy/calculators` is its home and contains newer calculators
-  (MACE, ALIGNN/alchemi). New MC / ML-potential work generally belongs in `mcpy`, not here.
+- **Monte Carlo lives in the companion repo `mcpy`** (https://github.com/farrisric/mcpy), not here.
+  `npl.monte_carlo` was removed; `npl` covers structure, descriptors, energy models, and
+  chemical-ordering optimization. New MC / ML-potential (MACE, alchemi) work belongs in `mcpy`. The
+  additional working directory `/home/energystorage/projects/mcpy/mcpy/calculators` is its home.
 - `import npl` runs `setup_logging()`, which writes an `npl.log` file in the current working
   directory and logs to stdout at INFO. Several modules also call `logging.basicConfig` again.
-- `data/params.json` exists but `TOPCalculator` reads its coefficients from the Python dict in
-  `npl/calculators/parameters.py`, not from that JSON file.
-- Version is inconsistent: `setup.py` declares `1.0.4` while `npl/__init__.py` sets `__version__ =
-  "1.0.0"`.
-- Some code uses APIs removed in modern NumPy (e.g. `np.int` in `npl/core/nanoparticle.py`); be aware
-  of NumPy/scikit-learn version sensitivity when running older paths.
+- `TOPCalculator` reads its coefficients from the Python dict `top_parameters` in
+  `npl/calculators/parameters.py` (keyed by stoichiometry string, e.g. `"Pt151Cu50"`).
+- The version is single-sourced from `npl/__init__.py:__version__` (`pyproject.toml` reads it via
+  `[tool.setuptools.dynamic]`). Bump it there.
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
