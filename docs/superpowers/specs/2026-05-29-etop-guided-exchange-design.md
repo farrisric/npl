@@ -119,17 +119,17 @@ existing `compute_atom_feature` logic with the element taken from the argument i
 - Both `GuidedExchangeOperator.guided_exchange` and `ETOPExchangeOperator.guided_exchange`
   return `(index1, index2, flip_estimate)`. For the binary operator, `flip_estimate =
   symbol1_exchange_energies[i] + symbol2_exchange_energies[j]` (the value
-  `basin_hopping.py` computes today at lines 42–43).
+  `basin_hopping.py` computes today at lines 38–39).
 - Call sites updated: `local_optimization` line 65 (`index1, index2, _ = ...`) and
-  `basin_hopping` lines 40–43 (use the returned `flip`, drop the
+  `basin_hopping` lines 36–39 (use the returned `flip`, drop the
   `symbol1_exchange_energies[...]` reach-in). `flip_energy_list` content is preserved.
 
 `basin_hopping/basin_hopping.py`:
 
-- Feature-update and rollback call the same `local_env_calculator is None` branch.
-- Final best-particle rebuild (lines 99–105): for ETOP (`local_env_calculator is None`)
-  skip `compute_local_environments` and just call `compute_feature_vector(best_particle)`,
-  which recomputes ETOP features from symbols.
+- Feature-update calls the same `local_env_calculator is None` branch in both inner loops.
+- The best particle is captured via `copy.deepcopy(start_particle)`, which already carries
+  the ETOP feature vector, so no ETOP-specific final-rebuild branch is needed. (This is the
+  current `deepcopy`-based `run_basin_hopping`; only the feature-update calls branch.)
 
 ## Error handling
 
@@ -142,10 +142,12 @@ existing `compute_atom_feature` logic with the element taken from the argument i
 
 ## Testing (`tests/test_optimization.py`)
 
-1. **Linear-decomposition exactness.** Construct a particle and a linear ETOP calculator;
-   choose a swap where A and B are non-adjacent and share no neighbors. Assert the
-   operator's `flip_estimate` equals the exact ΔE from a full energy recompute (the only
-   terms that could differ — cross-bond and shared neighbors — are absent).
+1. **Gain-formula correctness (white-box).** Build a particle and a linear ETOP calculator;
+   assert the operator's stored `flip_gain[(i, j)][A]` equals an independently computed
+   `coef · (f_A^(j) − f_A^(i))` (via `compute_atom_feature_for_symbol`). This validates the
+   sign and indexing of the gain. Note: the gain weights each bond at 0.5 (the atom's own
+   half), so it deliberately does **not** equal the full swap ΔE — it is a ranking
+   heuristic, made exact by the driver's recompute/rollback.
 2. **Incremental == fresh.** After a sequence of guided swaps, build a fresh operator via
    `bind_particle` on the current particle and assert its directed-list contents and
    flip-gains match the incrementally `update`d operator. This is the primary invariant
@@ -163,4 +165,4 @@ existing `compute_atom_feature` logic with the element taken from the argument i
 There is **no** numeric reduction to the binary `GuidedExchangeOperator` at `k = 2`: the
 two share the per-pair-sorted-list *structure* (two directed lists), but they consume
 different descriptors (ETOP vs. TEC), so their energies are not comparable. The real
-correctness invariants are tests 1 (exactness) and 2 (incremental == fresh).
+correctness invariants are tests 1 (gain-formula correctness) and 2 (incremental == fresh).
