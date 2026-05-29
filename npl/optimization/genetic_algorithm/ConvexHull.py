@@ -1,7 +1,7 @@
 import numpy as np
-from npl.optimization.genetic_algoritm.CutAndSpliceOperator import CutAndSpliceOperator
-from npl.optimization.genetic_algoritm.ExchangeOperator import ExchangeOperator
-from npl.optimization.genetic_algoritm.MutationOperator import MutationOperator
+from npl.optimization.genetic_algorithm.CutAndSpliceOperator import CutAndSpliceOperator
+from npl.optimization.genetic_algorithm.ExchangeOperator import ExchangeOperator
+from npl.optimization.genetic_algorithm.MutationOperator import MutationOperator
 
 import copy
 import pickle

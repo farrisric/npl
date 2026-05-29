@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def run_basin_hopping(start_particle, energy_calculator, environment_energies, n_hopping_attempts,
                       n_hops,
-                      local_feature_classifier=None):
+                      local_feature_classifier=None, model='TOP'):
 
     logging.info("Starting Basin Hopping simulation")
     logging.info("Hopping attempts: {}".format(n_hopping_attempts))
@@ -17,7 +17,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
 
     energy_key, local_env_calculator, local_feature_classifier, exchange_operator = \
         setup_local_optimization(start_particle, energy_calculator, environment_energies,
-                                 local_feature_classifier)
+                                 local_feature_classifier, model=model)
 
     logging.info("Starting energy: {}".format(start_particle.get_energy(
         energy_calculator.get_energy_key())))
@@ -35,8 +35,8 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
             step += 1
             index1, index2 = exchange_operator.guided_exchange(start_particle)
 
-            flip = exchange_operator.symbol1_exchange_energies[index1]
-            + exchange_operator.symbol2_exchange_energies[index2]
+            flip = (exchange_operator.symbol1_exchange_energies[index1]
+                    + exchange_operator.symbol2_exchange_energies[index2])
 
             exchanged_indices = [index1, index2]
 

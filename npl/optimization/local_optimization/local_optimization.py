@@ -1,10 +1,13 @@
 from npl.descriptors.local_environment_calculator import NeighborCountingEnvironmentCalculator
 from npl.optimization.local_optimization.guided_exchange_operator import GuidedExchangeOperator
+from npl.optimization.local_optimization.act_exchange_operator import ACTExchangeOperator
 from npl.descriptors.local_environment_feature_classifier import TopologicalEnvironmentClassifier
+
+EXCHANGE_OPERATORS = {'TOP': GuidedExchangeOperator, 'ACT': ACTExchangeOperator}
 
 
 def setup_local_optimization(start_particle, energy_calculator, environment_energies,
-                             local_feature_classifier=None):
+                             local_feature_classifier=None, model='TOP'):
     symbols = start_particle.get_all_symbols()
     local_env_calculator = NeighborCountingEnvironmentCalculator(symbols)
     if local_feature_classifier is None:
@@ -16,7 +19,12 @@ def setup_local_optimization(start_particle, energy_calculator, environment_ener
     feature_key = local_feature_classifier.get_feature_key()
     energy_calculator.compute_energy(start_particle)
 
-    exchange_operator = GuidedExchangeOperator(environment_energies, feature_key)
+    try:
+        exchange_operator_cls = EXCHANGE_OPERATORS[model]
+    except KeyError:
+        raise ValueError(
+            f"Unknown model {model!r}; choose from {sorted(EXCHANGE_OPERATORS)}")
+    exchange_operator = exchange_operator_cls(environment_energies, feature_key)
     exchange_operator.bind_particle(start_particle)
 
     energy_key = energy_calculator.get_energy_key()
@@ -43,10 +51,10 @@ def update_atomic_features(index1, index2, local_env_calculator, local_feature_c
 
 
 def local_optimization(start_particle, energy_calculator, environment_energies,
-                       local_feature_classifier=None):
+                       local_feature_classifier=None, model='TOP'):
     energy_key, local_env_calculator, local_feature_classifier, exchange_operator = \
         setup_local_optimization(start_particle, energy_calculator,
-                                 environment_energies, local_feature_classifier)
+                                 environment_energies, local_feature_classifier, model=model)
 
     start_energy = start_particle.get_energy(energy_key)
     accepted_energies = [(start_energy, 0)]

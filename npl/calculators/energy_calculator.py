@@ -327,104 +327,9 @@ class BayesianRRCalculator(EnergyCalculator):
             particle : Nanoparticle
         """
         feature_vector = particle.get_feature_vector(self.feature_key)
-        # brr_energy = self.ridge.predict([particle.get_feature_vector(self.feature_key)])
-        # brr_energy = np.dot(np.transpose(self.ridge.coef_),
-        # particle.get_feature_vector(self.feature_key))
         brr_energy = np.dot(np.transpose(self.ridge.coef_), feature_vector)
         particle.set_energy(self.energy_key, brr_energy)
         return brr_energy
-
-
-class DipoleMomentCalculator:
-
-    def __init__(self):
-        self.total_dipole_moment = None
-        self.dipole_moments = None
-        self.environments = None
-
-    def compute_dipole_moment(self, particle, charges=[1, -1]):
-
-        symbols = particle.get_all_symbols()
-        fake_charges = {symbols[0] : charges[0], symbols[1] : charges[1]}
-        partial_charges = [fake_charges[symbol] for symbol in particle.get_symbols()]
-
-        dipole_moments = []
-        environments = []
-        for central_atom_idx in particle.get_atom_indices_from_coordination_number([12]):
-            particle.translate_atoms_positions(particle.get_position(central_atom_idx))
-            dipole_moment = 0
-            for atom_idx in particle.get_coordination_atoms(central_atom_idx):
-                dipole_moment += partial_charges[atom_idx] * particle.get_position(atom_idx)
-
-            dipole_moments.append(np.linalg.norm(dipole_moment))
-            environments.append(particle.get_coordination_atoms(central_atom_idx))
-
-        self.total_dipole_moment = np.average(dipole_moments)/particle.get_n_atoms()
-        self.dipole_moments = dipole_moments
-        self.environments = environments
-
-    def get_total_dipole_moment(self):
-        return self.total_dipole_moment
-
-    def get_dipole_moments(self):
-        return self.dipole_moments
-
-    def get_environments(self):
-        return self.environments
-
-
-class LateralInteractionCalculator:
-
-    def __init__(self):
-        EnergyCalculator.__init__(self)
-        self.interaction_matrix = None
-        self.energy_key = 'Lateral Interaction'
-        self.a = 6
-
-    def construct_interatomic_potential_matrix(self, particle):
-        def construct_adsorbate_grid(particle):
-            from npl.core.adsorption import PlaceAddAtoms
-            particle.construct_adsorption_list()
-            n_sites = particle.get_total_number_of_sites()
-            ads_site_list = particle.get_adsorption_list()
-            ads_placer = PlaceAddAtoms(particle.get_all_symbols())
-            ads_placer.bind_particle(particle)
-            adsorbate_positions = [list(ads_site_list[site]) for site in range(n_sites)]
-            particle = ads_placer.place_add_atom(particle, 'O', adsorbate_positions)
-            return particle
-
-        def get_adsorbate_distance_matrix(particle, n_atoms_np):
-            ase_atoms = particle.get_ase_atoms()
-            adsorbate_all_distances = ase_atoms.get_all_distances()[n_atoms_np:]
-            distance_matrix = np.array([row[n_atoms_np:] for row in adsorbate_all_distances])
-            return distance_matrix
-
-        n_atoms_np = particle.get_n_atoms()
-        particle = construct_adsorbate_grid(particle)
-        distance_matrix = get_adsorbate_distance_matrix(particle, n_atoms_np)
-        interaction_matrix = np.zeros(distance_matrix.shape)
-        interaction_matrix = self.a / distance_matrix**2
-
-        dimension = len(interaction_matrix)
-        for i in np.arange(dimension):
-            interaction_matrix[i][i] = 0
-
-        self.interaction_matrix = interaction_matrix
-
-    def bind_grid(self, particle):
-        particle_for_grid = copy.deepcopy(particle)
-        self.construct_interatomic_potential_matrix(particle_for_grid)
-
-    def compute_energy(self, particle):
-        lateral_interaction = 0
-        occupied_sites_indices = particle.get_occupation_status_by_indices(1)
-        for idx, site_index in enumerate(occupied_sites_indices):
-            for pair_index in occupied_sites_indices[idx:]:
-                lateral_interaction += self.interaction_matrix[site_index][pair_index]
-        particle.set_energy(self.energy_key, lateral_interaction)
-
-# TODO move to relevant file -> Basin Hopping, Local optimization
-# TODO remove scaling factors from topological descriptors
 
 
 def compute_coefficients_for_linear_topological_model(global_topological_coefficients, symbols,
@@ -465,39 +370,6 @@ def compute_coefficients_for_linear_topological_model(global_topological_coeffic
 
                 coefficients.append(energy)
                 total_energies.append(total_energy)
-
-    coefficients = np.array(coefficients)
-
-    return coefficients, total_energies
-
-
-def compute_coefficients_for_shape_optimization(global_topological_coefficients, symbols):
-    coordination_numbers = list(range(13))
-    symbols_copy = copy.deepcopy(symbols)
-    symbols_copy.sort()
-
-    e_aa_bond = global_topological_coefficients[0]
-
-    coordination_energies_a = dict()
-    for index, cn in enumerate(coordination_numbers):
-        coordination_energies_a[cn] = global_topological_coefficients[index + 1]
-
-    coefficients = []
-    total_energies = []
-    for cn_number in coordination_numbers:
-        for n_symbol_a_atoms in range(cn_number + 1):
-            energy = 0
-
-            energy += (n_symbol_a_atoms*e_aa_bond/2)
-            energy += (coordination_energies_a[cn_number])
-
-            total_energy = energy + n_symbol_a_atoms*e_aa_bond/2
-
-            coefficients.append(energy)
-            total_energies.append(total_energy)
-
-    coefficients += [0]*len(coefficients)
-    total_energies += [0]*len(total_energies)
 
     coefficients = np.array(coefficients)
 
