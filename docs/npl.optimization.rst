@@ -11,17 +11,6 @@ Subpackages
    npl.optimization.genetic_algorithm
    npl.optimization.local_optimization
 
-Submodules
-----------
-
-npl.optimization.go\_search module
-----------------------------------
-
-.. automodule:: npl.optimization.go_search
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 
