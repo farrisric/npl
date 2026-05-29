@@ -276,7 +276,7 @@ class BayesianRRCalculator(EnergyCalculator):
         None
         """
         if isinstance(validation_set, float):
-            split_index = int(len(training_set) * validation_set)
+            split_index = int(len(training_set) * (1 - validation_set))
             validation_set = training_set[split_index:]
             training_set = training_set[:split_index]
 
