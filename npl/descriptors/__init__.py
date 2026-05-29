@@ -15,6 +15,14 @@ from .local_environment_calculator import (LocalEnvironmentCalculator,
                                            NeighborCountingEnvironmentCalculator)
 
 __all__ = [
-    "LayererTopologicalDescriptors",
-    "LocalEnvironmentCalculator"
+    "GlobalFeatureClassifier",
+    "TopologicalFeatureClassifier",
+    "ExtendedTopologicalFeaturesClassifier",
+    "AtomicCoordinationTypes",
+    "CoordinationFeatureClassifier",
+    "LocalEnvironmentFeatureClassifier",
+    "CoordinationNumberClassifier",
+    "TopologicalEnvironmentClassifier",
+    "LocalEnvironmentCalculator",
+    "NeighborCountingEnvironmentCalculator",
 ]

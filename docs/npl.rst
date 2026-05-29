@@ -10,7 +10,6 @@ Subpackages
    npl.calculators
    npl.core
    npl.descriptors
-   npl.monte_carlo
    npl.optimization
    npl.utils
 

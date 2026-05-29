@@ -8,6 +8,6 @@ __all__ = [
     "MCSearch",
     "GASearch",
     "GuidedSearch",
-    "local_optimization"
-    "run_basin_hopping"
+    "local_optimization",
+    "run_basin_hopping",
 ]

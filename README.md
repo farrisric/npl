@@ -57,39 +57,32 @@ pip install ./npl
 
 ## Examples
 
-### Monte Carlo Run Example
+### TOP Energy Evaluation Example
 
-Here’s a revised version without using lists:
-
-This example demonstrates how to perform a Monte Carlo simulation using NPL. First, pre-trained topological coefficients are loaded to guide the simulation. A truncated octahedral Pt151Cu50 nanoparticle is then initialized as the system for the simulation. The Monte Carlo simulation is set up with a temperature parameter of 250 K and a total of 10,000 steps. Once the simulation is executed, the positions of the nanoparticle atoms are optimized. Finally, the optimized positions are printed for analysis.
+This example demonstrates how to evaluate the topological (TOP) energy of a bimetallic nanoparticle using pretrained coefficients shipped with NPL. A 201-atom truncated-octahedral Pt151Cu50 particle is constructed, its extended topological feature vector is computed, and the energy is evaluated using a `TOPCalculator` loaded from pretrained linear-model coefficients. The result is a fast, DFT-quality energy estimate without requiring an external calculator.
 
 ```python
-
-from npl.descriptors import ExtendedTopologicalFeaturesClassifier
-from npl.calculators import TOPCalculator
 from npl.core import Nanoparticle
-from npl.monte_carlo import run_monte_carlo
-from npl.visualize import plot_parted_particle
+from npl.calculators import TOPCalculator
+from npl.descriptors import ExtendedTopologicalFeaturesClassifier
 
-energy_calculator = TOPCalculator('ETOP', stoichiometry='Pt151Cu50',
-                                  feature_classifier=ExtendedTopologicalFeaturesClassifier)
-feature_classifier = energy_calculator.get_feature_classifier()
+calculator = TOPCalculator(
+    "ETOP",
+    stoichiometry="Pt151Cu50",
+    feature_classifier=ExtendedTopologicalFeaturesClassifier,
+)
+feature_classifier = calculator.get_feature_classifier()
 
-temperature = 250
-max_steps = 10000
+particle = Nanoparticle()
+particle.truncated_octahedron(7, 2, {"Pt": 151, "Cu": 50})
 
-start_particle = Nanoparticle()
-start_particle.truncated_octahedron(7, 2, {'Pt': 151, 'Cu': 50})
-best_particle, accepted_energies = run_monte_carlo(temperature,
-                                                   max_steps,
-                                                   start_particle,
-                                                   energy_calculator,
-                                                   feature_classifier)
+feature_classifier.compute_feature_vector(particle)
+energy = calculator.compute_energy(particle)
 
-plot_parted_particle(best_particle)
+print(f"TOP energy of Pt151Cu50: {float(energy):.4f}")
 ```
 
-![Tutorial Image](https://github.com/farrisric/npl/blob/main/docs/images/tutorial4_image1.png?raw=true)
+> **Looking for Monte Carlo / grand-canonical sampling?** That functionality now lives in the companion package [mcpy](https://github.com/farrisric/mcpy).
 
 ## References
 
