@@ -1,7 +1,6 @@
 """
-NPlib - A library for numerical processing.
-
-This package provides various numerical processing utilities.
+NanoParticleLibrary (npl) — simulate and optimize the structure and chemical
+ordering of (primarily bimetallic) nanoparticles, built on top of ASE.
 """
 from .logging_config import setup_logging
 

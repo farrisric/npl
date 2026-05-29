@@ -1,6 +1,6 @@
 import numpy as np
-from npl.optimization.genetic_algorithm.CutAndSpliceOperator import CutAndSpliceOperator
-from npl.optimization.genetic_algorithm.ExchangeOperator import ExchangeOperator
+from npl.optimization.genetic_algorithm.cut_and_splice_operator import CutAndSpliceOperator
+from npl.optimization.genetic_algorithm.exchange_operator import ExchangeOperator
 from npl.optimization.local_optimization.local_optimization import local_optimization
 
 
