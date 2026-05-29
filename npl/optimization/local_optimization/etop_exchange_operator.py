@@ -75,6 +75,22 @@ class ETOPExchangeOperator:
         particle.swap_symbols([(index_a, index_b)])
         return index_a, index_b, gain
 
+    def basin_hop_step(self, particle):
+        candidates = []  # (gain, A, B)
+        for i, j in itertools.combinations(self.symbols, 2):
+            la, lb = self.indices[(i, j)], self.indices[(j, i)]
+            if la and lb:
+                a, b = la[0], lb[0]
+                candidates.append((self.flip_gain[(i, j)][a] + self.flip_gain[(j, i)][b], a, b))
+        if not candidates:
+            raise ValueError(
+                "ETOP basin hop needs at least two species present in the particle.")
+        uphill = [c for c in candidates if c[0] > 0]
+        gain, index_a, index_b = (min(uphill, key=lambda c: c[0]) if uphill
+                                  else max(candidates, key=lambda c: c[0]))
+        particle.swap_symbols([(index_a, index_b)])
+        return index_a, index_b
+
     def update(self, particle, indices, exchange_indices):
         # exchange_indices is accepted for interface parity with the binary
         # operators; ETOP refreshes every atom in `indices` from self.atom_symbol.

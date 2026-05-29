@@ -115,3 +115,12 @@ def test_etop_update_matches_fresh_bind():
         op_gains = [op.flip_gain[pair][idx] for idx in op.indices[pair]]
         fresh_gains = [fresh.flip_gain[pair][idx] for idx in fresh.indices[pair]]
         assert op_gains == pytest.approx(fresh_gains)
+
+
+def test_etop_basin_hop_step_swaps_unlike_species():
+    particle, calc, fc = _build_etop()
+    op = ETOPExchangeOperator(calc.get_coefficients(), fc)
+    op.bind_particle(particle)
+    a, b = op.basin_hop_step(particle)
+    assert op.atom_symbol[a] != op.atom_symbol[b]
+    assert particle.get_symbol(a) == op.atom_symbol[b]
