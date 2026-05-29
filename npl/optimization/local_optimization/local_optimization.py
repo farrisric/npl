@@ -2,13 +2,30 @@ from npl.descriptors.local_environment_calculator import NeighborCountingEnviron
 from npl.optimization.local_optimization.guided_exchange_operator import GuidedExchangeOperator
 from npl.optimization.local_optimization.act_exchange_operator import ACTExchangeOperator
 from npl.descriptors.local_environment_feature_classifier import TopologicalEnvironmentClassifier
+from npl.descriptors.global_feature_classifier import ExtendedTopologicalFeaturesClassifier
+from npl.optimization.local_optimization.etop_exchange_operator import ETOPExchangeOperator
 
-EXCHANGE_OPERATORS = {'TOP': GuidedExchangeOperator, 'ACT': ACTExchangeOperator}
+EXCHANGE_OPERATORS = {'TOP': GuidedExchangeOperator, 'ACT': ACTExchangeOperator,
+                      'ETOP': ETOPExchangeOperator}
 
 
 def setup_local_optimization(start_particle, energy_calculator, environment_energies,
                              local_feature_classifier=None, model='TOP'):
     symbols = start_particle.get_all_symbols()
+    if model == 'ETOP':
+        if not hasattr(energy_calculator, 'get_coefficients'):
+            raise ValueError(
+                "ETOP guided exchange requires a linear energy model exposing "
+                "get_coefficients() (e.g. BayesianRRCalculator or TOPCalculator).")
+        if local_feature_classifier is None:
+            local_feature_classifier = ExtendedTopologicalFeaturesClassifier(symbols)
+        local_feature_classifier.compute_feature_vector(start_particle)
+        energy_calculator.compute_energy(start_particle)
+        exchange_operator = ETOPExchangeOperator(
+            energy_calculator.get_coefficients(), local_feature_classifier)
+        exchange_operator.bind_particle(start_particle)
+        energy_key = energy_calculator.get_energy_key()
+        return energy_key, None, local_feature_classifier, exchange_operator
     local_env_calculator = NeighborCountingEnvironmentCalculator(symbols)
     if local_feature_classifier is None:
         local_feature_classifier = TopologicalEnvironmentClassifier(local_env_calculator, symbols)
@@ -50,6 +67,16 @@ def update_atomic_features(index1, index2, local_env_calculator, local_feature_c
     return particle, neighborhood
 
 
+def update_atomic_features_etop(index1, index2, feature_classifier, particle):
+    neighborhood = {index1, index2}
+    neighborhood = neighborhood.union(particle.neighbor_list[index1])
+    neighborhood = neighborhood.union(particle.neighbor_list[index2])
+
+    old_atom_features, change = feature_classifier.update_feature_vector(particle, neighborhood)
+
+    return particle, neighborhood, old_atom_features, change
+
+
 def local_optimization(start_particle, energy_calculator, environment_energies,
                        local_feature_classifier=None, model='TOP'):
     energy_key, local_env_calculator, local_feature_classifier, exchange_operator = \
@@ -65,9 +92,13 @@ def local_optimization(start_particle, energy_calculator, environment_energies,
         index1, index2, _flip = exchange_operator.guided_exchange(start_particle)
         exchanged_indices = [index1, index2]
 
-        start_particle, neighborhood = update_atomic_features(index1, index2, local_env_calculator,
-                                                              local_feature_classifier,
-                                                              start_particle)
+        if local_env_calculator is None:
+            start_particle, neighborhood, old_atom_features, change = \
+                update_atomic_features_etop(index1, index2, local_feature_classifier,
+                                            start_particle)
+        else:
+            start_particle, neighborhood = update_atomic_features(
+                index1, index2, local_env_calculator, local_feature_classifier, start_particle)
         exchange_operator.update(start_particle, neighborhood, exchanged_indices)
 
         energy_calculator.compute_energy(start_particle)
@@ -82,9 +113,13 @@ def local_optimization(start_particle, energy_calculator, environment_energies,
             # roll back last exchange and make sure features and environments are up-to-date
             start_particle.swap_symbols([(index1, index2)])
             start_particle.set_energy(energy_key, start_energy)
-            for index in neighborhood:
-                local_env_calculator.compute_local_environment(start_particle, index)
-                local_feature_classifier.compute_atom_feature(start_particle, index)
+            if local_env_calculator is None:
+                local_feature_classifier.downgrade_feature_vector(
+                    start_particle, neighborhood, old_atom_features, change)
+            else:
+                for index in neighborhood:
+                    local_env_calculator.compute_local_environment(start_particle, index)
+                    local_feature_classifier.compute_atom_feature(start_particle, index)
 
             break
 

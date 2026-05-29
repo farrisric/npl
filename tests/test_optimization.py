@@ -124,3 +124,27 @@ def test_etop_basin_hop_step_swaps_unlike_species():
     a, b = op.basin_hop_step(particle)
     assert op.atom_symbol[a] != op.atom_symbol[b]
     assert particle.get_symbol(a) == op.atom_symbol[b]
+
+
+def test_etop_local_optimization_descends_and_preserves_composition():
+    particle, calc, fc = _build_etop()
+    before = dict(particle.get_stoichiometry())
+    result, accepted = local_optimization(particle, calc, None, model="ETOP")
+    energies = [e for e, _ in accepted]
+    assert all(energies[k + 1] <= energies[k] + 1e-9 for k in range(len(energies) - 1))
+    assert accepted[-1][0] <= accepted[0][0] + 1e-6
+    assert dict(result.get_stoichiometry()) == before
+
+
+def test_etop_requires_linear_calculator():
+    particle, _calc, _fc = _build_etop()
+
+    class _NoCoeffCalc:
+        def get_energy_key(self):
+            return "X"
+
+        def compute_energy(self, p):
+            p.set_energy("X", 0.0)
+
+    with pytest.raises(ValueError):
+        local_optimization(particle, _NoCoeffCalc(), None, model="ETOP")
