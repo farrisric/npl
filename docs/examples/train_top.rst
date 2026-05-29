@@ -10,7 +10,7 @@ Here, we import essential modules that will allow us to create nanoparticles, co
     from npl.calculators import EMTCalculator
     from npl.descriptors.global_feature_classifier import testTopologicalFeatureClassifier
     from npl.calculators import BayesianRRCalculator
-    from npl.utils.utils import plot_learning_curves
+    from npl.visualize.visualize import plot_learning_curves
     import numpy as np
     import matplotlib.pyplot as plt
     import pickle
