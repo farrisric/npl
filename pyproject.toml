@@ -1,0 +1,36 @@
+[project]
+name = "npl"
+description = "NanoParticleLibrary: structural and chemical-ordering analysis and optimization of nanoparticles"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Riccardo Farris", email = "rfarris@ub.edu" }]
+dynamic = ["version"]
+dependencies = [
+    "ase>=3.23",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.5",
+    "sortedcontainers>=2.4",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/farrisric/npl"
+Documentation = "https://nplib.readthedocs.io"
+Issues = "https://github.com/farrisric/npl/issues"
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["npl*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "npl.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

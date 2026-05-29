@@ -35,7 +35,7 @@ A partial documentation is available at: https://nplib.readthedocs.io/en/latest/
 
 ### Requirements
 
-- Python 3.9+
+- Python 3.10+
 - Atomic Simulation Environment (ASE) >= 3.21
 - scikit-learn
 - sortedcontainers
