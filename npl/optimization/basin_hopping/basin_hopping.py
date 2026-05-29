@@ -24,7 +24,11 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
 
     start_energy = start_particle.get_energy(energy_key)
     lowest_energies = [(start_energy, 0)]
-    best_particle = copy.deepcopy(start_particle)
+    # Track the best ordering as a cheap atomic-numbers snapshot; the full
+    # best_particle (geometry is identical across orderings) is built once at
+    # the end instead of deep-copying the whole particle on every improvement.
+    best_numbers = start_particle.atoms.atoms.numbers.copy()
+    best_energy = start_energy
     lowest_energy = start_energy
 
     flip_energy_list = []
@@ -66,8 +70,8 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
 
                 if lowest_energy == start_energy:
                     start_particle.swap_symbols([(index1, index2)])
-                    best_particle = copy.deepcopy(start_particle)
-                    best_particle.set_energy(energy_key, start_energy)
+                    best_numbers = start_particle.atoms.atoms.numbers.copy()
+                    best_energy = start_energy
 
                     start_particle.swap_symbols([(index1, index2)])
                 break
@@ -91,5 +95,13 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
             start_energy = new_energy
     logging.info('Lowest energy: {:.3f}'.format(lowest_energy))
     lowest_energies.append((lowest_energy, step))
+
+    # Rebuild the best particle once from the cheap ordering snapshot, restoring
+    # local environments / features so it is consistent with the best ordering.
+    best_particle = copy.deepcopy(start_particle)
+    best_particle.atoms.atoms.set_atomic_numbers(best_numbers)
+    local_env_calculator.compute_local_environments(best_particle)
+    local_feature_classifier.compute_feature_vector(best_particle)
+    best_particle.set_energy(energy_key, best_energy)
 
     return [best_particle, lowest_energies, flip_energy_list]

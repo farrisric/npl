@@ -2,6 +2,7 @@ import numpy as np
 from collections import defaultdict
 
 from ase import Atoms
+from ase.data import atomic_numbers, chemical_symbols
 
 # TODO Derive directly from Atoms
 
@@ -25,7 +26,7 @@ class AtomWrapper:
         return self.atoms[indices]
 
     def get_position(self, idx):
-        return self.atoms[idx].position
+        return self.atoms.positions[idx]
 
     def remove_atoms(self, indices):
         del self.atoms[indices]
@@ -41,10 +42,9 @@ class AtomWrapper:
         return self.atoms[indices]
 
     def swap_symbols(self, index_pairs):
+        numbers = self.atoms.numbers
         for idx1, idx2 in index_pairs:
-            self.atoms[idx1].symbol, self.atoms[idx2].symbol = (
-                self.atoms[idx2].symbol, self.atoms[idx1].symbol
-            )
+            numbers[idx1], numbers[idx2] = numbers[idx2], numbers[idx1]
 
     def random_ordering(self, new_stoichiometry):
         """Creates a random chemical ordering for the given stoichiometry
@@ -62,8 +62,9 @@ class AtomWrapper:
         self.atoms.symbols = new_symbols
 
     def transform_atoms(self, atom_indices, new_symbols):
+        numbers = self.atoms.numbers
         for idx, symbol in zip(atom_indices, new_symbols):
-            self.atoms[idx].symbol = symbol
+            numbers[idx] = atomic_numbers[symbol]
 
     def get_indices(self):
         """Convenience function for range(n_atoms)."""
@@ -74,7 +75,7 @@ class AtomWrapper:
         return list(self.atoms.symbols.species())
 
     def get_symbol(self, atom_idx):
-        return self.atoms[atom_idx].symbol
+        return chemical_symbols[self.atoms.numbers[atom_idx]]
 
     def get_symbols(self, indices=None):
         if indices is None:

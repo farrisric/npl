@@ -1,6 +1,8 @@
 import numpy as np
 import copy
 
+from ase.data import atomic_numbers
+
 
 class LocalEnvironmentCalculator:
     """Base class for local environment calculators.
@@ -36,16 +38,12 @@ class NeighborCountingEnvironmentCalculator(LocalEnvironmentCalculator):
         symbols_copy.sort()
         self.symbol_a = symbols_copy[0]
         self.symbol_b = symbols_copy[1]
+        self.number_a = atomic_numbers[self.symbol_a]
 
     def predict_local_environment(self, particle, lattice_index):
-        n_a_atoms = 0
-        n_b_atoms = 0
-
+        # Count symbol_a neighbors directly on the atomic-numbers array; the rest
+        # are symbol_b (this calculator is restricted to two elements).
+        numbers = particle.atoms.atoms.numbers
         neighbors = particle.neighbor_list[lattice_index]
-        for neighbor in neighbors:
-            if particle.get_symbol(neighbor) == self.symbol_a:
-                n_a_atoms += 1
-            else:
-                n_b_atoms += 1
-
-        return np.array([n_a_atoms, n_b_atoms])
+        n_a_atoms = sum(1 for neighbor in neighbors if numbers[neighbor] == self.number_a)
+        return np.array([n_a_atoms, len(neighbors) - n_a_atoms])
