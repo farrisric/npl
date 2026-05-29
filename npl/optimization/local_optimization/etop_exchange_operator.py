@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 from sortedcontainers import SortedKeyList
 
@@ -56,3 +58,19 @@ class ETOPExchangeOperator:
         self.atom_symbol = {}
         for index in particle.get_indices():
             self._set_gains(particle, index)
+
+    def guided_exchange(self, particle):
+        best = None  # (gain, A, B)
+        for i, j in itertools.combinations(self.symbols, 2):
+            la, lb = self.indices[(i, j)], self.indices[(j, i)]
+            if la and lb:
+                a, b = la[0], lb[0]
+                gain = self.flip_gain[(i, j)][a] + self.flip_gain[(j, i)][b]
+                if best is None or gain < best[0]:
+                    best = (gain, a, b)
+        if best is None:
+            raise ValueError(
+                "ETOP guided exchange needs at least two species present in the particle.")
+        gain, index_a, index_b = best
+        particle.swap_symbols([(index_a, index_b)])
+        return index_a, index_b, gain

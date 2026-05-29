@@ -73,3 +73,18 @@ def test_etop_flip_gain_matches_formula():
     expected = float(np.dot(coeffs, f_j) - np.dot(coeffs, f_i))
     assert op.flip_gain[("Pt", "Au")][A] == pytest.approx(expected)
     assert A in op.indices[("Pt", "Au")]
+
+
+def test_etop_guided_exchange_swaps_unlike_species():
+    particle, calc, fc = _build_etop()
+    op = ETOPExchangeOperator(calc.get_coefficients(), fc)
+    op.bind_particle(particle)
+    sym_a = particle.get_symbol  # alias for readability
+
+    A, B, flip = op.guided_exchange(particle)
+    # the two atoms were of different species before the swap
+    assert op.atom_symbol[A] != op.atom_symbol[B]
+    # after the in-place swap they carry each other's old species
+    assert sym_a(A) == op.atom_symbol[B]
+    assert sym_a(B) == op.atom_symbol[A]
+    assert isinstance(flip, float)
