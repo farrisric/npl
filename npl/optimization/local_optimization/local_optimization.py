@@ -62,7 +62,7 @@ def local_optimization(start_particle, energy_calculator, environment_energies,
     step = 0
     while True:
         step += 2
-        index1, index2 = exchange_operator.guided_exchange(start_particle)
+        index1, index2, _flip = exchange_operator.guided_exchange(start_particle)
         exchanged_indices = [index1, index2]
 
         start_particle, neighborhood = update_atomic_features(index1, index2, local_env_calculator,

@@ -33,10 +33,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
     for i in range(n_hopping_attempts):
         while True:
             step += 1
-            index1, index2 = exchange_operator.guided_exchange(start_particle)
-
-            flip = (exchange_operator.symbol1_exchange_energies[index1]
-                    + exchange_operator.symbol2_exchange_energies[index2])
+            index1, index2, flip = exchange_operator.guided_exchange(start_particle)
 
             exchanged_indices = [index1, index2]
 

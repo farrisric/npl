@@ -25,8 +25,10 @@ class GuidedExchangeOperator:
         symbol1_index = self.symbol1_indices[0]
         symbol2_index = self.symbol2_indices[0]
 
+        flip = (self.symbol1_exchange_energies[symbol1_index]
+                + self.symbol2_exchange_energies[symbol2_index])
         particle.swap_symbols([(symbol1_index, symbol2_index)])
-        return symbol1_index, symbol2_index
+        return symbol1_index, symbol2_index, flip
 
     def basin_hop_step(self, particle):
         expected_energy_gain = -1
