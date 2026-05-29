@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 from npl.core import Nanoparticle
 from npl.calculators import (
@@ -26,9 +25,12 @@ def _build():
     return particle, calc, env_energies
 
 
-def test_local_optimization_runs_and_does_not_worsen():
+@pytest.mark.parametrize("model", ["TOP", "ACT"])
+def test_local_optimization_runs_and_does_not_worsen(model):
     particle, calc, env_energies = _build()
-    result_particle, accepted = local_optimization(particle, calc, env_energies)
+    result_particle, accepted = local_optimization(
+        particle, calc, env_energies, model=model
+    )
     assert len(accepted) >= 1
     assert accepted[-1][0] <= accepted[0][0] + 1e-6
 
