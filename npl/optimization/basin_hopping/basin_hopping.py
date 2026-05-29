@@ -1,5 +1,6 @@
 from npl.optimization.local_optimization import setup_local_optimization
 from npl.optimization.local_optimization import update_atomic_features
+from npl.optimization.local_optimization import update_atomic_features_etop
 import logging
 import copy
 
@@ -37,10 +38,13 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
 
             exchanged_indices = [index1, index2]
 
-            start_particle, neighborhood = update_atomic_features(index1, index2,
-                                                                  local_env_calculator,
-                                                                  local_feature_classifier,
-                                                                  start_particle)
+            if local_env_calculator is None:
+                start_particle, neighborhood, _old, _chg = update_atomic_features_etop(
+                    index1, index2, local_feature_classifier, start_particle)
+            else:
+                start_particle, neighborhood = update_atomic_features(
+                    index1, index2, local_env_calculator, local_feature_classifier,
+                    start_particle)
 
             exchange_operator.update(start_particle, neighborhood, exchanged_indices)
 
@@ -76,10 +80,13 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
 
             exchanged_indices = [index1, index2]
 
-            start_particle, neighborhood = update_atomic_features(index1, index2,
-                                                                  local_env_calculator,
-                                                                  local_feature_classifier,
-                                                                  start_particle)
+            if local_env_calculator is None:
+                start_particle, neighborhood, _old, _chg = update_atomic_features_etop(
+                    index1, index2, local_feature_classifier, start_particle)
+            else:
+                start_particle, neighborhood = update_atomic_features(
+                    index1, index2, local_env_calculator, local_feature_classifier,
+                    start_particle)
             exchange_operator.update(start_particle, neighborhood, exchanged_indices)
 
             energy_calculator.compute_energy(start_particle)

@@ -148,3 +148,12 @@ def test_etop_requires_linear_calculator():
 
     with pytest.raises(ValueError):
         local_optimization(particle, _NoCoeffCalc(), None, model="ETOP")
+
+
+def test_etop_basin_hopping_runs():
+    particle, calc, fc = _build_etop()
+    best, lowest_energies, flip_list = run_basin_hopping(
+        particle, calc, None, n_hopping_attempts=2, n_hops=2, model="ETOP")
+    assert best is not None
+    assert len(lowest_energies) >= 1
+    assert lowest_energies[-1][0] <= lowest_energies[0][0] + 1e-6
