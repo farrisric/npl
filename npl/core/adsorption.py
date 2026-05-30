@@ -6,13 +6,13 @@ import copy
 import itertools
 import numpy as np
 
-import itertools
 from collections import defaultdict
+
 
 class AdsorptionSiteList():
 
     def __init__(self):
-        self.list = defaultdict(lambda : set())
+        self.list = defaultdict(lambda: set())
         self.total_n_sites = 0
         self.occupation_vector = []
 
@@ -34,9 +34,10 @@ class AdsorptionSiteList():
         # Reset the occupation vector
         self.occupation_vector = np.array([0 for _ in range(self.total_n_sites)])
 
-        occupied_sites_indices = np.random.choice(np.arange(self.total_n_sites), number_of_adsorbates, replace=False)
+        occupied_sites_indices = np.random.choice(
+            np.arange(self.total_n_sites), number_of_adsorbates, replace=False)
         for site_index in occupied_sites_indices:
-                self.occupation_vector[site_index] = 1 
+            self.occupation_vector[site_index] = 1
 
     def get_occupation_vector(self):
         return self.occupation_vector
@@ -62,7 +63,8 @@ class AdsorptionSiteList():
 
     def swap_status(self, index_pairs):
         for idx1, idx2 in index_pairs:
-            self.occupation_vector[idx1], self.occupation_vector[idx2] = self.occupation_vector[idx2], self.occupation_vector[idx1]
+            self.occupation_vector[idx1], self.occupation_vector[idx2] = \
+                self.occupation_vector[idx2], self.occupation_vector[idx1]
 
     def build_site_list(self, particle):
         def find_plane_for_bridge_atoms(particle, indices):
@@ -80,7 +82,8 @@ class AdsorptionSiteList():
 
         bridge_sites = []
         for central_atom_index in atoms_in_surface:
-            central_atom_nearest_neighbors = set(particle.get_coordination_atoms(central_atom_index))
+            central_atom_nearest_neighbors = set(
+                particle.get_coordination_atoms(central_atom_index))
             for nearest_neighbor in atoms_in_surface.intersection(central_atom_nearest_neighbors):
                 pair = sorted([central_atom_index, nearest_neighbor])
                 if pair not in bridge_sites:
@@ -97,9 +100,8 @@ class AdsorptionSiteList():
                     if len(triplet) == 3:
                         hollow_sites.append(triplet)
 
-
         four_fold_hollow_sites = []
-        atoms_in_100 = set(particle.get_atom_indices_from_coordination_number([6,7,8]))
+        atoms_in_100 = set(particle.get_atom_indices_from_coordination_number([6, 7, 8]))
         sub_surface = set(particle.get_atom_indices_from_coordination_number([12]))
         four_fold_hollow_sites = []
 
@@ -109,32 +111,33 @@ class AdsorptionSiteList():
             if len(hollow_site) == 4 and hollow_site not in four_fold_hollow_sites:
                 four_fold_hollow_sites.append(hollow_site)
 
-
         return ontop_sites + bridge_sites + hollow_sites + four_fold_hollow_sites
 
 
-        
 class FindAdsorptionSites():
-    """ Class that identify and place add atoms based on the Generalized coordination Numbers of the nanoparticles"""
+    """Identify and place add-atoms based on the Generalized Coordination Numbers
+    of the nanoparticles."""
+
     def __init__(self):
         self.ontop = []
         self.bridge_positions = []
         self.hollow_positions = []
-    
+
     def get_ontop_sites(self, particle):
         for atom in particle.get_atom_indices_from_coordination_number(range(10)):
             self.ontop.append([atom])
-            
+
     def get_bridge_sites(self, particle):
         shell_atoms = set(particle.get_atom_indices_from_coordination_number(range(10)))
         for central_atom_index in shell_atoms:
-            central_atom_nearest_neighbors = set(particle.get_coordination_atoms(central_atom_index))
+            central_atom_nearest_neighbors = set(
+                particle.get_coordination_atoms(central_atom_index))
             for nearest_neighbor in shell_atoms.intersection(central_atom_nearest_neighbors):
                 pair = sorted([central_atom_index, nearest_neighbor])
                 if pair not in self.bridge_positions:
                     self.bridge_positions.append(pair)
-                    
-    def get_hollow_sites(self, particle):      
+
+    def get_hollow_sites(self, particle):
         for pair in self.bridge_positions:
             for third_atom in self.find_plane_for_bridge_atoms(particle, pair):
                 triplet = copy.copy(pair)
@@ -142,7 +145,7 @@ class FindAdsorptionSites():
                 triplet = sorted(triplet)
                 if triplet not in self.hollow_positions:
                     self.hollow_positions.append(triplet)
-    
+
     def find_plane_for_bridge_atoms(self, particle, indices):
         uncoordinated_atoms = particle.get_atom_indices_from_coordination_number(range(12))
         uncoordinated_atoms = set(uncoordinated_atoms)
@@ -151,12 +154,12 @@ class FindAdsorptionSites():
         shared_atoms = uncoordinated_atoms.intersection(shell_1.intersection(shell_2))
         return list(shared_atoms)
 
-
     def find_atom_plane_vec(self, particle, atom_idx):
         normal_vector = -1
-        pos_vec = particle.get_position(atom_idx)/ np.linalg.norm(particle.get_position(atom_idx))
-        planes = [[1,1,1], [-1,1,1], [1,-1,1], [1,1,-1], [-1,-1,1], [-1,1,-1], [1,-1,-1], [-1,-1,-1]]
-        planes += [[1,0,0], [-1,0,0], [0,1,0], [0,-1,0], [0,0,1], [0,0,-1]]
+        pos_vec = particle.get_position(atom_idx) / np.linalg.norm(particle.get_position(atom_idx))
+        planes = [[1, 1, 1], [-1, 1, 1], [1, -1, 1], [1, 1, -1],
+                  [-1, -1, 1], [-1, 1, -1], [1, -1, -1], [-1, -1, -1]]
+        planes += [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]
         for plane in planes:
             mi_vec = plane / np.linalg.norm(plane)
             dot_prod = abs(np.dot(mi_vec, pos_vec))
@@ -179,27 +182,32 @@ class FindAdsorptionSites():
         direction = math.get_bridge_perpendicular_line(positions, center_of_mass)
         return direction
 
+
 class PlaceAddAtoms():
     """Class that plance add atoms on positions identified by FindAdsorptionSites"""
+
     def __init__(self, symbols):
         self.adsorption_sites = FindAdsorptionSites()
         self.symbols = sorted(symbols)
         self.sites_list = []
-        self.ontop_positions = {site[0] : [] for site in itertools.combinations_with_replacement(self.symbols,1)}
-        self.bridge_positions = {''.join(list(site)) : [] for site in itertools.combinations_with_replacement(self.symbols,2)}
-        self.hollow_positions = {''.join(list(site)) : [] for site in itertools.combinations_with_replacement(self.symbols,3)}
+        ontop = itertools.combinations_with_replacement(self.symbols, 1)
+        bridge = itertools.combinations_with_replacement(self.symbols, 2)
+        hollow = itertools.combinations_with_replacement(self.symbols, 3)
+        self.ontop_positions = {site[0]: [] for site in ontop}
+        self.bridge_positions = {''.join(list(site)): [] for site in bridge}
+        self.hollow_positions = {''.join(list(site)): [] for site in hollow}
 
     def bind_particle(self, particle):
         self.com = particle.atoms.atoms.get_center_of_mass()
         particle.atoms.atoms.translate(-self.com)
         self.adsorption_sites.get_ontop_sites(particle)
         self.adsorption_sites.get_bridge_sites(particle)
-        self.adsorption_sites.get_hollow_sites(particle)  
+        self.adsorption_sites.get_hollow_sites(particle)
         self.get_total_adsorption_sites(particle)
         self.get_ontop_sites(particle)
         self.get_bridge_sties(particle)
         self.get_hollow_sties(particle)
-    
+
     def get_ontop_sites(self, particle):
         for atom in self.adsorption_sites.ontop:
             self.ontop_positions[particle.get_symbol(atom[0])].append(atom[0])
@@ -207,18 +215,18 @@ class PlaceAddAtoms():
     def get_bridge_sties(self, particle):
         for pairs in self.adsorption_sites.bridge_positions:
             self.bridge_positions[''.join(sorted(particle.get_symbols(pairs)))].append(pairs)
- 
+
     def get_hollow_sties(self, particle):
         for triplet in self.adsorption_sites.hollow_positions:
             self.hollow_positions[''.join(sorted(particle.get_symbols(triplet)))].append(triplet)
-            
+
     def get_total_adsorption_sites(self, particle):
-        #self.sites_list += self.adsorption_sites.ontop
-        #self.sites_list += self.adsorption_sites.bridge_positions
+        # self.sites_list += self.adsorption_sites.ontop
+        # self.sites_list += self.adsorption_sites.bridge_positions
         self.sites_list += self.adsorption_sites.hollow_positions
 
     def get_xyz_site_from_atom_indices(self, particle, site):
-        #if isinstance(site, (np.ndarray, np.generic)) or isinstance(site, int):
+        # if isinstance(site, (np.ndarray, np.generic)) or isinstance(site, int):
         site = list(site)
         if len(site) == 1:
             pos_vec = particle.get_position(site[0])
@@ -230,7 +238,8 @@ class PlaceAddAtoms():
                 xyz_site = (particle.get_position(site[0]))+(direction*plane_direction*2)
                 return xyz_site
             if cn == 7:
-                plane_direction = self.adsorption_sites.find_direction_for_edges(particle, site[0], self.com)
+                plane_direction = self.adsorption_sites.find_direction_for_edges(
+                    particle, site[0], self.com)
                 dot_prod = np.dot(pos_vec, plane_direction)
                 direction = dot_prod/abs(dot_prod)
                 xyz_site = (particle.get_position(site[0]))+(direction*plane_direction*2)
@@ -244,16 +253,18 @@ class PlaceAddAtoms():
             xyz_site_plane = math.find_middle_point(xyz_atoms)
             unit_vector1, length1 = math.get_unit_vector(xyz_site_plane)
             if len(site) >= 3:
-                normal_vector = math.get_normal_vector(xyz_atoms) 
+                normal_vector = math.get_normal_vector(xyz_atoms)
             if len(site) == 2:
                 cn1 = particle.get_coordination_number(site[0])
                 cn2 = particle.get_coordination_number(site[1])
-                shared_atoms = set(particle.get_coordination_atoms(site[0])).intersection(set(particle.get_coordination_atoms(site[1])))
-                corner = set(particle.get_atom_indices_from_coordination_number([4,6])).intersection(shared_atoms)
-                if cn1 < 9 and  cn2 < 9 and len(corner) == 0:    
+                shared_atoms = set(particle.get_coordination_atoms(site[0])).intersection(
+                    set(particle.get_coordination_atoms(site[1])))
+                corner = set(particle.get_atom_indices_from_coordination_number(
+                    [4, 6])).intersection(shared_atoms)
+                if cn1 < 9 and cn2 < 9 and len(corner) == 0:
                     positions = [particle.get_position(x) for x in site]
                     normal_vector = math.get_bridge_perpendicular_line(positions, self.com)
-                else:    
+                else:
                     third_atom = self.adsorption_sites.find_plane_for_bridge_atoms(particle, site)
                     if isinstance(third_atom, int):
                         xyz_third_atom = particle.get_position(third_atom)
@@ -261,12 +272,12 @@ class PlaceAddAtoms():
                         xyz_third_atom = particle.get_position(third_atom[0])
                     xyz_atoms.append(xyz_third_atom)
                     normal_vector = math.get_normal_vector(xyz_atoms)
-                
+
             unit_vector2, length2 = math.get_unit_vector(normal_vector)
             dot_prod = np.dot(unit_vector1, unit_vector2)
             direction = dot_prod/abs(dot_prod)
             xyz_site = (unit_vector1*(length1))+(direction*unit_vector2*(1.4))
-   
+
             return xyz_site
 
     def place_add_atom(self, particle, adsorbates, sites):
@@ -275,19 +286,14 @@ class PlaceAddAtoms():
             xyz_site = self.get_xyz_site_from_atom_indices(particle, site)
 
             for adsorbate in adsorbates:
-                add_atom = Atoms(adsorbate)   
+                add_atom = Atoms(adsorbate)
                 add_atom.translate(xyz_site)
                 add_atom_list.append(add_atom)
 
                 unit_vector1, length1 = math.get_unit_vector(xyz_site)
                 xyz_site = (unit_vector1*(length1+1.18))
-            
+
         for add_atom in add_atom_list:
             particle.add_atoms(add_atom, recompute_neighbor_list=False)
-            
-        return particle    
 
-
-
-
-
+        return particle

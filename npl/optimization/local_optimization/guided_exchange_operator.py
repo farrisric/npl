@@ -5,7 +5,9 @@ from sortedcontainers import SortedKeyList
 class GuidedExchangeOperator:
     def __init__(self, environment_energies, feature_key):
         self.n_envs = int(len(environment_energies)/2)
-        self.env_energy_differences = [environment_energies[i] - environment_energies[i + self.n_envs] for i in range(self.n_envs)]
+        self.env_energy_differences = [
+            environment_energies[i] - environment_energies[i + self.n_envs]
+            for i in range(self.n_envs)]
 
         self.feature_key = feature_key
 
@@ -66,12 +68,14 @@ class GuidedExchangeOperator:
         atom_features = particle.get_atom_features(self.feature_key)
         for index in symbol1_indices:
             feature = atom_features[index]
-            self.symbol1_exchange_energies[index] = -self.env_energy_differences[self.env_from_feature(feature)]
+            self.symbol1_exchange_energies[index] = \
+                -self.env_energy_differences[self.env_from_feature(feature)]
             self.symbol1_indices.add(index)
 
         for index in symbol2_indices:
             feature = atom_features[index]
-            self.symbol2_exchange_energies[index] = +self.env_energy_differences[self.env_from_feature(feature)]
+            self.symbol2_exchange_energies[index] = \
+                +self.env_energy_differences[self.env_from_feature(feature)]
             self.symbol2_indices.add(index)
 
     def update(self, particle, indices, exchange_indices):

@@ -63,7 +63,8 @@ class SphericalCuttingPlaneGenerator:
         else:
             anchor_dir = 1 - 2 * np.random.random(3)
             anchor_dir /= np.linalg.norm(anchor_dir)
-        anchor = anchor_dir * (self.min_radius + np.random.random() * (self.max_radius - self.min_radius))
+        anchor = anchor_dir * (self.min_radius +
+                               np.random.random() * (self.max_radius - self.min_radius))
         anchor = anchor + self.center
 
         return CuttingPlane(anchor, normal)

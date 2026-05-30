@@ -16,6 +16,7 @@ from .local_environment_calculator import (LocalEnvironmentCalculator,
 
 __all__ = [
     "GlobalFeatureClassifier",
+    "testTopologicalFeatureClassifier",
     "TopologicalFeatureClassifier",
     "ExtendedTopologicalFeaturesClassifier",
     "AtomicCoordinationTypes",

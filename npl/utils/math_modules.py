@@ -30,10 +30,10 @@ def find_middle_point(positions):
 
 
 def get_perpendicular_edge_vector(position, tolerance=1e-4):
-    final_vector = np.array([0,0,0])
+    final_vector = np.array([0, 0, 0])
 
     for i, coordinate in enumerate(position):
-        trial_vector = np.array([0,0,0])
+        trial_vector = np.array([0, 0, 0])
         if abs(coordinate) > tolerance:
             trial_vector[i] = coordinate/abs(coordinate)
             final_vector += trial_vector
@@ -42,6 +42,7 @@ def get_perpendicular_edge_vector(position, tolerance=1e-4):
     final_vector, _ = get_unit_vector(final_vector)
     return final_vector
 
+
 def get_normal_vector(positions):
     v1 = positions[1] - positions[0]
     v2 = positions[2] - positions[0]
@@ -49,16 +50,16 @@ def get_normal_vector(positions):
     unit, _ = get_unit_vector(normal)
     return unit
 
+
 def get_plane(positions):
     normal_vector = get_normal_vector(positions)
     d = np.dot(normal_vector, positions[2])
     return normal_vector, d
 
+
 def get_bridge_perpendicular_line(positions, center_of_mass):
     a, a1 = positions
-    n,_ = get_unit_vector(a - a1)
+    n, _ = get_unit_vector(a - a1)
     p = center_of_mass
     direction = (p - a) - (np.dot((p-a), n)) * n
     return direction / np.linalg.norm(direction)
-
-    

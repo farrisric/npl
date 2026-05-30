@@ -56,7 +56,7 @@ class NeighborList:
 
         common_atom_indices = []
         for pair in itertools.combinations(indices, 2):
-            shared_pair = list(np.intersect1d(self.get_coordination_atoms(pair[0]), 
+            shared_pair = list(np.intersect1d(self.get_coordination_atoms(pair[0]),
                                               self.get_coordination_atoms(pair[1])))
             common_atom_indices += shared_pair
 
@@ -97,7 +97,7 @@ class NeighborList:
 
         if edges_corner:
             for atom_idx in atoms_indices_in_plane:
-                neighbors = self.get_coordination_atoms(atom_idx) 
+                neighbors = self.get_coordination_atoms(atom_idx)
                 for neighbor in neighbors:
                     cn_neighbor = self.get_coordination_number(neighbor)
                     if cn_neighbor < cn and neighbor not in atoms_indices_in_plane:
