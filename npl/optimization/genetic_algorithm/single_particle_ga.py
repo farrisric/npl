@@ -11,7 +11,8 @@ def compute_fitness(particle, min_energy, max_energy, energy_key):
     return np.exp(-3 * normalized_energy)
 
 
-def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence, energy_calculator, local_env_calculator,
+def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence,
+                           energy_calculator, local_env_calculator,
                            local_feature_classifier, environment_energies):
     unsuccessful_gens = 0
     energy_key = energy_calculator.get_energy_key()
@@ -40,7 +41,8 @@ def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence, 
         max_energy = cur_population[-1].get_energy(energy_key)
         generation += 1
 
-        fitness_values = np.array([compute_fitness(p, min_energy, max_energy, energy_key) for p in cur_population])
+        fitness_values = np.array(
+            [compute_fitness(p, min_energy, max_energy, energy_key) for p in cur_population])
         if np.sum(fitness_values) == 0:
             break
         fitness_values /= np.sum(fitness_values)
@@ -48,7 +50,8 @@ def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence, 
         while True:
             p = np.random.rand()
             if p < 0.4:
-                parent1, parent2 = np.random.choice(cur_population, 2, replace=False, p=fitness_values)
+                parent1, parent2 = np.random.choice(
+                    cur_population, 2, replace=False, p=fitness_values)
                 new_offspring = cut_and_splice_operator.cut_and_splice(parent1, parent2)
             else:
                 parent = np.random.choice(cur_population, 1, p=fitness_values)[0]

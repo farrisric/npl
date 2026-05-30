@@ -29,9 +29,11 @@ class MutationOperator:
         if n_mutations is None:
             n_mutations = min(self.draw_from_geometric_distribution(), max_mutations)
 
-        atom_indices_to_be_transformed = np.random.choice(new_particle.atoms.get_indices_by_symbol(symbol_from), n_mutations, replace=False)
+        atom_indices_to_be_transformed = np.random.choice(
+            new_particle.atoms.get_indices_by_symbol(symbol_from), n_mutations, replace=False)
 
-        new_particle.atoms.transform_atoms(zip(atom_indices_to_be_transformed, [symbol_to] * n_mutations), a)
+        new_particle.atoms.transform_atoms(
+            atom_indices_to_be_transformed, [symbol_to] * n_mutations)
 
         return new_particle
 

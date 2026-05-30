@@ -17,12 +17,15 @@ class ExchangeOperator:
         symbol1 = symbols[0]
         symbol2 = symbols[1]
 
-        max_exchanges = min(new_particle.get_n_atoms_of_symbol(symbol1), new_particle.get_n_atoms_of_symbol(symbol2))
+        max_exchanges = min(new_particle.get_n_atoms_of_symbol(symbol1),
+                            new_particle.get_n_atoms_of_symbol(symbol2))
         if n_exchanges is None:
             n_exchanges = min(np.random.geometric(p=self.p, size=1)[0], max_exchanges)
 
-        symbol1_indices = np.random.choice(new_particle.get_indices_by_symbol(symbol1), n_exchanges, replace=False)
-        symbol2_indices = np.random.choice(new_particle.get_indices_by_symbol(symbol2), n_exchanges, replace=False)
+        symbol1_indices = np.random.choice(
+            new_particle.get_indices_by_symbol(symbol1), n_exchanges, replace=False)
+        symbol2_indices = np.random.choice(
+            new_particle.get_indices_by_symbol(symbol2), n_exchanges, replace=False)
 
         new_particle.swap_symbols(zip(symbol1_indices, symbol2_indices))
 

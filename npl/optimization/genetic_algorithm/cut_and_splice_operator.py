@@ -5,7 +5,8 @@ import numpy as np
 
 class CutAndSpliceOperator:
     def __init__(self, max_radius, recompute_neighbor_list=True, normal_dir=None):
-        self.cutting_plane_generator = SphericalCuttingPlaneGenerator(max_radius, 0.0, 0.0, normal_dir)
+        self.cutting_plane_generator = SphericalCuttingPlaneGenerator(
+            max_radius, 0.0, 0.0, normal_dir)
         self.recompute_neighbor_list = recompute_neighbor_list
 
     def cut_and_splice(self, p1, p2, fixed_stoichiometry=True):
@@ -15,10 +16,13 @@ class CutAndSpliceOperator:
         # Ensure that we indeed cut, i.e. take atoms from both particles
         while True:
             cutting_plane = self.cutting_plane_generator.generate_new_cutting_plane()
-            atom_indices_in_positive_subspace, _ = cutting_plane.split_atom_indices(p1.get_ase_atoms())
-            _, atom_indices_in_negative_subspace = cutting_plane.split_atom_indices(p2.get_ase_atoms())
+            atom_indices_in_positive_subspace, _ = \
+                cutting_plane.split_atom_indices(p1.get_ase_atoms())
+            _, atom_indices_in_negative_subspace = \
+                cutting_plane.split_atom_indices(p2.get_ase_atoms())
 
-            if np.sum(atom_indices_in_negative_subspace) > 0 and np.sum(atom_indices_in_positive_subspace) > 0:
+            if (np.sum(atom_indices_in_negative_subspace) > 0 and
+                    np.sum(atom_indices_in_positive_subspace) > 0):
                 break
 
         new_particle = Nanoparticle()

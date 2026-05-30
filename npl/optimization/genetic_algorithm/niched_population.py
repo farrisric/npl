@@ -34,9 +34,7 @@ class NichedPopulation(Population):
         return self.population[item]
 
     def compute_fitness(self, particle):
-        niche = self.get_niche(particle)
-
-        #return particle.get_energy('BRR')
+        # return particle.get_energy('BRR')
         return 1
 
     def get_niche(self, particle):
@@ -50,12 +48,15 @@ class NichedPopulation(Population):
         self.population[niche] = particle
 
     def random_selection(self, n_individuals):
-        return np.random.choice(list(self.population.values()), n_individuals, replace=False).tolist()
+        return np.random.choice(
+            list(self.population.values()), n_individuals, replace=False).tolist()
 
     def tournament_selection(self, n_individuals, tournament_size):
         winners = list()
         for tournament in range(n_individuals):
-            candidates = np.random.choice(list(set(self.population.values()).difference(set(winners))), tournament_size, replace=False).tolist()
+            available = list(set(self.population.values()).difference(set(winners)))
+            candidates = np.random.choice(
+                available, tournament_size, replace=False).tolist()
             candidates.sort(key=lambda x: self.compute_fitness(x))
             winners.append(candidates[0])
 
@@ -69,10 +70,14 @@ class NichedPopulation(Population):
 
             sigma = 5
 
-            probabilities = np.array([1 / (sigma * 2 * np.pi) * np.exp(-0.5 * ((i - mean) / sigma) ** 2) for i in range(0, self.n_niches)])
+            probabilities = np.array(
+                [1 / (sigma * 2 * np.pi) * np.exp(-0.5 * ((i - mean) / sigma) ** 2)
+                 for i in range(0, self.n_niches)])
             probabilities = probabilities / np.sum(probabilities)
 
-            candidates = np.random.choice(list(self.population.values()), tournament_size, replace=False, p=probabilities).tolist()
+            candidates = np.random.choice(
+                list(self.population.values()), tournament_size,
+                replace=False, p=probabilities).tolist()
             candidates.sort(key=lambda x: self.compute_fitness(x))
 
             winners.append(candidates[0])
@@ -83,6 +88,5 @@ class NichedPopulation(Population):
         return list(self.population.values())
 
     def get_convex_hull(self):
-        return [(niche, self.population[niche].get_energy('BRR')) for niche in range(self.n_niches)]
-
-
+        return [(niche, self.population[niche].get_energy('BRR'))
+                for niche in range(self.n_niches)]
