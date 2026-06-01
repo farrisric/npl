@@ -91,6 +91,14 @@ class AtomWrapper:
         indices = self.atoms.symbols.indices()
         return indices.get(symbol, np.array([]))
 
+    def get_indices_by_symbol_map(self):
+        """Return ``{symbol: indices}`` for every present symbol in a single pass.
+
+        Cheaper than calling ``get_indices_by_symbol`` per symbol, which rebuilds
+        the whole map each time.
+        """
+        return self.atoms.symbols.indices()
+
     def get_n_atoms(self):
         """Return the number of atoms."""
         return len(self.atoms)

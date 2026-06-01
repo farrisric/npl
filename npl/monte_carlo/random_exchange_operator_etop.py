@@ -43,9 +43,12 @@ class RandomExchangeOperatorExtended(RandomExchangeOperator):
                                                  p=self.swap_types_probability)[0]
         symbol1, symbol2 = self.swap_types[swap_type_probability]
         n_exchanges = 1
-        symbol1_indices = np.random.choice(particle.get_indices_by_symbol(symbol1), n_exchanges,
+        # Build the symbol->indices map once; per-symbol lookups otherwise rebuild
+        # the whole map each call (two full passes over all atoms per step).
+        indices_by_symbol = particle.get_indices_by_symbol_map()
+        symbol1_indices = np.random.choice(indices_by_symbol[symbol1], n_exchanges,
                                            replace=False)
-        symbol2_indices = np.random.choice(particle.get_indices_by_symbol(symbol2), n_exchanges,
+        symbol2_indices = np.random.choice(indices_by_symbol[symbol2], n_exchanges,
                                            replace=False)
 
         exchanges = list(zip(symbol1_indices, symbol2_indices))

@@ -1,10 +1,14 @@
 import copy
 import itertools
+import logging
 from collections import defaultdict
 from itertools import combinations_with_replacement
 
 import numpy as np
 from ase.data import atomic_numbers
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class GlobalFeatureClassifier:
@@ -255,6 +259,33 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
         atom_feature[cn_index] += 1
         return atom_feature
 
+    def compute_atom_features_for_all_symbols(self, particle, index):
+        """Per-atom ETOP feature the atom at ``index`` would have as *each* species.
+
+        Returns ``{symbol: feature_vector}`` and is equivalent to calling
+        ``compute_atom_feature_for_symbol`` once per symbol, but walks the neighbor
+        list only once: the neighbor-symbol composition is shared across all
+        candidate symbols. This is the basin-hopping / ETOP-exchange hot path.
+        """
+        coordination = particle.get_coordination_number(index)
+        sublayer = self.sublayer_indices[index]
+        neighbor_counts = {}
+        for neigh_index in particle.neighbor_list[index]:
+            element2 = particle.get_symbol(neigh_index)
+            neighbor_counts[element2] = neighbor_counts.get(element2, 0) + 1
+
+        cn_base = self.n_bond_features + self.n_sub_layers + coordination
+        features = {}
+        for sym_idx, symbol in enumerate(self.symbols):
+            atom_feature = np.zeros(self.n_features)
+            atom_feature[self.layer_types[symbol]] = sublayer
+            atom_feature[cn_base + 13 * sym_idx] += 1
+            for element2, count in neighbor_counts.items():
+                bond_type = tuple(sorted([symbol, element2]))
+                atom_feature[self.bond_types[bond_type]] += 0.5 * count
+            features[symbol] = atom_feature
+        return features
+
     def compute_atom_features(self, particle):
         self.get_sublayer_indices(particle)
         particle.set_atom_features(np.zeros((particle.get_n_atoms(),
@@ -281,7 +312,7 @@ class ExtendedTopologicalFeaturesClassifier(GlobalFeatureClassifier):
         feature_vector = particle.get_feature_vector(self.feature_key)
         change = 0
         for index in neighborhood:
-            old_atom_feature = copy.deepcopy(particle.get_atom_feature(self.feature_key, index))
+            old_atom_feature = particle.get_atom_feature(self.feature_key, index).copy()
             old_atom_features.append(old_atom_feature)
             change -= old_atom_feature
 
@@ -501,7 +532,7 @@ class GeneralizedCoordinationNumber(SimpleFeatureClassifier):
     def compute_feature_vector(self, particle):
         feature_vector = np.zeros(self.n_features)
         occupied_site_indices = particle.get_indices_of_adsorbates()
-        print(occupied_site_indices)
+        logger.debug(occupied_site_indices)
         for occupied_site_index in occupied_site_indices:
             index = self.all_gcn.index(self.gcn_site_list[occupied_site_index])
             feature_vector[index] += 1

@@ -350,6 +350,10 @@ class BaseNanoparticle:
         """
         return self.atoms.get_indices_by_symbol(symbol)
 
+    def get_indices_by_symbol_map(self):
+        """Return ``{symbol: indices}`` for every present symbol in a single pass."""
+        return self.atoms.get_indices_by_symbol_map()
+
     def construct_neighbor_list(self, exclude_x=True, scale_factor=1.0):
         """Construct neighbor list.
 

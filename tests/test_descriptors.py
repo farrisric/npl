@@ -34,3 +34,19 @@ def test_compute_atom_feature_for_symbol_matches_current_symbol():
     # asking for a different symbol changes the feature
     other = fc.compute_atom_feature_for_symbol(p, idx, "Au")
     assert not np.array_equal(same, other)
+
+
+def test_all_symbol_features_match_per_symbol():
+    # The single-neighbor-walk variant used in the ETOP hot path must be
+    # bit-identical to calling compute_atom_feature_for_symbol per species.
+    symbols = ["Au", "Cu", "Pt"]
+    fc = ExtendedTopologicalFeaturesClassifier(symbols)
+    p = Nanoparticle()
+    p.truncated_octahedron(7, 2, {"Pt": 101, "Au": 50, "Cu": 50})
+    fc.compute_feature_vector(p)  # populates sublayer_indices
+    for idx in [0, 50, 100, 150, 200]:
+        bundle = fc.compute_atom_features_for_all_symbols(p, idx)
+        assert set(bundle) == set(symbols)
+        for symbol in symbols:
+            ref = fc.compute_atom_feature_for_symbol(p, idx, symbol)
+            assert np.array_equal(bundle[symbol], ref)

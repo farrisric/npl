@@ -39,12 +39,15 @@ class ETOPExchangeOperator:
     def _set_gains(self, particle, index):
         sym_i = particle.get_symbol(index)
         self.atom_symbol[index] = sym_i
-        base = np.dot(self.coeffs,
-                      self.classifier.compute_atom_feature_for_symbol(particle, index, sym_i))
+        # One neighbor walk yields the atom's feature as every candidate species;
+        # the base (sym_i) feature comes from the same walk instead of a separate
+        # recompute.
+        features = self.classifier.compute_atom_features_for_all_symbols(particle, index)
+        base = np.dot(self.coeffs, features[sym_i])
         for sym_j in self.symbols:
             if sym_j == sym_i:
                 continue
-            f_j = self.classifier.compute_atom_feature_for_symbol(particle, index, sym_j)
+            f_j = features[sym_j]
             self.flip_gain[(sym_i, sym_j)][index] = float(np.dot(self.coeffs, f_j) - base)
             self.indices[(sym_i, sym_j)].add(index)
 

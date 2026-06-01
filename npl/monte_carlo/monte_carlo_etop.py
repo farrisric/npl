@@ -59,7 +59,7 @@ def run_monte_carlo(temperature, max_steps, start_particle, energy_calculator, f
     lowest_energy = start_energy
     accepted_energies = [(lowest_energy, 0)]
 
-    best_particle = copy.deepcopy(start_particle)
+    best_numbers = start_particle.atoms.atoms.numbers.copy()
 
     total_steps = 0
     no_improvement = 0
@@ -88,8 +88,9 @@ def run_monte_carlo(temperature, max_steps, start_particle, energy_calculator, f
             if new_energy < lowest_energy:
                 no_improvement = 0
                 lowest_energy = new_energy
-                # capture the best configuration as soon as a new minimum is found
-                best_particle = copy.deepcopy(start_particle)
+                # snapshot the best ordering cheaply; the full best_particle is
+                # rebuilt once at the end (geometry is identical across orderings)
+                best_numbers = start_particle.atoms.atoms.numbers.copy()
             else:
                 no_improvement += 1
 
@@ -103,5 +104,12 @@ def run_monte_carlo(temperature, max_steps, start_particle, energy_calculator, f
                                                         old_atom_features, change)
 
     accepted_energies.append((accepted_energies[-1][0], total_steps))
+
+    # Rebuild the best particle once from the cheap ordering snapshot, restoring
+    # its feature vector so it is consistent with the best ordering.
+    best_particle = copy.deepcopy(start_particle)
+    best_particle.atoms.atoms.set_atomic_numbers(best_numbers)
+    feature_calculator.compute_feature_vector(best_particle)
+    best_particle.set_energy(energy_key, lowest_energy)
 
     return [best_particle, accepted_energies]
