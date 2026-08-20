@@ -229,3 +229,105 @@ def test_etop_basin_hopping_runs():
     assert best is not None
     assert len(lowest_energies) >= 1
     assert lowest_energies[-1][0] <= lowest_energies[0][0] + 1e-6
+
+
+# --------------------------------------------------------------------- GA
+def _ga_setup(n_population=6):
+    """A start population of random Pt151Cu50 orderings plus the wiring the GA
+    needs. Same calculator as the guided-optimizer tests above."""
+    from npl.descriptors import (
+        NeighborCountingEnvironmentCalculator,
+        TopologicalEnvironmentClassifier,
+    )
+
+    np.random.seed(5)
+    _particle, calc, total_energies = _build()
+    symbols = ["Pt", "Cu"]
+    env_calc = NeighborCountingEnvironmentCalculator(symbols)
+    classifier = TopologicalEnvironmentClassifier(env_calc, symbols)
+
+    population = []
+    for _ in range(n_population):
+        p = Nanoparticle()
+        p.truncated_octahedron(7, 2, {"Pt": 151, "Cu": 50})
+        population.append(p)
+    return population, calc, env_calc, classifier, total_energies
+
+
+@pytest.mark.parametrize("model", ["ACT", "TOP"])
+def test_ga_lowers_energy_and_keeps_composition(model):
+    from npl.optimization.genetic_algorithm import run_single_particle_ga
+
+    population, calc, env_calc, classifier, total_energies = _ga_setup()
+    best_energies, best, evaluations = run_single_particle_ga(
+        population, 3, calc, env_calc, classifier, total_energies, model=model,
+    )
+    assert best_energies[-1][0] < best_energies[0][0]
+    assert evaluations > 0
+    symbols = best.get_symbols()
+    assert list(symbols).count("Pt") == 151
+    assert list(symbols).count("Cu") == 50
+
+
+def test_ga_defaults_to_the_act_operator():
+    """'TOP' is deterministic in both its guided step and its kick, so every
+    offspring collapses into the same limit cycle. The default must not be TOP."""
+    import inspect
+
+    from npl.optimization.genetic_algorithm import run_single_particle_ga
+
+    assert inspect.signature(run_single_particle_ga).parameters['model'].default == 'ACT'
+
+
+def test_ga_convergence_ignores_float_noise():
+    """An improvement of 1e-12 is float noise. Counting it as progress kept the
+    loop from ever converging."""
+    from npl.optimization.genetic_algorithm import run_single_particle_ga
+
+    population, calc, env_calc, classifier, total_energies = _ga_setup()
+    _best_energies, _best, evaluations = run_single_particle_ga(
+        population, 2, calc, env_calc, classifier, total_energies,
+        improvement_tol=1e-6,
+    )
+    assert evaluations > 0     # terminated rather than spinning forever
+
+
+def test_ga_uniform_fitness_when_population_is_degenerate():
+    """All-equal energies must not zero every fitness: that used to break the
+    generation loop and read as convergence."""
+    from npl.optimization.genetic_algorithm import compute_fitness
+
+    particle = Nanoparticle()
+    particle.truncated_octahedron(7, 2, {"Pt": 151, "Cu": 50})
+    particle.set_energy("TOP", -1.0)
+    assert compute_fitness(particle, -1.0, -1.0, "TOP") > 0
+
+
+def test_ordering_key_separates_degenerate_orderings():
+    """Two different orderings can share an energy exactly; de-duplicating on
+    energy would discard one of them."""
+    from npl.optimization.genetic_algorithm import ordering_key
+
+    a = Nanoparticle()
+    a.truncated_octahedron(7, 2, {"Pt": 151, "Cu": 50})
+    b = Nanoparticle()
+    b.truncated_octahedron(7, 2, {"Pt": 151, "Cu": 50})
+    indices_pt = a.get_indices_by_symbol("Pt")
+    indices_cu = a.get_indices_by_symbol("Cu")
+    b.swap_symbols([(int(indices_pt[0]), int(indices_cu[0]))])
+    assert ordering_key(a) != ordering_key(b)
+
+
+def test_cut_and_splice_preserves_composition_and_atom_count():
+    from npl.optimization.genetic_algorithm import CutAndSpliceOperator
+
+    np.random.seed(11)
+    parents = []
+    for _ in range(2):
+        p = Nanoparticle()
+        p.truncated_octahedron(7, 2, {"Pt": 151, "Cu": 50})
+        parents.append(p)
+    child = CutAndSpliceOperator().cut_and_splice(parents[0], parents[1])
+    symbols = list(child.get_symbols())
+    assert len(symbols) == 201
+    assert symbols.count("Pt") == 151 and symbols.count("Cu") == 50
