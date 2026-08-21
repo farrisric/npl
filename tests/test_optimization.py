@@ -259,9 +259,11 @@ def test_ga_lowers_energy_and_keeps_composition(model):
     from npl.optimization.genetic_algorithm import run_single_particle_ga
 
     population, calc, env_calc, classifier, total_energies = _ga_setup()
-    best_energies, best, evaluations = run_single_particle_ga(
+    best_energies, best, evaluations, final_population, stats = run_single_particle_ga(
         population, 3, calc, env_calc, classifier, total_energies, model=model,
     )
+    assert len(final_population) == len(population)
+    assert stats['generations'] > 0
     assert best_energies[-1][0] < best_energies[0][0]
     assert evaluations > 0
     symbols = best.get_symbols()
@@ -285,7 +287,7 @@ def test_ga_convergence_ignores_float_noise():
     from npl.optimization.genetic_algorithm import run_single_particle_ga
 
     population, calc, env_calc, classifier, total_energies = _ga_setup()
-    _best_energies, _best, evaluations = run_single_particle_ga(
+    _best_energies, _best, evaluations, _population, _stats = run_single_particle_ga(
         population, 2, calc, env_calc, classifier, total_energies,
         improvement_tol=1e-6,
     )
@@ -331,3 +333,39 @@ def test_cut_and_splice_preserves_composition_and_atom_count():
     symbols = list(child.get_symbols())
     assert len(symbols) == 201
     assert symbols.count("Pt") == 151 and symbols.count("Cu") == 50
+
+
+def test_rank_fitness_is_independent_of_energy_scale():
+    """Rank weights must not drift with how spread out the population is: that
+    coupling made selection pressure a function of diversity, not physics."""
+    from npl.optimization.genetic_algorithm import rank_fitness
+
+    weights = rank_fitness(8, pressure=3.0)
+    assert weights[0] == pytest.approx(1.0)
+    assert weights[-1] == pytest.approx(np.exp(-3.0))
+    assert np.all(np.diff(weights) < 0)          # strictly best-first
+    assert rank_fitness(1, pressure=3.0)[0] > 0  # a lone member is selectable
+
+
+def test_mutation_size_scales_with_the_particle():
+    """One swap is useless against a parent already descended to a local
+    minimum, so mutations are sized as a fraction of the particle."""
+    from npl.optimization.genetic_algorithm import mutation_size
+
+    for _ in range(20):
+        n = mutation_size(405, (0.01, 0.06))
+        assert 4 <= n <= 24
+    assert mutation_size(201, (0.0, 0.0)) == 1     # never zero swaps
+
+
+def test_ga_reports_acceptance_statistics():
+    """Wasted offspring are the failure mode worth seeing: most mutations used
+    to come back worse than the population's worst and be dropped at once."""
+    from npl.optimization.genetic_algorithm import run_single_particle_ga
+
+    population, calc, env_calc, classifier, total_energies = _ga_setup()
+    *_rest, stats = run_single_particle_ga(
+        population, 3, calc, env_calc, classifier, total_energies,
+    )
+    assert 0.0 <= stats['acceptance'] <= 1.0
+    assert stats['accepted'] + stats['duplicates'] >= 0
