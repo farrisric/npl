@@ -109,3 +109,5 @@ test*ipynb
 *.xyz
 *.db
 *.out
+# Rust build artefacts
+/rust-act/target/

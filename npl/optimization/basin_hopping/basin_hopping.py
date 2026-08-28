@@ -3,18 +3,78 @@ from npl.optimization.local_optimization import update_atomic_features
 from npl.optimization.local_optimization import update_atomic_features_etop
 import logging
 import copy
+import random
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def _act_descriptors(particle, local_feature_classifier):
+    """The environment calculator and feature classifier the ACT fast path needs
+    to leave a particle self-consistent, reusing a classifier if one was given."""
+    from npl.descriptors.local_environment_calculator import (
+        NeighborCountingEnvironmentCalculator)
+    from npl.descriptors.local_environment_feature_classifier import (
+        TopologicalEnvironmentClassifier)
+
+    symbols = particle.get_all_symbols()
+    if local_feature_classifier is not None:
+        env_calculator = local_feature_classifier.local_environment_calculator
+        return env_calculator, local_feature_classifier
+    env_calculator = NeighborCountingEnvironmentCalculator(symbols)
+    return env_calculator, TopologicalEnvironmentClassifier(env_calculator, symbols)
+
+
+def _run_basin_hopping_rust(start_particle, energy_calculator, environment_energies,
+                            n_hopping_attempts, n_hops, local_feature_classifier,
+                            seed):
+    """ACT basin hopping through the Rust extension. See ``act_fast``."""
+    from npl.optimization import act_fast
+
+    env_calculator, feature_classifier = _act_descriptors(
+        start_particle, local_feature_classifier)
+    env_calculator.compute_local_environments(start_particle)
+    feature_classifier.compute_feature_vector(start_particle)
+    energy_calculator.compute_energy(start_particle)
+    logging.info("Starting energy: {}".format(start_particle.get_energy(
+        energy_calculator.get_energy_key())))
+
+    if seed is None:
+        seed = random.getrandbits(63)
+    result, error = act_fast.basin_hopping(
+        copy.deepcopy(start_particle), energy_calculator, environment_energies,
+        n_hopping_attempts, n_hops, env_calculator, feature_classifier, seed)
+    logging.info('Lowest energy: {:.3f}'.format(result[1][-1][0]))
+    logging.debug('ACT exchange bookkeeping error: %g', error)
+    return result
+
+
 def run_basin_hopping(start_particle, energy_calculator, environment_energies, n_hopping_attempts,
                       n_hops,
-                      local_feature_classifier=None, model='TOP'):
+                      local_feature_classifier=None, model='TOP', seed=None,
+                      force_python=False):
+    """Guided-exchange basin hopping over the chemical ordering.
+
+    ``model='ACT'`` on a two-element particle with a linear TEC energy model
+    runs inside the ``npl_act_rs`` extension when it is installed: the same
+    algorithm, with the inner loop out of the interpreter. Pass
+    ``force_python=True`` to keep the pure Python path - the tests use it to
+    compare the two. ``seed`` seeds the Rust RNG and is drawn from the
+    ``random`` module when omitted, so seeding ``random`` still makes a run
+    reproducible.
+    """
 
     logging.info("Starting Basin Hopping simulation")
     logging.info("Hopping attempts: {}".format(n_hopping_attempts))
     logging.info("Hops: {}".format(n_hops))
+
+    from npl.optimization import act_fast  # lazy: npl.optimization imports this module
+
+    if not force_python and act_fast.usable(start_particle, energy_calculator,
+                                            environment_energies, model):
+        return _run_basin_hopping_rust(
+            start_particle, energy_calculator, environment_energies,
+            n_hopping_attempts, n_hops, local_feature_classifier, seed)
 
     energy_key, local_env_calculator, local_feature_classifier, exchange_operator = \
         setup_local_optimization(start_particle, energy_calculator, environment_energies,

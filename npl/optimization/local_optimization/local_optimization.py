@@ -4,6 +4,7 @@ from npl.optimization.local_optimization.act_exchange_operator import ACTExchang
 from npl.descriptors.local_environment_feature_classifier import TopologicalEnvironmentClassifier
 from npl.descriptors.global_feature_classifier import ExtendedTopologicalFeaturesClassifier
 from npl.optimization.local_optimization.etop_exchange_operator import ETOPExchangeOperator
+import copy
 
 EXCHANGE_OPERATORS = {'TOP': GuidedExchangeOperator, 'ACT': ACTExchangeOperator,
                       'ETOP': ETOPExchangeOperator}
@@ -78,7 +79,30 @@ def update_atomic_features_etop(index1, index2, feature_classifier, particle):
 
 
 def local_optimization(start_particle, energy_calculator, environment_energies,
-                       local_feature_classifier=None, model='TOP'):
+                       local_feature_classifier=None, model='TOP',
+                       force_python=False):
+    """Guided-exchange descent to a local minimum of the chemical ordering.
+
+    ``model='ACT'`` on a two-element particle with a linear TEC energy model
+    runs inside the ``npl_act_rs`` extension when it is installed. The descent
+    is deterministic, so the two paths agree exactly except where equal exchange
+    energies leave the choice of atom open. ``force_python=True`` keeps the pure
+    Python path.
+    """
+    from npl.optimization import act_fast  # lazy: npl.optimization imports this module
+    from npl.optimization.basin_hopping.basin_hopping import _act_descriptors
+
+    if not force_python and act_fast.usable(start_particle, energy_calculator,
+                                            environment_energies, model):
+        env_calculator, feature_classifier = _act_descriptors(
+            start_particle, local_feature_classifier)
+        env_calculator.compute_local_environments(start_particle)
+        feature_classifier.compute_feature_vector(start_particle)
+        result, _error = act_fast.local_optimization(
+            copy.deepcopy(start_particle), energy_calculator, environment_energies,
+            env_calculator, feature_classifier)
+        return result
+
     energy_key, local_env_calculator, local_feature_classifier, exchange_operator = \
         setup_local_optimization(start_particle, energy_calculator,
                                  environment_energies, local_feature_classifier, model=model)
