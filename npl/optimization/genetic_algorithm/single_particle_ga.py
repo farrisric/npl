@@ -72,7 +72,8 @@ def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence,
                           model='ACT', improvement_tol=1e-6,
                           max_offspring_attempts=50, cut_and_splice_p=0.4,
                           selection_pressure=3.0,
-                          mutation_swap_fraction=(0.01, 0.06)):
+                          mutation_swap_fraction=(0.01, 0.06),
+                          seed=None, force_python=False):
     """Steady-state genetic algorithm over the orderings of one particle.
 
     ``model`` selects the exchange operator used to locally optimize every
@@ -94,6 +95,21 @@ def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence,
     selection, and how many were rejected as duplicates, which is what tells
     you whether the settings are wasting the budget.
     """
+    from npl.optimization import act_fast
+
+    if not force_python and act_fast.usable(start_population[0], energy_calculator,
+                                            environment_energies, model):
+        # every member shares one lattice, so the Rust GA carries only symbol
+        # vectors: no deepcopy per mutation, no neighbour list per offspring
+        if seed is None:
+            seed = np.random.randint(0, 2**31 - 1)
+        return act_fast.genetic_algorithm(
+            start_population, energy_calculator, environment_energies,
+            local_env_calculator, local_feature_classifier,
+            unsuccessful_gens_for_convergence, max_offspring_attempts,
+            cut_and_splice_p, selection_pressure, mutation_swap_fraction,
+            improvement_tol, seed)
+
     unsuccessful_gens = 0
     energy_key = energy_calculator.get_energy_key()
 
@@ -137,7 +153,7 @@ def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence,
 
             candidate, energies = local_optimization(
                 candidate, energy_calculator, environment_energies,
-                model=model)
+                model=model, force_python=force_python)
             energy_evaluations += energies[-1][1]
 
             if ordering_key(candidate) not in seen:

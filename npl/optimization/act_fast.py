@@ -13,6 +13,7 @@ elements, a linear TEC model, the extension actually importable - and
 so nothing here changes what npl can do, only how fast it does it.
 """
 
+import copy
 import os
 
 import numpy as np
@@ -128,6 +129,55 @@ def basin_hopping(start_particle, energy_calculator, environment_energies,
 
     flip_energy_list = [(flip, delta, list(pair)) for flip, delta, pair in flips]
     return [best_particle, lowest_energies, flip_energy_list], error
+
+
+def genetic_algorithm(start_population, energy_calculator, environment_energies,
+                      local_env_calculator, local_feature_classifier,
+                      patience, max_offspring_attempts, cut_and_splice_p,
+                      selection_pressure, mutation_swap_fraction,
+                      improvement_tol, seed):
+    """Rust equivalent of ``run_single_particle_ga`` for the ACT case.
+
+    Every member of the population is the same lattice with a different
+    ordering, so only the symbol vectors cross the boundary: the geometry, the
+    neighbour list and the masses are sent once. That is what removes the
+    ``deepcopy`` per mutation and the neighbour-list rebuild per cut-and-splice
+    that dominate the Python GA.
+
+    Returns the same ``[best_energies, best_particle, energy_evaluations,
+    population, stats]`` the Python returns.
+    """
+    from ase.data import atomic_masses
+
+    reference = start_population[0]
+    offsets, neighbours, _codes, elements = pack(reference)
+    positions = np.asarray(reference.get_ase_atoms().get_positions(),
+                           dtype=float).reshape(-1).tolist()
+    masses = [float(atomic_masses[atomic_numbers[element]]) for element in elements]
+    orderings = [pack(member)[2] for member in start_population]
+
+    (final_orderings, final_energies, history, evaluations, generations,
+     accepted, duplicates) = _rs.act_genetic_algorithm(
+        offsets, neighbours, positions, masses, orderings,
+        _coefficients(energy_calculator),
+        [float(e) for e in environment_energies],
+        int(patience), int(max_offspring_attempts), float(cut_and_splice_p),
+        float(selection_pressure), float(mutation_swap_fraction[0]),
+        float(mutation_swap_fraction[1]), float(improvement_tol), int(seed))
+
+    energy_key = energy_calculator.get_energy_key()
+    population = []
+    for codes, energy in zip(final_orderings, final_energies):
+        member = copy.deepcopy(reference)
+        unpack(member, codes, elements)
+        _restore(member, local_env_calculator, local_feature_classifier)
+        member.set_energy(energy_key, energy)
+        population.append(member)
+
+    stats = dict(generations=generations, accepted=accepted,
+                 duplicates=duplicates,
+                 acceptance=accepted / max(generations, 1))
+    return [history, population[0], evaluations, population, stats]
 
 
 def local_optimization(start_particle, energy_calculator, environment_energies,

@@ -526,10 +526,323 @@ fn act_basin_hopping(
     Ok((best_symbols, best_energy, lowest, flips, error))
 }
 
+
+// ----------------------------------------------------------------- genetic
+//
+// The Python GA spends most of its time not searching: profiling one restart
+// on a 711-atom particle showed 20.1 s of `copy.deepcopy` inside the mutation
+// operator and 11.4 s rebuilding a neighbour list with ASE inside cut-and-
+// splice. Both are pure waste - every member of the population sits on the
+// same lattice, so the geometry and the neighbour list never change. Here a
+// member is just its symbol vector, and neither cost exists.
+
+/// Energy of an ordering without building the exchange bookkeeping, for
+/// scoring population members.
+fn energy_of(offsets: &[u32], neighbours: &[u32], symbol: &[u8], coef: &[f64],
+             cn_offset: &[u32; 13]) -> f64 {
+    let mut e = 0.0;
+    for i in 0..symbol.len() {
+        let lo = offsets[i] as usize;
+        let hi = offsets[i + 1] as usize;
+        let mut n_a = 0u32;
+        for k in lo..hi {
+            if symbol[neighbours[k] as usize] == 0 {
+                n_a += 1;
+            }
+        }
+        e += coef[(91 * symbol[i] as u32 + cn_offset[hi - lo] + n_a) as usize];
+    }
+    e
+}
+
+/// Rank-based selection weights for a population sorted best-first: the best
+/// member always gets 1 and the worst exp(-pressure), whatever the energies
+/// are. Mirrors `rank_fitness`.
+fn rank_weights(n: usize, pressure: f64) -> Vec<f64> {
+    if n == 1 {
+        return vec![1.0];
+    }
+    (0..n)
+        .map(|i| (-pressure * (i as f64 / (n - 1) as f64)).exp())
+        .collect()
+}
+
+/// One weighted draw, by cumulative sum.
+fn weighted_pick(weights: &[f64], rng: &mut Rng) -> usize {
+    let total: f64 = weights.iter().sum();
+    let mut target = (rng.next_u64() as f64 / u64::MAX as f64) * total;
+    for (i, w) in weights.iter().enumerate() {
+        target -= w;
+        if target <= 0.0 {
+            return i;
+        }
+    }
+    weights.len() - 1
+}
+
+/// `n` distinct atoms carrying `want`, drawn without replacement.
+fn sample_by_symbol(symbol: &[u8], want: u8, n: usize, rng: &mut Rng) -> Vec<usize> {
+    let mut pool: Vec<usize> = (0..symbol.len()).filter(|&i| symbol[i] == want).collect();
+    let take = n.min(pool.len());
+    for i in 0..take {
+        let j = i + rng.below((pool.len() - i) as u64) as usize;
+        pool.swap(i, j);
+    }
+    pool.truncate(take);
+    pool
+}
+
+/// Flip randomly chosen atoms until the ordering has `target_a` atoms of the
+/// first element, the two-element case of `adjust_stoichiometry`.
+fn fix_stoichiometry(symbol: &mut [u8], target_a: usize, rng: &mut Rng) {
+    let count_a = symbol.iter().filter(|&&s| s == 0).count();
+    if count_a > target_a {
+        for i in sample_by_symbol(symbol, 0, count_a - target_a, rng) {
+            symbol[i] = 1;
+        }
+    } else if count_a < target_a {
+        for i in sample_by_symbol(symbol, 1, target_a - count_a, rng) {
+            symbol[i] = 0;
+        }
+    }
+}
+
+/// Take the atoms on one side of a random plane from `p1` and the rest from
+/// `p2`, then restore `p1`'s composition. Mirrors `CutAndSpliceOperator` with
+/// its default random normal direction, minus the particle rebuild: both
+/// parents index the same lattice, so the offspring keeps that indexing and
+/// inherits the neighbour list unchanged.
+fn cut_and_splice(p1: &[u8], p2: &[u8], positions: &[f64], center: [f64; 3],
+                  max_radius: f64, rng: &mut Rng) -> Vec<u8> {
+    let n = p1.len();
+    let unit = |rng: &mut Rng| {
+        loop {
+            let v = [
+                1.0 - 2.0 * (rng.next_u64() as f64 / u64::MAX as f64),
+                1.0 - 2.0 * (rng.next_u64() as f64 / u64::MAX as f64),
+                1.0 - 2.0 * (rng.next_u64() as f64 / u64::MAX as f64),
+            ];
+            let norm = (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt();
+            if norm > 1e-12 {
+                return [v[0] / norm, v[1] / norm, v[2] / norm];
+            }
+        }
+    };
+
+    loop {
+        let normal = unit(rng);
+        let anchor_dir = unit(rng);
+        let radius = (rng.next_u64() as f64 / u64::MAX as f64) * max_radius;
+        let anchor = [
+            anchor_dir[0] * radius + center[0],
+            anchor_dir[1] * radius + center[1],
+            anchor_dir[2] * radius + center[2],
+        ];
+
+        let mut child = vec![0u8; n];
+        let (mut n_positive, mut n_negative) = (0usize, 0usize);
+        for i in 0..n {
+            let d = (positions[3 * i] - anchor[0]) * normal[0]
+                + (positions[3 * i + 1] - anchor[1]) * normal[1]
+                + (positions[3 * i + 2] - anchor[2]) * normal[2];
+            if d > 0.0 {
+                child[i] = p1[i];
+                n_positive += 1;
+            } else {
+                // atoms exactly on the plane fall to p2; the Python drops them
+                // from both parents, which is the same measure-zero case
+                child[i] = p2[i];
+                if d < 0.0 {
+                    n_negative += 1;
+                }
+            }
+        }
+        if n_positive > 0 && n_negative > 0 {
+            return child;
+        }
+    }
+}
+
+/// Steady-state genetic algorithm over the orderings of one particle.
+///
+/// Returns (final population symbols sorted best-first, their energies,
+/// best-energy history as (energy, evaluations), evaluations, generations,
+/// accepted, duplicates).
+#[pyfunction]
+#[pyo3(signature = (offsets, neighbours, positions, masses, population, coef,
+                    environment_energies, patience, max_offspring_attempts,
+                    cut_and_splice_p, selection_pressure, mutation_low,
+                    mutation_high, improvement_tol, seed))]
+#[allow(clippy::too_many_arguments)]
+fn act_genetic_algorithm(
+    offsets: Vec<u32>,
+    neighbours: Vec<u32>,
+    positions: Vec<f64>,
+    masses: [f64; 2],
+    population: Vec<Vec<u8>>,
+    coef: Vec<f64>,
+    environment_energies: Vec<f64>,
+    patience: u64,
+    max_offspring_attempts: u64,
+    cut_and_splice_p: f64,
+    selection_pressure: f64,
+    mutation_low: f64,
+    mutation_high: f64,
+    improvement_tol: f64,
+    seed: u64,
+) -> PyResult<(Vec<Vec<u8>>, Vec<f64>, Vec<(f64, u64)>, u64, u64, u64, u64)> {
+    if population.is_empty() {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "the starting population is empty",
+        ));
+    }
+    let n = population[0].len();
+    if positions.len() != 3 * n {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "positions must hold three coordinates per atom",
+        ));
+    }
+
+    let mut cn_offset = [0u32; 13];
+    for cn in 0..13u32 {
+        cn_offset[cn as usize] = cn * (cn + 1) / 2;
+    }
+    let mut rng = Rng::new(seed);
+
+    // geometry is shared by every member, so the centre of mass and the
+    // radius are measured once from the first member's composition
+    let reference = &population[0];
+    let target_a = reference.iter().filter(|&&s| s == 0).count();
+    let total_mass: f64 = reference.iter().map(|&s| masses[s as usize]).sum();
+    let mut center = [0.0f64; 3];
+    for i in 0..n {
+        let m = masses[reference[i] as usize];
+        for axis in 0..3 {
+            center[axis] += m * positions[3 * i + axis];
+        }
+    }
+    for axis in 0..3 {
+        center[axis] /= total_mass;
+    }
+    let mut max_radius: f64 = 0.0;
+    for i in 0..n {
+        let dx = positions[3 * i] - center[0];
+        let dy = positions[3 * i + 1] - center[1];
+        let dz = positions[3 * i + 2] - center[2];
+        max_radius = max_radius.max((dx * dx + dy * dy + dz * dz).sqrt());
+    }
+
+    let descend = |symbols: Vec<u8>| -> (Vec<u8>, f64, u64) {
+        let mut act = Act::new(offsets.clone(), neighbours.clone(), symbols,
+                               coef.clone(), environment_energies.clone());
+        let mut start_energy = act.energy;
+        let mut step: u64 = 0;
+        loop {
+            step += 2;
+            let (i1, i2, _flip) = act.guided_exchange();
+            if act.energy < start_energy {
+                start_energy = act.energy;
+            } else {
+                act.apply_swap(i1, i2);
+                break;
+            }
+        }
+        (act.symbol.clone(), start_energy, step)
+    };
+
+    let mut members: Vec<(f64, Vec<u8>)> = population
+        .into_iter()
+        .map(|s| {
+            let e = energy_of(&offsets, &neighbours, &s, &coef, &cn_offset);
+            (e, s)
+        })
+        .collect();
+    let mut evaluations = members.len() as u64;
+    members.sort_by(|a, b| a.0.total_cmp(&b.0));
+
+    let mut seen: std::collections::HashSet<Vec<u8>> =
+        members.iter().map(|m| m.1.clone()).collect();
+    let mut history: Vec<(f64, u64)> = vec![(members[0].0, evaluations)];
+
+    let low = ((mutation_low * n as f64).round() as usize).max(1);
+    let high = ((mutation_high * n as f64).round() as usize).max(low);
+
+    let (mut generation, mut accepted, mut duplicates) = (0u64, 0u64, 0u64);
+    let mut unsuccessful = 0u64;
+
+    while unsuccessful < patience {
+        generation += 1;
+        let weights = rank_weights(members.len(), selection_pressure);
+
+        let mut offspring: Option<(f64, Vec<u8>)> = None;
+        for _ in 0..max_offspring_attempts {
+            let candidate = if (rng.next_u64() as f64 / u64::MAX as f64) < cut_and_splice_p
+                && members.len() > 1
+            {
+                let first = weighted_pick(&weights, &mut rng);
+                let mut remaining = weights.clone();
+                remaining[first] = 0.0;
+                let second = weighted_pick(&remaining, &mut rng);
+                let mut child = cut_and_splice(&members[first].1, &members[second].1,
+                                               &positions, center, max_radius, &mut rng);
+                fix_stoichiometry(&mut child, target_a, &mut rng);
+                child
+            } else {
+                let parent = weighted_pick(&weights, &mut rng);
+                let mut child = members[parent].1.clone();
+                let n_swaps = low + rng.below((high - low + 1) as u64) as usize;
+                let firsts = sample_by_symbol(&child, 0, n_swaps, &mut rng);
+                let seconds = sample_by_symbol(&child, 1, n_swaps, &mut rng);
+                for (a, b) in firsts.into_iter().zip(seconds) {
+                    child.swap(a, b);
+                }
+                child
+            };
+
+            let (symbols, energy, steps) = descend(candidate);
+            evaluations += steps;
+            if !seen.contains(&symbols) {
+                offspring = Some((energy, symbols));
+                break;
+            }
+            duplicates += 1;
+        }
+
+        let Some(child) = offspring else {
+            // every attempt reproduced an ordering already in the population
+            break;
+        };
+
+        let child_symbols = child.1.clone();
+        seen.insert(child_symbols.clone());
+        members.push(child);
+        members.sort_by(|a, b| a.0.total_cmp(&b.0));
+        let dropped = members.pop().expect("population is never empty");
+        seen.remove(&dropped.1);
+        // the offspring counts as accepted only if it is not the one dropped
+        if dropped.1 != child_symbols {
+            accepted += 1;
+        }
+
+        let best = members[0].0;
+        if best < history[history.len() - 1].0 - improvement_tol {
+            unsuccessful = 0;
+            history.push((best, evaluations));
+        } else {
+            unsuccessful += 1;
+        }
+    }
+
+    let energies: Vec<f64> = members.iter().map(|m| m.0).collect();
+    let orderings: Vec<Vec<u8>> = members.into_iter().map(|m| m.1).collect();
+    Ok((orderings, energies, history, evaluations, generation, accepted, duplicates))
+}
+
 #[pymodule]
 fn npl_act_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(act_energy, m)?)?;
     m.add_function(wrap_pyfunction!(act_local_optimization, m)?)?;
     m.add_function(wrap_pyfunction!(act_basin_hopping, m)?)?;
+    m.add_function(wrap_pyfunction!(act_genetic_algorithm, m)?)?;
     Ok(())
 }

@@ -144,3 +144,84 @@ def _classifier(particle):
 def test_falls_back_when_the_model_is_not_act():
     particle, calculator, environment_energies = _setup()
     assert not act_fast.usable(particle, calculator, environment_energies, 'TOP')
+
+
+# ------------------------------------------------------------------ genetic
+
+def _population(n_members=6):
+    """A start population of distinct random orderings on one lattice."""
+    from npl.optimization.genetic_algorithm.exchange_operator import ExchangeOperator
+
+    particle, calculator, environment_energies = _setup()
+    exchange = ExchangeOperator(0.5)
+    population = [particle]
+    for _ in range(n_members - 1):
+        population.append(exchange.random_exchange(particle, n_exchanges=10))
+    return population, calculator, environment_energies
+
+
+def _run_ga(force_python, seed=4242, n_members=6):
+    from npl.optimization.genetic_algorithm.single_particle_ga import (
+        run_single_particle_ga)
+    from npl.descriptors import (NeighborCountingEnvironmentCalculator,
+                                 TopologicalEnvironmentClassifier)
+
+    population, calculator, environment_energies = _population(n_members)
+    symbols = population[0].get_all_symbols()
+    env_calculator = NeighborCountingEnvironmentCalculator(symbols)
+    classifier = TopologicalEnvironmentClassifier(env_calculator, symbols)
+
+    np.random.seed(seed)
+    result = run_single_particle_ga(
+        population, 20, calculator, env_calculator, classifier,
+        environment_energies, model='ACT', seed=seed,
+        force_python=force_python)
+    return result, calculator, population
+
+
+def test_genetic_algorithm_returns_the_python_shape():
+    (history, best, evaluations, population, stats), _calc, start = _run_ga(False)
+
+    assert len(population) == len(start)
+    assert evaluations > 0
+    assert set(stats) == {'generations', 'accepted', 'duplicates', 'acceptance'}
+    assert history[-1][0] <= history[0][0] + 1e-9
+    assert best is population[0]
+
+
+def test_genetic_algorithm_preserves_stoichiometry():
+    """Cut-and-splice mixes two parents and then has to put the composition
+    back; if it did not, every downstream energy would be for the wrong alloy."""
+    (_history, _best, _evals, population, _stats), _calc, start = _run_ga(False)
+
+    expected = start[0].get_stoichiometry()
+    for member in population:
+        assert member.get_stoichiometry() == expected
+
+
+def test_genetic_algorithm_energies_are_real():
+    """Each returned energy must be the energy the Python calculator computes
+    for that ordering - the ordering and the number must not drift apart."""
+    (_history, _best, _evals, population, _stats), calculator, _start = _run_ga(False)
+
+    for member in population:
+        reported = member.get_energy(calculator.get_energy_key())
+        assert calculator.compute_energy(member) == pytest.approx(reported, abs=1e-6)
+
+
+def test_genetic_algorithm_population_has_no_duplicates():
+    (_history, _best, _evals, population, _stats), _calc, _start = _run_ga(False)
+
+    orderings = {tuple(member.get_symbols()) for member in population}
+    assert len(orderings) == len(population)
+
+
+def test_genetic_algorithm_is_in_the_same_league_as_python():
+    """Different RNG streams, so not identical - but the Rust GA must not be
+    systematically worse at finding a minimum."""
+    (rust_history, *_), _calc, _start = _run_ga(False)
+    (python_history, *_), _calc2, _start2 = _run_ga(True)
+
+    rust_best = rust_history[-1][0]
+    python_best = python_history[-1][0]
+    assert rust_best == pytest.approx(python_best, abs=0.5)
