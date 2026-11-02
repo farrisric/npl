@@ -7,7 +7,7 @@
 
 # <span style="font-size:larger;">NanoParticleLibrary (NPL)</span>
 
-![NPL Logo](https://github.com/farrisric/npl/blob/main/docs/images/logo.png?raw=true)
+<img src="https://github.com/farrisric/npl/blob/main/docs/images/logo.png?raw=true" alt="NPL Logo" width="206">
 
 ## Table of contents
 
