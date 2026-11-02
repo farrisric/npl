@@ -67,13 +67,13 @@ def ordering_key(particle):
 
 
 def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence,
-                          energy_calculator, local_env_calculator,
-                          local_feature_classifier, environment_energies,
-                          model='ACT', improvement_tol=1e-6,
-                          max_offspring_attempts=50, cut_and_splice_p=0.4,
-                          selection_pressure=3.0,
-                          mutation_swap_fraction=(0.01, 0.06),
-                          seed=None, force_python=False):
+                           energy_calculator, local_env_calculator,
+                           local_feature_classifier, environment_energies,
+                           model='ACT', improvement_tol=1e-6,
+                           max_offspring_attempts=50, cut_and_splice_p=0.4,
+                           selection_pressure=3.0,
+                           mutation_swap_fraction=(0.01, 0.06),
+                           seed=None, force_python=False):
     """Steady-state genetic algorithm over the orderings of one particle.
 
     ``model`` selects the exchange operator used to locally optimize every
