@@ -7,7 +7,9 @@ on:
 
 jobs:
   # npl carries the compiled Rust ACT search (npl._act_rs), so every platform
-  # needs its own wheel; installing from the sdist needs a Rust toolchain.
+  # needs its own wheel; installing from the sdist needs a Rust toolchain. The
+  # extension uses the stable ABI (abi3-py310), so one wheel per platform covers
+  # CPython 3.10 and every later version.
   wheels:
     name: Build wheels (${{ matrix.os }}, ${{ matrix.target }})
     runs-on: ${{ matrix.os }}
@@ -24,16 +26,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: |
-            3.10
-            3.11
-            3.12
-            3.13
+          python-version: "3.12"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --find-interpreter
+          args: --release --out dist
           manylinux: auto
       - uses: actions/upload-artifact@v4
         with:
