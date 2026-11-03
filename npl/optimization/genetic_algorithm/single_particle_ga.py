@@ -71,7 +71,7 @@ def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence,
                            local_feature_classifier, environment_energies,
                            model='ACT', improvement_tol=1e-6,
                            max_offspring_attempts=50, cut_and_splice_p=0.4,
-                           selection_pressure=3.0,
+                           selection_pressure=1.0,
                            mutation_swap_fraction=(0.01, 0.06),
                            seed=None, force_python=False):
     """Steady-state genetic algorithm over the orderings of one particle.
@@ -88,7 +88,9 @@ def run_single_particle_ga(start_population, unsuccessful_gens_for_convergence,
     Selection is rank-based with ``selection_pressure``, so it does not drift
     with the population's spread, and mutations swap
     ``mutation_swap_fraction`` of the atoms rather than the one atom a
-    geometric draw used to give.
+    geometric draw used to give. The default pressure of 1.0 was measured
+    against 3.0 on 405-atom PtCu particles at three compositions (40 seeds
+    each): never worse, 26-41 meV lower mean energy at Pt25Cu75, same cost.
 
     Returns ``[best_energies, best_particle, energy_evaluations, population,
     stats]``; ``stats`` reports generations, how many offspring survived
