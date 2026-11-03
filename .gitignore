@@ -114,3 +114,5 @@ test*ipynb
 
 # local example run outputs
 examples/*_results/
+# written by examples/train_top.ipynb; nothing loads it
+examples/bayesian_rr_calculator.pkl

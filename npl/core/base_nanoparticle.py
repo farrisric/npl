@@ -11,10 +11,13 @@ from npl.utils import get_crystalline_structure
 class BaseNanoparticle:
     """
     Represent a nanoparticle.
-    a NeighborList object. Multiple energies, feature vectors, and local environments
-    can be accessed by storing them with their respective key.
+
+    A BaseNanoparticle wraps the atoms (an AtomWrapper), their neighbor list (a
+    NeighborList object) and the adsorption sites. Multiple energies, feature vectors,
+    and local environments can be accessed by storing them with their respective key.
     BaseNanoparticle is a data holder class in the sense that all common calculations
     such as the calculation of feature vectors, atomic descriptors, or energies should
+    be done by the respective calculator and classifier classes, not by the particle.
     This ensures that BaseNanoparticle remains as general as possible.
     For project-specific behavior, the Nanoparticle class, which inherits from
     BaseNanoparticle, should be used.

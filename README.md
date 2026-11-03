@@ -64,7 +64,7 @@ pip install ./npl
 
 ### TOP Energy Evaluation Example
 
-This example demonstrates how to evaluate the topological (TOP) energy of a bimetallic nanoparticle using pretrained coefficients shipped with NPL. A 201-atom truncated-octahedral Pt151Cu50 particle is constructed, its extended topological feature vector is computed, and the energy is evaluated using a `TOPCalculator` loaded from pretrained linear-model coefficients. The result is a fast, DFT-quality energy estimate without requiring an external calculator.
+This example demonstrates how to evaluate the topological (TOP) energy of a bimetallic nanoparticle using pretrained coefficients shipped with NPL. A 201-atom truncated-octahedral Pt151Cu50 particle is constructed, its extended topological feature vector is computed, and the energy is evaluated using a `TOPCalculator` loaded from pretrained linear-model coefficients. The result is a fast relative energy, in the units of the pretrained coefficients, without requiring an external calculator.
 
 ```python
 from npl.core import Nanoparticle
