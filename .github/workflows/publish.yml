@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+  # dry run from the Actions tab: builds every wheel and the sdist, uploads nothing
+  workflow_dispatch:
 
 jobs:
   # npl carries the compiled Rust ACT search (npl._act_rs), so every platform
@@ -23,8 +25,8 @@ jobs:
           - { os: macos-14, target: aarch64 }
           - { os: windows-latest, target: x64 }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Build wheels
@@ -33,7 +35,7 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist
           manylinux: auto
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.target }}
           path: dist
@@ -42,13 +44,13 @@ jobs:
     name: Build sdist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
           command: sdist
           args: --out dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist
@@ -56,6 +58,7 @@ jobs:
   pypi-publish:
     name: Publish release to PyPI
     needs: [wheels, sdist]
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -63,7 +66,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           path: dist
           merge-multiple: true
