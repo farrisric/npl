@@ -25,7 +25,7 @@ from test_optimization import _build  # noqa: E402  (shared fixture builder)
 
 
 pytestmark = pytest.mark.skipif(not act_fast.available(),
-                                reason='npl_act_rs is not installed')
+                                reason="npl._act_rs is not built")
 
 
 def _setup():
@@ -48,9 +48,9 @@ def test_energy_matches_the_python_calculator():
 
     expected = calculator.compute_energy(particle)
 
-    import npl_act_rs
+    from npl import _act_rs
     offsets, neighbours, codes, _elements = act_fast.pack(particle)
-    got = npl_act_rs.act_energy(
+    got = _act_rs.act_energy(
         offsets, neighbours, codes,
         [float(c) for c in calculator.get_coefficients()])
 

@@ -25,6 +25,9 @@ Option 2: Install via pip
 
     pip install npl
 
+   The wheels include a compiled Rust extension that makes ACT basin hopping and the ACT genetic algorithm 24-42x faster.
+   Installing from source, or on a platform without a prebuilt wheel, needs a Rust toolchain (https://rustup.rs).
+
 2. **Verify the installation**:
 
 .. code-block:: bash

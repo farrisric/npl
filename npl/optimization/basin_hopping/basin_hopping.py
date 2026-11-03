@@ -56,7 +56,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
     """Guided-exchange basin hopping over the chemical ordering.
 
     ``model='ACT'`` on a two-element particle with a linear TEC energy model
-    runs inside the ``npl_act_rs`` extension when it is installed: the same
+    runs inside the compiled ``npl._act_rs`` extension when it is built: the same
     algorithm, with the inner loop out of the interpreter. Pass
     ``force_python=True`` to keep the pure Python path - the tests use it to
     compare the two. ``seed`` seeds the Rust RNG and is drawn from the

@@ -20,9 +20,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install package with test extras
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install package with test extras (compiles the Rust extension)
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[test]"
       - name: Run tests
         run: pytest -v
+      - name: Run tests on the pure-Python fallback
+        run: pytest -v
+        env:
+          NPL_DISABLE_ACT_RS: "1"
+

@@ -84,7 +84,7 @@ def local_optimization(start_particle, energy_calculator, environment_energies,
     """Guided-exchange descent to a local minimum of the chemical ordering.
 
     ``model='ACT'`` on a two-element particle with a linear TEC energy model
-    runs inside the ``npl_act_rs`` extension when it is installed. The descent
+    runs inside the compiled ``npl._act_rs`` extension when it is built. The descent
     is deterministic, so the two paths agree exactly except where equal exchange
     energies leave the choice of atom open. ``force_python=True`` keeps the pure
     Python path.

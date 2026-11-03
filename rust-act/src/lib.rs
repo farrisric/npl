@@ -839,6 +839,7 @@ fn act_genetic_algorithm(
 }
 
 #[pymodule]
+#[pyo3(name = "_act_rs")]
 fn npl_act_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(act_energy, m)?)?;
     m.add_function(wrap_pyfunction!(act_local_optimization, m)?)?;

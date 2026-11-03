@@ -16,7 +16,7 @@ pip install -e ".[test]"          # editable install + test deps (pytest); deps 
 pytest                            # run the test suite (config in pyproject.toml: testpaths=tests)
 flake8                            # lint; config in .flake8 (max line 100, single quotes, E203 ignored)
 
-python -m build                   # build sdist+wheel (PyPI publish runs on pushing a v* tag)
+python -m build                   # build sdist+wheel via maturin (CI builds per-platform wheels on a v* tag)
 
 cd docs && make html              # build Sphinx docs into docs/_build/
 ```
@@ -104,8 +104,12 @@ computed on the particle.
   directory and logs to stdout at INFO. Several modules also call `logging.basicConfig` again.
 - `TOPCalculator` reads its coefficients from the Python dict `top_parameters` in
   `npl/calculators/parameters.py` (keyed by stoichiometry string, e.g. `"Pt151Cu50"`).
-- The version is single-sourced from `npl/__init__.py:__version__` (`pyproject.toml` reads it via
-  `[tool.setuptools.dynamic]`). Bump it there.
+- The version is single-sourced from `version` in `pyproject.toml`; `npl.__version__` reads it back
+  from the installed metadata. Bump it there.
+- The build backend is maturin: the Rust ACT search in `rust-act/` is compiled into the wheel as
+  `npl._act_rs`, so `pip install -e .` needs a Rust toolchain. Rebuild after editing
+  `rust-act/src/lib.rs` by re-running `pip install -e .`. Without the compiled module (or with
+  `NPL_DISABLE_ACT_RS=1`) `npl.optimization.act_fast` falls back to the Python search.
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.

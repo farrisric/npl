@@ -4,7 +4,7 @@ The ACT inner loop is integer bookkeeping plus one dot product, but in Python
 it costs ~30 million interpreter calls per basin-hopping restart: profiling a
 2000-attempt restart on a 405-atom particle put 19 s of 19 s inside
 ``ACTExchangeOperator.update`` and the local-environment recompute below it.
-``npl_act_rs`` reimplements exactly that loop; this module packs a particle into
+``npl._act_rs`` reimplements exactly that loop; this module packs a particle into
 the flat arrays it wants and unpacks the result.
 
 The fast path only takes over when every assumption behind it holds - two
@@ -20,10 +20,15 @@ import numpy as np
 
 from ase.data import atomic_numbers
 
-try:  # the extension is optional; npl runs without it
-    import npl_act_rs as _rs
-except ImportError:  # pragma: no cover - exercised by installs without the wheel
-    _rs = None
+try:  # compiled into the npl wheel; a source checkout without a build lacks it
+    from npl import _act_rs as _rs
+except ImportError:  # pragma: no cover
+    # shortcut: the old standalone npl_act_rs wheel, still installed in existing
+    # environments; drop once those have been reinstalled from npl>=3.0
+    try:
+        import npl_act_rs as _rs
+    except ImportError:
+        _rs = None
 
 
 TEC_N_FEATURES = 182
