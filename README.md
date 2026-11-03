@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/mit)
 [![GitHub issues](https://img.shields.io/github/issues/farrisric/npl.svg)](https://GitHub.com/farrisric/npl/issues)
 [![Documentation Status](https://readthedocs.org/projects/nplib/badge/)](https://nplib.readthedocs.io/en/latest/index.html)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20445317.svg)](https://doi.org/10.5281/zenodo.20445317)
 
 # <span style="font-size:larger;">NanoParticleLibrary (NPL)</span>
 

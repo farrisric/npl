@@ -16,5 +16,6 @@ authors:
     affiliation: "Institut de Química Teòrica i Computacional (IQTCUB), Universitat de Barcelona, Barcelona, Spain"
 date-released: "2026-11-03"
 version: "3.0.0"
+doi: "10.5281/zenodo.20445317"
 url: "https://github.com/farrisric/npl"
 license: "MIT"
