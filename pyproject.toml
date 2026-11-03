@@ -4,7 +4,11 @@ description = "NanoParticleLibrary: structural and chemical-ordering analysis an
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
-authors = [{ name = "Riccardo Farris", email = "rfarris@ub.edu" }]
+authors = [
+    { name = "Riccardo Farris", email = "rfarris@ub.edu" },
+    { name = "Konstantin M. Neyman" },
+    { name = "Albert Bruix" },
+]
 version = "3.0.0"
 dependencies = [
     "ase>=3.23",

@@ -12,6 +12,9 @@ authors:
   - name: Riccardo Farris
     orcid: 0000-0002-8157-6786
     affiliation: "1, 2"
+  - name: Konstantin M. Neyman
+    orcid: 0000-0002-5242-5567
+    affiliation: "1, 3"
   - name: Albert Bruix
     orcid: 0000-0003-2585-5542
     affiliation: 1
@@ -20,6 +23,8 @@ affiliations:
     index: 1
   - name: LEITAT Technological Center, Terrassa, Spain
     index: 2
+  - name: Institució Catalana de Recerca i Estudis Avançats (ICREA), Barcelona, Spain
+    index: 3
 date: 29 May 2026
 bibliography: paper.bib
 ---
