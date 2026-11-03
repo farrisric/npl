@@ -16,6 +16,8 @@ Open a terminal and run the following commands:
     cd npl
     pip install .
 
+Building from source compiles NPL's Rust extension, so it needs a Rust toolchain (https://rustup.rs).
+
 Option 2: Install via pip
 -------------------------
 
@@ -26,7 +28,7 @@ Option 2: Install via pip
     pip install npl
 
    The wheels include a compiled Rust extension that makes ACT basin hopping and the ACT genetic algorithm 24-42x faster.
-   Installing from source, or on a platform without a prebuilt wheel, needs a Rust toolchain (https://rustup.rs).
+   On a platform without a prebuilt wheel, pip builds from source and needs a Rust toolchain (https://rustup.rs).
 
 2. **Verify the installation**:
 
@@ -37,4 +39,4 @@ Option 2: Install via pip
 Troubleshooting
 ---------------
 
-If you encounter any issues during installation, please refer to the `README.md` file or open an issue on the [GitHub repository](https://github.com/farrisric/NPlib/issues).
+If you encounter any issues during installation, please refer to the `README.md` file or open an issue on the `GitHub repository <https://github.com/farrisric/npl/issues>`_.

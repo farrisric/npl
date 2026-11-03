@@ -187,15 +187,17 @@ class BayesianRRCalculator(EnergyCalculator):
     """
     BayesianRRCalculator is a class for performing Bayesian Ridge Regression (BRR) on nanoparticle
     datasets.
-    Attributes:
-    -----------
+
+    Attributes
+    ----------
     ridge : BayesianRidge
         The Bayesian Ridge Regression model.
         The key used to store energy values in the nanoparticles.
     feature_key : str
         The key used to extract feature vectors from the nanoparticles.
-    Methods:
-    --------
+
+    Methods
+    -------
     __init__(self, feature_key):
         Initializes the BayesianRRCalculator with a given feature key.
     fit(self, training_set, energy_key, validation_set=None):
@@ -210,8 +212,9 @@ class BayesianRRCalculator(EnergyCalculator):
         Sets the feature key used to extract feature vectors from the nanoparticles.
     compute_energy(self, particle):
         Computes the energy of a given nanoparticle using the Bayesian Ridge Regression model.
-    Examples:
-    ---------
+
+    Examples
+    --------
     >>> from npl.calculators.energy_calculator import BayesianRRCalculator
     >>> calculator = BayesianRRCalculator(feature_key='some_feature_key')
     >>> training_set = [...]  # List of Nanoparticles for training
@@ -233,7 +236,7 @@ class BayesianRRCalculator(EnergyCalculator):
     def fit(self, training_set, energy_key, validation_set=None):
         """Fit the Bayesian Ridge Regression (BRR) model.
 
-        Parameters:
+        Parameters
         ----------
         training_set : list of Nanoparticles
             The dataset used for training the model.
@@ -243,7 +246,8 @@ class BayesianRRCalculator(EnergyCalculator):
             If a float is provided, it represents the fraction of the training set to be used as
             the validation set.
             If a list is provided, it is used as the validation set directly. Default is None.
-        Returns:
+
+        Returns
         -------
         None
         """
@@ -263,14 +267,14 @@ class BayesianRRCalculator(EnergyCalculator):
     def validate(self, validation_set, energy_key):
         """Validate the Bayesian Ridge Regression (BRR) model.
 
-        Parameters:
+        Parameters
         ----------
         validation_set : list of Nanoparticles
             The dataset used for validating the model.
         energy_key : str
             The key used to extract energy values from the nanoparticles.
 
-        Returns:
+        Returns
         -------
         None
         """

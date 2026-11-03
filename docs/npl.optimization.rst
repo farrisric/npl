@@ -11,10 +11,21 @@ Subpackages
    npl.optimization.genetic_algorithm
    npl.optimization.local_optimization
 
+Submodules
+----------
+
+npl.optimization.act\_fast module
+---------------------------------
+
+.. automodule:: npl.optimization.act_fast
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Module contents
 ---------------
 
 .. automodule:: npl.optimization
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -21,7 +21,7 @@ class LocalEnvironmentFeatureClassifier:
             environments.
 
         compute_feature_vector(particle, recompute_atom_features=True,
-        recompute_local_environments=False):
+                               recompute_local_environments=False):
             Computes the feature vector for the particle. Optionally recomputes atom features and
             local environments.
 

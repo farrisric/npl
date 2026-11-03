@@ -72,7 +72,6 @@ This figure illustrates the learning curve for the model, depicting the training
     plot_learning_curves(X, y, n_atoms, calculator.ridge, n_splits=10, train_sizes=range(4, 30, 2), y_lim=(0, 2))
 
 .. figure:: ../images/learning_curve.png
-
    :alt: Learning curve showing model performance across training sizes.
    :align: center
    :figwidth: 100%
@@ -93,7 +92,6 @@ We plot the coefficients values to visualize the importance of each feature in t
     plt.show()
 
 .. figure:: ../images/coefficients.png
-
     :alt: Description of the image
     :align: center
     :figwidth: 100%

@@ -1,1 +1,9 @@
+# Read the Docs imports npl from the checkout (docs/conf.py) instead of installing it,
+# so no Rust toolchain is needed; npl.optimization.act_fast falls back to Python.
 sphinx_rtd_theme==3.0.1
+ase>=3.23
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.5
+sortedcontainers>=2.4
+matplotlib

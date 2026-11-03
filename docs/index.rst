@@ -27,6 +27,7 @@ Features
    
    installation
    examples
+   modules
    
 
    

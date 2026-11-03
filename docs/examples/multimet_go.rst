@@ -84,12 +84,12 @@ Optimizing the Chemical Ordering
         start_particle.truncated_octahedron(height, trunc, stoichiometry)
         return start_particle
 
-    beta, max_steps = 300, 10000
+    temperature, max_steps = 300, 10000
 
     steps_MC, energies_MC = [], []
     for _ in range(10):
         start_particle = create_start_particle(6, 2, stoichiometry)
-        [best_particle, accepted_energies] = run_monte_carlo(beta, max_steps, start_particle, calculator, etop)
+        [best_particle, accepted_energies] = run_monte_carlo(temperature, max_steps, start_particle, calculator, etop)
         min_energy, min_step = min(accepted_energies, key=lambda x: x[0])
         energies_MC.append(min_energy)
         steps_MC.append(min_step)
@@ -145,4 +145,4 @@ If you use this code, please cite our papers:
     issn = {0021-9606},
     doi = {10.1063/5.0193848},
     url = {https://doi.org/10.1063/5.0193848},
-}
+    }

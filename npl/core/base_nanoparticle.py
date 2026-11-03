@@ -18,6 +18,7 @@ class BaseNanoparticle:
     This ensures that BaseNanoparticle remains as general as possible.
     For project-specific behavior, the Nanoparticle class, which inherits from
     BaseNanoparticle, should be used.
+
     Attributes:
         atoms (AtomWrapper): An object that wraps atomic information.
         neighbor_list (NeighborList): An object that stores the neighbor list.
@@ -410,12 +411,12 @@ class BaseNanoparticle:
         """
         Calculate the generalized coordination number for the given indices.
 
-        Parameters:
-        indices (list or array-like): The indices of the atoms for which the
-                                      generalized coordination number is to be calculated.
+        Args:
+            indices (list or array-like): The indices of the atoms for which the
+                generalized coordination number is to be calculated.
 
         Returns:
-        float: The generalized coordination number for the specified indices.
+            float: The generalized coordination number for the specified indices.
         """
         return self.neighbor_list.get_generalized_coordination_number(indices)
 
@@ -449,16 +450,16 @@ class BaseNanoparticle:
         """
         Get the atoms in the surface plane of a nanoparticle.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         atom_idx : int
             The index of the atom for which to find the surface plane atoms.
         edges_corner : bool, optional
             If True, include atoms at the edges and corners of the surface plane.
             Default is False.
 
-        Returns:
-        --------
+        Returns
+        -------
         list
             A list of atom indices that are in the surface plane.
         """
@@ -732,9 +733,8 @@ class BaseNanoparticle:
         """
         Swap the status of adsorption sites based on the provided index pairs.
 
-        Parameters:
-        index_pairs (list of tuple): A list of tuples where each tuple contains two indices.
-                                     The status of the adsorption sites at these indices will be
-                                     swapped.
+        Args:
+            index_pairs (list of tuple): A list of tuples where each tuple contains two indices.
+                The status of the adsorption sites at these indices will be swapped.
         """
         self.adsorption_site_list.swap_status(index_pairs)
