@@ -11,8 +11,8 @@ The fitted linear coefficients ARE the per-environment energies, so the same
 array is used both as the calculator coefficients and as the energies driving
 the ACT exchange -- there is no conversion step.
 
-Guided exchange exists only for two elements; for multi-metal (ETOP) ordering
-use the Metropolis Monte Carlo workflow in ``examples/multimet_go.ipynb``.
+This example has two elements; for three or more metals use ``model="ETOP"``
+(see ``examples/multimet_go.ipynb``, which compares it with Metropolis Monte Carlo).
 """
 from npl.core import Nanoparticle
 from npl.calculators import EMTCalculator, BayesianRRCalculator

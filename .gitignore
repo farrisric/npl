@@ -111,3 +111,6 @@ test*ipynb
 *.out
 # Rust build artefacts
 /rust-act/target/
+
+# local example run outputs
+examples/*_results/

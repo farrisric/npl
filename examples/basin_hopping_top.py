@@ -12,8 +12,8 @@ converted into per-atom environment energies with
 switched to read the per-atom ``TEC`` descriptor that the guided exchange
 updates incrementally.
 
-Guided exchange exists only for two elements; for multi-metal (ETOP) ordering
-use the Metropolis Monte Carlo workflow in ``examples/multimet_go.ipynb``.
+This example has two elements; for three or more metals use ``model="ETOP"``
+(see ``examples/multimet_go.ipynb``, which compares it with Metropolis Monte Carlo).
 """
 from npl.core import Nanoparticle
 from npl.calculators import (
