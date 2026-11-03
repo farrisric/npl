@@ -23,12 +23,7 @@ from ase.data import atomic_numbers
 try:  # compiled into the npl wheel; a source checkout without a build lacks it
     from npl import _act_rs as _rs
 except ImportError:  # pragma: no cover
-    # shortcut: the old standalone npl_act_rs wheel, still installed in existing
-    # environments; drop once those have been reinstalled from npl>=3.0
-    try:
-        import npl_act_rs as _rs
-    except ImportError:
-        _rs = None
+    _rs = None
 
 
 TEC_N_FEATURES = 182
