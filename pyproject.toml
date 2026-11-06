@@ -9,7 +9,7 @@ authors = [
     { name = "Konstantin M. Neyman" },
     { name = "Albert Bruix" },
 ]
-version = "3.0.1"
+version = "3.1.0"
 dependencies = [
     "ase>=3.23",
     "numpy>=1.26",
