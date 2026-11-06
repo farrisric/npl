@@ -7,7 +7,6 @@ from itertools import combinations_with_replacement
 import numpy as np
 from ase.data import atomic_numbers
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

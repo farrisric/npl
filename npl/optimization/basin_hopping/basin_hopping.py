@@ -5,7 +5,6 @@ import logging
 import copy
 import random
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -36,7 +35,7 @@ def _run_basin_hopping_rust(start_particle, energy_calculator, environment_energ
     env_calculator.compute_local_environments(start_particle)
     feature_classifier.compute_feature_vector(start_particle)
     energy_calculator.compute_energy(start_particle)
-    logging.info("Starting energy: {}".format(start_particle.get_energy(
+    logger.info("Starting energy: {}".format(start_particle.get_energy(
         energy_calculator.get_energy_key())))
 
     if seed is None:
@@ -44,8 +43,8 @@ def _run_basin_hopping_rust(start_particle, energy_calculator, environment_energ
     result, error = act_fast.basin_hopping(
         copy.deepcopy(start_particle), energy_calculator, environment_energies,
         n_hopping_attempts, n_hops, env_calculator, feature_classifier, seed)
-    logging.info('Lowest energy: {:.3f}'.format(result[1][-1][0]))
-    logging.debug('ACT exchange bookkeeping error: %g', error)
+    logger.info('Lowest energy: {:.3f}'.format(result[1][-1][0]))
+    logger.debug('ACT exchange bookkeeping error: %g', error)
     return result
 
 
@@ -64,9 +63,9 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
     reproducible.
     """
 
-    logging.info("Starting Basin Hopping simulation")
-    logging.info("Hopping attempts: {}".format(n_hopping_attempts))
-    logging.info("Hops: {}".format(n_hops))
+    logger.info("Starting Basin Hopping simulation")
+    logger.info("Hopping attempts: {}".format(n_hopping_attempts))
+    logger.info("Hops: {}".format(n_hops))
 
     from npl.optimization import act_fast  # lazy: npl.optimization imports this module
 
@@ -80,7 +79,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
         setup_local_optimization(start_particle, energy_calculator, environment_energies,
                                  local_feature_classifier, model=model)
 
-    logging.info("Starting energy: {}".format(start_particle.get_energy(
+    logger.info("Starting energy: {}".format(start_particle.get_energy(
         energy_calculator.get_energy_key())))
 
     start_energy = start_particle.get_energy(energy_key)
@@ -125,7 +124,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
 
             else:
                 if i % n_hopping_attempts == 0:
-                    logging.info('Energy after local_opt: {:.3f}, lowest {:.3f}'.format(
+                    logger.info('Energy after local_opt: {:.3f}, lowest {:.3f}'.format(
                         start_energy,
                         lowest_energy))
 
@@ -157,7 +156,7 @@ def run_basin_hopping(start_particle, energy_calculator, environment_energies, n
             new_energy = start_particle.get_energy(energy_key)
 
             start_energy = new_energy
-    logging.info('Lowest energy: {:.3f}'.format(lowest_energy))
+    logger.info('Lowest energy: {:.3f}'.format(lowest_energy))
     lowest_energies.append((lowest_energy, step))
 
     # Rebuild the best particle once from the cheap ordering snapshot, restoring

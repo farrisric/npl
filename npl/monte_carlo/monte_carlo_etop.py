@@ -6,7 +6,6 @@ import warnings
 
 from npl.monte_carlo.random_exchange_operator_etop import RandomExchangeOperatorExtended
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 warnings.filterwarnings('ignore')
 
@@ -44,13 +43,13 @@ def run_monte_carlo(temperature, max_steps, start_particle, energy_calculator, f
     energy_key, feature_calculator, exchange_operator = setup_monte_carlo(start_particle,
                                                                           energy_calculator,
                                                                           feature_classifier)
-    logging.info("=====================================================")
-    logging.info("Monte Carlo simulation")
-    logging.info("=====================================================\n")
-    logging.info("Starting Monte Carlo simulation")
-    logging.info("Temperature: {}".format(temperature))
-    logging.info("Max steps: {}".format(max_steps))
-    logging.info("Starting energy: {:.3f}".format(start_particle.get_energy(
+    logger.info("=====================================================")
+    logger.info("Monte Carlo simulation")
+    logger.info("=====================================================\n")
+    logger.info("Starting Monte Carlo simulation")
+    logger.info("Temperature: {}".format(temperature))
+    logger.info("Max steps: {}".format(max_steps))
+    logger.info("Starting energy: {:.3f}".format(start_particle.get_energy(
         energy_calculator.get_energy_key())))
 
     beta = 1 / (kB * temperature)
@@ -66,8 +65,8 @@ def run_monte_carlo(temperature, max_steps, start_particle, energy_calculator, f
     while no_improvement < max_steps:
         total_steps += 1
         if total_steps % 2000 == 0:
-            logging.info("Step: {}".format(total_steps))
-            logging.info("Lowest energy: {}".format(lowest_energy))
+            logger.info("Step: {}".format(total_steps))
+            logger.info("Lowest energy: {}".format(lowest_energy))
 
         exchanges = exchange_operator.random_exchange(start_particle)
         neighborhood = features_to_update(start_particle, exchanges)

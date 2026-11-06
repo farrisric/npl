@@ -100,8 +100,12 @@ computed on the particle.
   MC with machine-learning interatomic potentials (variable particle number, MACE/alchemi). New
   GCMC / ML-potential work belongs in `mcpy`; chemical-ordering MC stays here. mcpy's calculators
   live at the additional working directory `/home/energystorage/projects/mcpy/mcpy/calculators`.
-- `import npl` runs `setup_logging()`, which writes an `npl.log` file in the current working
-  directory and logs to stdout at INFO. Several modules also call `logging.basicConfig` again.
+- `import npl` does not configure logging: the `npl` logger only gets a `NullHandler`. Modules log
+  through `logging.getLogger(__name__)`, never the root `logging.info(...)` (which runs
+  `basicConfig`). To see INFO output, the application calls `logging.basicConfig(level=logging.INFO)`
+  or the opt-in `npl.setup_logging(level=..., file=None, stream=True)`, which configures only the
+  `npl` logger (like mcpy's `mcpy.utils.logging.configure`) and writes a file only when `file=` is given.
+  `tests/test_imports.py` guards this.
 - `TOPCalculator` reads its coefficients from the Python dict `top_parameters` in
   `npl/calculators/parameters.py` (keyed by stoichiometry string, e.g. `"Pt151Cu50"`).
 - The version is single-sourced from `version` in `pyproject.toml`; `npl.__version__` reads it back

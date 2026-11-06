@@ -7,7 +7,6 @@ from npl.descriptors.global_feature_classifier import AdsorptionFeatureVector
 from npl.calculators.energy_calculator import LateralInteractionCalculator
 from npl.monte_carlo.random_exchange_operator import RandomExchangeOperator
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

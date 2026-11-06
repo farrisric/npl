@@ -2,11 +2,13 @@
 NanoParticleLibrary (npl) — simulate and optimize the structure and chemical
 ordering of (primarily bimetallic) nanoparticles, built on top of ASE.
 """
+import logging
 from importlib.metadata import PackageNotFoundError, version
 
-from .logging_config import setup_logging
+from .logging_config import setup_logging  # noqa: F401  opt-in, for applications
 
-setup_logging()
+# A library must not configure logging: the application decides where records go.
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 try:
     __version__ = version("npl")  # single source: pyproject.toml
